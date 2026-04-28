@@ -15,7 +15,7 @@ For **HIPAA-aligned design**, the critical dimensions are **where PHI lives** (d
 
 **Data quality** is uneven in any real EHR: duplicate problems, stale meds, scanned PDFs versus structured entries, and unsigned notes. **Agent failure modes** mirror these gaps; verification must treat **missing** and **ambiguous** as first-class outcomes.
 
-**Compliance:** Class deployment uses **synthetic chart text** and may call **OpenAI’s API**, but **production PHI** would require **Business Associate Agreements**, **minimum necessary** payloads, **training / retention** guarantees, subprocessors review, and likely **Azure OpenAI** or equivalent enterprise contracts. **Public observability SaaS** is **high risk** for PHI unless **redacted** or **self-hosted**; default recommendation is **server-side redacted logs** (see [ARCHITECTURE.md](ARCHITECTURE.md)).
+**Compliance:** Class deployment uses **synthetic chart text** and may call **OpenAI’s API**, with the Week 1 runtime using a **Railway + Docker deployment**. For **production PHI**, this would still require **Business Associate Agreements**, **minimum necessary** payloads, **training / retention** guarantees, subprocessors review, and likely **Azure OpenAI** or equivalent enterprise contracts. **Public observability SaaS** remains **high risk** for PHI unless redacted; for the Railway + Docker deployment, maintain **server-side redacted logs** and explicit retention controls (see [ARCHITECTURE.md](ARCHITECTURE.md)).
 
 **Bottom line:** OpenEMR is a **credible foundation** for a **session-bound, in-process** Clinical Co-Pilot that **reuses existing authorization layers** and limits LLM exposure to **necessary structured excerpts**. The highest-impact audit outcome is **not** “avoid OpenEMR,” but **control integration surface area**: strict tool contracts, mandatory verification, **no PHI in third-party traces**, and a documented **upgrade path** to OAuth2-scoped APIs before real clinical deployment.
 
@@ -54,6 +54,7 @@ For **HIPAA-aligned design**, the critical dimensions are **where PHI lives** (d
 - **PHP error logs** (stack traces can include SQL or paths).
 - **LLM vendor logs** (policy-dependent; assume sensitive).
 - **Observability third parties** (default: **do not send** raw prompts/responses).
+- **Platform logs on Railway** (treat as sensitive operational telemetry; keep PHI out of log lines).
 
 ### PHI handling gaps (inherent to integration, not solely OpenEMR)
 
@@ -141,6 +142,13 @@ flowchart LR
 
 - If logs contain **PHI**, they become **high-sensitivity assets** with retention limits.
 - Sprint approach: **synthetic PHI only**; logs **redacted**.
+- In the Railway + Docker deployment, document the ownership split: app-level redaction is your responsibility; platform log access, retention windows, and export paths must be explicitly reviewed and configured.
+
+### Railway operational controls (Week 1 hosting model)
+
+- Keep all secrets in Railway environment/service variables; never commit secrets or bake them into container images.
+- Pin deployment region deliberately and verify data-flow implications for external API egress.
+- Define backup/restore accountability for DB and persisted application storage before any non-demo usage.
 
 ### BAA assumption (per PRD)
 
@@ -152,7 +160,7 @@ Gauntlet Week 1 PRD: act **as if** a **Business Associate Agreement** (or equiva
 
 | ID | Severity | Finding | Recommendation |
 |----|----------|---------|----------------|
-| F1 | High | LLM + observability can **exfiltrate PHI** via logs | Redact; prefer self-hosted or DB-stored redacted traces |
+| F1 | High | LLM + observability can **exfiltrate PHI** via logs (including platform logs) | Redact aggressively; prefer in-app redacted traces and strict platform log controls |
 | F2 | High | New agent endpoints could **skip ACL** if rushed | Central middleware enforcing patient + permission |
 | F3 | Medium | Legacy surface increases **audit inconsistency** | Reuse `src/Services` patterns; add tests |
 | F4 | Medium | Data quality causes **hallucination-like** failures | Verification + “missing data” UX |

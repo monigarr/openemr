@@ -39,10 +39,10 @@ Agent tools execute in-process under the authenticated OpenEMR session, delegati
 8. [LLM integration (OpenAI)](#llm-integration-openai)  
 9. [Verification pipeline](#verification-pipeline)  
 10. [Observability options](#observability-options)  
-11. [Evaluation hooks](#evaluation-hooks)  
-12. [AI cost analysis (planning)](#ai-cost-analysis-planning)  
+11. [Evaluation hooks](#evaluation-hooks) ([dataset](#eval-dataset-canonical-description) · [run](#how-to-run-the-eval-suite) · [results](#results-submission-log))  
+12. [AI cost analysis (planning)](#ai-cost-analysis-planning) ([measured spend](#measured-development-spend) · [projection assumptions](#projection-assumptions))  
 13. [Failure modes and degradation](#failure-modes-and-degradation)  
-14. [Deployment (TBD checklist)](#deployment-tbd-checklist)  
+14. [Deployment (TBD checklist)](#deployment-tbd-checklist) ([Stage 1 local](#canonical-local-environment-stage-1) · [Stage 2 hosting](#target-hosting-stage-2-public-deploy))  
 15. [References within this repository](#references-within-this-repository)
 
 ---
@@ -57,14 +57,16 @@ Agent tools execute in-process under the authenticated OpenEMR session, delegati
 
 | PRD stage / gate | Where it is satisfied in-repo |
 |------------------|-------------------------------|
+| Stage 1 — Run locally | [Canonical local environment (Stage 1)](#canonical-local-environment-stage-1) in this file; detailed commands in [CONTRIBUTING.md](CONTRIBUTING.md) / [CLAUDE.md](CLAUDE.md) |
+| Stage 2 — Deploy | [Target hosting (Stage 2 public deploy)](#target-hosting-stage-2-public-deploy); canonical URL in [Deployment (TBD checklist)](#deployment-tbd-checklist) |
 | Stage 3 — Audit | [AUDIT.md](AUDIT.md) (five audit areas + ~500 word summary) |
 | Stage 4 — Users & use cases | [USERS.md](USERS.md) (narrow user + use cases + why conversational) |
 | Stage 5 — Agent integration plan | This file (~500 word summary + technical sections) |
 | Observability minimum questions | [Observability options](#observability-options) |
-| Evaluation / test suite | [Evaluation hooks](#evaluation-hooks); detailed fixtures may live under `tests/` when code exists |
+| Evaluation / test suite | [Evaluation hooks](#evaluation-hooks) (dataset, run instructions, [results log](#results-submission-log)); test code and fixtures under `tests/` when they exist |
 | Submitted deployed URL | [Deployment (TBD checklist)](#deployment-tbd-checklist) — canonical URL field |
 
-**Course deliverables vs. these three files:** The PRD also names a fork **README** (setup guide), an **eval dataset with results**, and **AI cost analysis**. If instructors require those as **separate committed files**, add or extend them outside this trio and keep one-line pointers here. If not, treat the sections [Local setup and deployment pointers](#local-setup-and-deployment-pointers), [Evaluation hooks](#evaluation-hooks), and [AI cost analysis (planning)](#ai-cost-analysis-planning) as the in-repo record.
+**Course deliverables vs. these three files:** The PRD also names a fork **README** (setup guide), an **eval dataset with results**, and **AI cost analysis**. **Eval dataset description, how to run the suite, submission results, and measured plus projected AI cost are canonical in this file** ([Evaluation hooks](#evaluation-hooks) and [AI cost analysis (planning)](#ai-cost-analysis-planning)). Keep the fork **README** short and point here for grading. If instructors require **additional** separate committed artifacts, add them outside this file and link one line from here.
 
 ---
 
@@ -216,15 +218,67 @@ Modern requests may enter through [`public/index.php`](public/index.php), which 
 
 **Mechanisms:** Unit tests for JSON schema and verification gate; integration tests with **mocked** OpenAI; synthetic fixtures only (**no real PHI**).
 
-**Results log (update when runs exist):** Record date, command (e.g. `phpunit` target), pass/fail counts, and notable regressions in a bullet list here or in CI output linked from the fork. Until tests land, this subsection remains the **planned** eval contract.
+### Eval dataset (canonical description)
+
+This subsection is the **single in-repo description** of what the eval suite is intended to cover (PRD: defensible, not only happy paths). Implementation lives under `tests/` when added; scenarios below map to the category table above.
+
+| Scenario group | Intent | Status |
+|----------------|--------|--------|
+| **Missing / incomplete chart** | Tool or model sees empty sections; output labels gaps, does not invent facts | TBD — wire tests when agent + tools exist |
+| **Authorization / wrong patient** | Session A cannot retrieve patient B tool payloads; IDOR attempts fail closed | TBD |
+| **Malformed model JSON** | Parser + one repair path; safe degradation | TBD |
+| **Tool timeout / OpenAI error** | Explicit user-visible degradation; no silent invention | TBD |
+| **Ambiguous user phrasing** | Clarification or conservative answer with uncertainty | TBD |
+| **Golden tool JSON → safe UI text** | Given fixture tool output + model output, rendered text matches expected verified payload | TBD |
+
+All cases use **synthetic** chart and user strings only (**no real PHI**).
+
+### How to run the eval suite
+
+- **Isolated (host, no DB):** `composer phpunit-isolated` or `vendor/bin/phpunit -c phpunit-isolated.xml` — see [README-Isolated-Testing.md](README-Isolated-Testing.md). Use this for fast feedback on pure PHP components (e.g. schema and verification gate) as they land.
+- **Full stack inside Docker:** From `docker/development-easy/`, use `/root/devtools` targets (e.g. `unit-test`, `services-test`) per [CLAUDE.md](CLAUDE.md) when tests require OpenEMR bootstrap, DB, or integration surfaces.
+
+Update this subsection when a dedicated agent/phpunit suite name exists (e.g. custom `phpunit.xml` group).
+
+### Results (submission log)
+
+Record every meaningful eval run you want graders to credit. Link to CI job URLs if results live primarily in GitHub Actions.
+
+| Date | Command | Pass / Fail | Notes |
+|------|---------|---------------|-------|
+| — | — | — | *Pending first run —* |
 
 ---
 
 ## AI cost analysis (planning)
 
-**Development spend:** Track actual API spend during integration (model choice, average tools per request, tokens in/out). Update this subsection with rough monthly dev totals when available.
+This section is the **canonical in-repo** place for **measured development spend**, **projection assumptions**, and **scale implications** (PRD submission: AI cost analysis). Update numbers after integration work; keep sources noted for auditability.
 
-**Projected load (illustrative axes—replace with measured averages):** Assume *N* concurrent clinicians, *R* requests per clinician per hour, and *T* total input+output tokens per request (including tool JSON). Cost scales with *N × R × T ×* price-per-token; tool-heavy flows increase *T* faster than chat-only flows.
+### Measured development spend
+
+| Field | Value |
+|-------|--------|
+| **Date range** | — *(fill after first billing period)* |
+| **Model(s)** | — *(e.g. gpt-4.x / reasoning tier)* |
+| **Rough USD total** | — *(from vendor billing export or dashboard)* |
+| **Data source** | — *(e.g. OpenAI usage page, export file name)* |
+| **Notes** | Track average tools per request and tokens in/out when the agent loop is instrumented. |
+
+### Projection assumptions
+
+These variables feed order-of-magnitude cost thinking; **replace defaults with measured averages** from logs or observability once the agent is wired.
+
+| Symbol | Meaning | Initial placeholder (revise with data) |
+|--------|---------|----------------------------------------|
+| *N* | Concurrent clinicians (or active sessions) | TBD |
+| *R* | Agent requests per clinician per hour | TBD |
+| *T* | Total input + output **tokens** per request (include tool JSON and verification passes) | TBD; tool-heavy flows grow *T* faster than chat-only |
+
+Cost scales roughly with *N × R × T ×* price-per-token; **bounded tools**, **verification passes**, and **caching policy** dominate at scale—this is **not** “cost-per-token × users” alone.
+
+### Illustrative scale table (architectural implications, not measured billing)
+
+The following table is **not** a bill forecast; it records **engineering responses** at different adoption levels given the assumptions above.
 
 | Scale (active clinical users) | Architectural implication |
 |------------------------------|----------------------------|
@@ -232,8 +286,6 @@ Modern requests may enter through [`public/index.php`](public/index.php), which 
 | **~1K** | Queue or throttle agent requests; cache **non-PHI** or redacted short-lived briefings where policy allows; consider reserved throughput / enterprise API. |
 | **~10K** | Regional deployment, aggressive **minimum-necessary** prompts, model tiering (smaller model for routing), batch where safe—not linear “token × users” without redesign. |
 | **~100K** | Dedicated inference contracts, possible **on-VPC** or Azure OpenAI–class deployments; observability and cost allocation per site/department. |
-
-This is **not** “cost-per-token × users” alone; bounded tools, verification passes, and caching policy dominate at scale.
 
 ---
 
@@ -253,19 +305,46 @@ This is **not** “cost-per-token × users” alone; bounded tools, verification
 **Canonical deployed application URL (PRD submissions):**  
 `TBD` — replace at each checkpoint (MVP, Early Submission, Final) with the **publicly reachable** URL of this fork’s deployment; keep in sync with what you submit to the course.
 
-**Hosting not yet selected.** Before going live even with synthetic data, complete:
+### Target hosting (Stage 2 public deploy)
 
-- [ ] TLS certificate and HTTPS-only cookies  
-- [ ] Secrets management (API keys)  
+**Provider:** **Railway + Docker deployment** (public PaaS runtime for this sprint). Keep an optional **Environment label** line here when you want a named deployment (for example `staging` or `prd-week1`) on record.
+
+**Topology:**
+
+- **Compute:** Railway service running the OpenEMR container image (Dockerfile-based deployment).
+- **Services:** Dockerized OpenEMR application plus MariaDB dependency in Railway (managed database service or attached containerized DB service, whichever is used by this fork).
+- **Networking/TLS:** Public Railway URL with platform HTTPS termination; keep OpenEMR app traffic HTTPS-only and avoid exposing plaintext-only endpoints in production routing.
+- **Configuration:** Environment variables and API keys are injected through Railway project/service settings, never committed to the repository.
+- **Scope:** Single-region, single-environment baseline for Week 1 (no HA or multi-region claim unless explicitly extended).
+
+**Alignment with local:** Stage 1 uses **Easy Development Docker** under [`docker/development-easy/`](docker/development-easy/); Stage 2 uses the same Dockerized OpenEMR stack in the **Railway + Docker deployment** so PHP, MariaDB, and OpenEMR behavior stay comparable between laptop and hosted environment. See [DOCKER_README.md](DOCKER_README.md) for the broader Docker layout.
+
+**Runtime (pin when live):** PHP version and extensions should match [CLAUDE.md](CLAUDE.md) expectations (PHP **8.2+** for modern OpenEMR development); list any fork-specific `docker-compose` overrides in a bullet below once stable.
+
+Before going live even with synthetic data, complete:
+
+- [ ] Confirm Railway HTTPS endpoint, cookie security flags, and HTTPS-only access  
+- [ ] Secrets management via Railway variables (API keys, DB credentials)  
 - [ ] Admin password rotation / demo banner  
-- [ ] Log rotation and **redaction** rules  
-- [ ] Backup policy for DB (if storing traces)  
-- [ ] Rollback: prior container image or release tag  
+- [ ] Platform and app log **redaction** rules (including prompt/tool payload controls)  
+- [ ] Backup/restore policy for DB and any persisted volumes in the Railway + Docker deployment  
+- [ ] Rollback/redeploy path (previous container image or release config)  
 
-### Local setup and deployment pointers
+### Canonical local environment (Stage 1)
 
-- **Local OpenEMR:** Follow upstream guidance (e.g. Docker or stack docs from [openemr/openemr](https://github.com/openemr/openemr)); fork-specific env vars or compose overrides should be **documented here in bullet form** as you stabilize them so Week 1 “Run it locally” stays traceable in-repo.  
-- **Public deploy:** Same stack family as intended for the final agent reduces surprise; record provider and **runtime** (PHP version, extensions) briefly here once chosen.
+**Canonical path** for “run OpenEMR locally” in this fork is the **Easy Development Docker** stack under [`docker/development-easy/`](docker/development-easy/), started per [CONTRIBUTING.md — Code contributions (local development)](CONTRIBUTING.md#code-contributions-local-development) and summarized in [CLAUDE.md](CLAUDE.md): after `docker compose up --detach --wait` from that directory, the app is at **http://localhost:8300/** or **https://localhost:9300/**; default login **admin** / **pass**; phpMyAdmin at **http://localhost:8310/** when that service is part of the compose profile. Load **realistic sample patient data** for demos (PRD Stage 1)—**synthetic / demo only; never production PHI**.
+
+**Pointers (commands and CI expectations live in these files—avoid duplicating long runbooks here):**
+
+- [CONTRIBUTING.md](CONTRIBUTING.md) — local development and contribution workflow  
+- [DOCKER_README.md](DOCKER_README.md) — production vs development Docker families  
+- [CLAUDE.md](CLAUDE.md) — URLs, credentials summary, and `docker compose exec openemr /root/devtools` test entrypoints  
+- [README-Isolated-Testing.md](README-Isolated-Testing.md) — host-only PHPUnit (`composer phpunit-isolated`) for isolated suites when logging eval runs without a full DB  
+- Upstream reference: [openemr/openemr](https://github.com/openemr/openemr) for stack changes outside this fork  
+
+**Fork-specific compose/env overrides (fill as you stabilize):**
+
+- *(None documented yet—add bullets here for env vars or compose file paths unique to this fork.)*
 
 ---
 

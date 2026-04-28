@@ -12,7 +12,7 @@ This document is the **source of truth** for *who* the Clinical Co-Pilot serves 
 
 **Setting:** Community **outpatient clinic** with a **high-volume schedule** (approximately fifteen to twenty-five face-to-face visits per day), mixed acute and chronic care, plus inbox and results tasks between visits.
 
-**Technical context:** The physician already uses **OpenEMR** for scheduling, charting, e-prescribing, and lab/imaging review. They move between exam rooms with **roughly one minute or less** between patients to re-orient on the next chart.
+**Technical context:** The physician already uses **OpenEMR** for scheduling, charting, e-prescribing, and lab/imaging review; for this Week 1 project, that OpenEMR environment is delivered via a **Railway + Docker deployment**. They move between exam rooms with **roughly one minute or less** between patients to re-orient on the next chart.
 
 **Goals:** Minimize cognitive load, avoid missing important changes since the last visit, and enter the room with an accurate mental model without reading the entire chart.
 
