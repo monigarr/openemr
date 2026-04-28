@@ -1543,7 +1543,7 @@ $ignoreErrors[] = [
 ];
 $ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$text of function text expects string, mixed given\\.$#',
-    'count' => 2,
+    'count' => 1,
     'path' => __DIR__ . '/../../interface/batchcom/batchEmail.php',
 ];
 $ignoreErrors[] = [
@@ -1607,18 +1607,13 @@ $ignoreErrors[] = [
     'path' => __DIR__ . '/../../interface/batchcom/batchcom.php',
 ];
 $ignoreErrors[] = [
-    'message' => '#^Parameter \\#1 \\$text of function text expects string, mixed given\\.$#',
-    'count' => 1,
-    'path' => __DIR__ . '/../../interface/batchcom/batchcom.php',
-];
-$ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$text of function attr expects string, mixed given\\.$#',
     'count' => 4,
     'path' => __DIR__ . '/../../interface/batchcom/emailnotification.php',
 ];
 $ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$text of function text expects string, mixed given\\.$#',
-    'count' => 3,
+    'count' => 2,
     'path' => __DIR__ . '/../../interface/batchcom/emailnotification.php',
 ];
 $ignoreErrors[] = [
@@ -1628,7 +1623,7 @@ $ignoreErrors[] = [
 ];
 $ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$text of function text expects string, mixed given\\.$#',
-    'count' => 2,
+    'count' => 1,
     'path' => __DIR__ . '/../../interface/batchcom/settingsnotification.php',
 ];
 $ignoreErrors[] = [
@@ -1638,7 +1633,7 @@ $ignoreErrors[] = [
 ];
 $ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$text of function text expects string, mixed given\\.$#',
-    'count' => 3,
+    'count' => 2,
     'path' => __DIR__ . '/../../interface/batchcom/smsnotification.php',
 ];
 $ignoreErrors[] = [
@@ -13578,7 +13573,7 @@ $ignoreErrors[] = [
 ];
 $ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$text of function js_escape expects string, mixed given\\.$#',
-    'count' => 10,
+    'count' => 7,
     'path' => __DIR__ . '/../../interface/orders/find_order_popup.php',
 ];
 $ignoreErrors[] = [
@@ -14262,7 +14257,7 @@ $ignoreErrors[] = [
     'path' => __DIR__ . '/../../interface/orders/types_ajax.php',
 ];
 $ignoreErrors[] = [
-    'message' => '#^Parameter \\#1 \\$text of function text expects string, \\(float\\|int\\) given\\.$#',
+    'message' => '#^Parameter \\#1 \\$text of function text expects string, int\\<1, max\\> given\\.$#',
     'count' => 1,
     'path' => __DIR__ . '/../../interface/orders/types_ajax.php',
 ];
@@ -14278,7 +14273,7 @@ $ignoreErrors[] = [
 ];
 $ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$text of function attr expects string, mixed given\\.$#',
-    'count' => 11,
+    'count' => 10,
     'path' => __DIR__ . '/../../interface/orders/types_edit.php',
 ];
 $ignoreErrors[] = [
@@ -19762,19 +19757,9 @@ $ignoreErrors[] = [
     'path' => __DIR__ . '/../../interface/super/edit_globals.php',
 ];
 $ignoreErrors[] = [
-    'message' => '#^Parameter \\#2 \\$haystack of function in_array expects array, mixed given\\.$#',
-    'count' => 5,
-    'path' => __DIR__ . '/../../interface/super/edit_globals.php',
-];
-$ignoreErrors[] = [
     'message' => '#^Parameter \\#3 \\$user of function setUserSetting expects int\\|null, mixed given\\.$#',
     'count' => 1,
     'path' => __DIR__ . '/../../interface/super/edit_globals.php',
-];
-$ignoreErrors[] = [
-    'message' => '#^Parameter \\#1 \\$array of function natsort expects array, mixed given\\.$#',
-    'count' => 1,
-    'path' => __DIR__ . '/../../interface/super/edit_layout.php',
 ];
 $ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$character of function ord expects string, mixed given\\.$#',
@@ -19828,7 +19813,7 @@ $ignoreErrors[] = [
 ];
 $ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$text of function attr expects string, mixed given\\.$#',
-    'count' => 36,
+    'count' => 35,
     'path' => __DIR__ . '/../../interface/super/edit_layout.php',
 ];
 $ignoreErrors[] = [
@@ -19842,13 +19827,18 @@ $ignoreErrors[] = [
     'path' => __DIR__ . '/../../interface/super/edit_layout.php',
 ];
 $ignoreErrors[] = [
+    'message' => '#^Parameter \\#1 \\$text of function js_escape expects string, int given\\.$#',
+    'count' => 1,
+    'path' => __DIR__ . '/../../interface/super/edit_layout.php',
+];
+$ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$text of function js_escape expects string, mixed given\\.$#',
-    'count' => 3,
+    'count' => 2,
     'path' => __DIR__ . '/../../interface/super/edit_layout.php',
 ];
 $ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$text of function text expects string, mixed given\\.$#',
-    'count' => 17,
+    'count' => 16,
     'path' => __DIR__ . '/../../interface/super/edit_layout.php',
 ];
 $ignoreErrors[] = [
@@ -19967,13 +19957,8 @@ $ignoreErrors[] = [
     'path' => __DIR__ . '/../../interface/super/layout_service_codes.php',
 ];
 $ignoreErrors[] = [
-    'message' => '#^Parameter \\#1 \\$stream of function fclose expects resource, mixed given\\.$#',
-    'count' => 1,
-    'path' => __DIR__ . '/../../interface/super/layout_service_codes.php',
-];
-$ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$text of function text expects string, mixed given\\.$#',
-    'count' => 3,
+    'count' => 2,
     'path' => __DIR__ . '/../../interface/super/layout_service_codes.php',
 ];
 $ignoreErrors[] = [
@@ -20158,7 +20143,7 @@ $ignoreErrors[] = [
 ];
 $ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$text of function text expects string, mixed given\\.$#',
-    'count' => 4,
+    'count' => 1,
     'path' => __DIR__ . '/../../interface/therapy_groups/therapy_groups_views/addGroup.php',
 ];
 $ignoreErrors[] = [
@@ -20207,13 +20192,18 @@ $ignoreErrors[] = [
     'path' => __DIR__ . '/../../interface/therapy_groups/therapy_groups_views/groupDetailsGeneralData.php',
 ];
 $ignoreErrors[] = [
-    'message' => '#^Parameter \\#1 \\$key of function xlt expects literal\\-string, mixed given\\.$#',
+    'message' => '#^Parameter \\#1 \\$key of function xlt expects literal\\-string, array\\<string, mixed\\> given\\.$#',
+    'count' => 1,
+    'path' => __DIR__ . '/../../interface/therapy_groups/therapy_groups_views/groupDetailsGeneralData.php',
+];
+$ignoreErrors[] = [
+    'message' => '#^Parameter \\#1 \\$text of function attr expects string, int given\\.$#',
     'count' => 1,
     'path' => __DIR__ . '/../../interface/therapy_groups/therapy_groups_views/groupDetailsGeneralData.php',
 ];
 $ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$text of function attr expects string, mixed given\\.$#',
-    'count' => 8,
+    'count' => 7,
     'path' => __DIR__ . '/../../interface/therapy_groups/therapy_groups_views/groupDetailsGeneralData.php',
 ];
 $ignoreErrors[] = [
@@ -20233,7 +20223,7 @@ $ignoreErrors[] = [
 ];
 $ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$text of function text expects string, mixed given\\.$#',
-    'count' => 6,
+    'count' => 3,
     'path' => __DIR__ . '/../../interface/therapy_groups/therapy_groups_views/groupDetailsGeneralData.php',
 ];
 $ignoreErrors[] = [
@@ -20257,8 +20247,13 @@ $ignoreErrors[] = [
     'path' => __DIR__ . '/../../interface/therapy_groups/therapy_groups_views/groupDetailsParticipants.php',
 ];
 $ignoreErrors[] = [
+    'message' => '#^Parameter \\#1 \\$text of function attr expects string, int\\|string given\\.$#',
+    'count' => 1,
+    'path' => __DIR__ . '/../../interface/therapy_groups/therapy_groups_views/groupDetailsParticipants.php',
+];
+$ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$text of function attr expects string, mixed given\\.$#',
-    'count' => 10,
+    'count' => 9,
     'path' => __DIR__ . '/../../interface/therapy_groups/therapy_groups_views/groupDetailsParticipants.php',
 ];
 $ignoreErrors[] = [
@@ -20267,8 +20262,13 @@ $ignoreErrors[] = [
     'path' => __DIR__ . '/../../interface/therapy_groups/therapy_groups_views/groupDetailsParticipants.php',
 ];
 $ignoreErrors[] = [
+    'message' => '#^Parameter \\#1 \\$text of function attr_url expects string, int\\|string given\\.$#',
+    'count' => 6,
+    'path' => __DIR__ . '/../../interface/therapy_groups/therapy_groups_views/groupDetailsParticipants.php',
+];
+$ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$text of function attr_url expects string, mixed given\\.$#',
-    'count' => 7,
+    'count' => 1,
     'path' => __DIR__ . '/../../interface/therapy_groups/therapy_groups_views/groupDetailsParticipants.php',
 ];
 $ignoreErrors[] = [
@@ -20277,13 +20277,13 @@ $ignoreErrors[] = [
     'path' => __DIR__ . '/../../interface/therapy_groups/therapy_groups_views/groupDetailsParticipants.php',
 ];
 $ignoreErrors[] = [
-    'message' => '#^Parameter \\#1 \\$text of function js_url expects string, mixed given\\.$#',
+    'message' => '#^Parameter \\#1 \\$text of function js_url expects string, int\\|string given\\.$#',
     'count' => 1,
     'path' => __DIR__ . '/../../interface/therapy_groups/therapy_groups_views/groupDetailsParticipants.php',
 ];
 $ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$text of function text expects string, mixed given\\.$#',
-    'count' => 6,
+    'count' => 4,
     'path' => __DIR__ . '/../../interface/therapy_groups/therapy_groups_views/groupDetailsParticipants.php',
 ];
 $ignoreErrors[] = [
@@ -20297,13 +20297,23 @@ $ignoreErrors[] = [
     'path' => __DIR__ . '/../../interface/therapy_groups/therapy_groups_views/groupDetailsParticipants.php',
 ];
 $ignoreErrors[] = [
+    'message' => '#^Parameter \\#1 \\$key of function xlt expects literal\\-string, array\\<string, mixed\\> given\\.$#',
+    'count' => 3,
+    'path' => __DIR__ . '/../../interface/therapy_groups/therapy_groups_views/listGroups.php',
+];
+$ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$key of function xlt expects literal\\-string, mixed given\\.$#',
-    'count' => 5,
+    'count' => 2,
+    'path' => __DIR__ . '/../../interface/therapy_groups/therapy_groups_views/listGroups.php',
+];
+$ignoreErrors[] = [
+    'message' => '#^Parameter \\#1 \\$text of function attr expects string, array\\<string, mixed\\> given\\.$#',
+    'count' => 2,
     'path' => __DIR__ . '/../../interface/therapy_groups/therapy_groups_views/listGroups.php',
 ];
 $ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$text of function attr expects string, mixed given\\.$#',
-    'count' => 4,
+    'count' => 2,
     'path' => __DIR__ . '/../../interface/therapy_groups/therapy_groups_views/listGroups.php',
 ];
 $ignoreErrors[] = [
@@ -20393,7 +20403,7 @@ $ignoreErrors[] = [
 ];
 $ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$value of function count expects array\\|Countable, mixed given\\.$#',
-    'count' => 2,
+    'count' => 1,
     'path' => __DIR__ . '/../../interface/usergroup/facilities.php',
 ];
 $ignoreErrors[] = [
@@ -20577,11 +20587,6 @@ $ignoreErrors[] = [
     'path' => __DIR__ . '/../../interface/usergroup/user_info.php',
 ];
 $ignoreErrors[] = [
-    'message' => '#^Parameter \\#1 \\$text of function js_escape expects string, mixed given\\.$#',
-    'count' => 1,
-    'path' => __DIR__ . '/../../interface/usergroup/user_info.php',
-];
-$ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$text of function text expects string, mixed given\\.$#',
     'count' => 3,
     'path' => __DIR__ . '/../../interface/usergroup/user_info.php',
@@ -20628,7 +20633,7 @@ $ignoreErrors[] = [
 ];
 $ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$text of function text expects string, mixed given\\.$#',
-    'count' => 10,
+    'count' => 9,
     'path' => __DIR__ . '/../../interface/usergroup/usergroup_admin.php',
 ];
 $ignoreErrors[] = [
@@ -20683,7 +20688,7 @@ $ignoreErrors[] = [
 ];
 $ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$text of function text expects string, mixed given\\.$#',
-    'count' => 8,
+    'count' => 7,
     'path' => __DIR__ . '/../../interface/usergroup/usergroup_admin_add.php',
 ];
 $ignoreErrors[] = [
