@@ -3367,11 +3367,6 @@ $ignoreErrors[] = [
     'path' => __DIR__ . '/../../interface/fax/fax_dispatch.php',
 ];
 $ignoreErrors[] = [
-    'message' => '#^Parameter \\#1 \\$text of function attr_url expects string, mixed given\\.$#',
-    'count' => 1,
-    'path' => __DIR__ . '/../../interface/fax/fax_dispatch.php',
-];
-$ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$text of function text expects string, int\\<1, max\\> given\\.$#',
     'count' => 1,
     'path' => __DIR__ . '/../../interface/fax/fax_dispatch.php',
@@ -18997,6 +18992,11 @@ $ignoreErrors[] = [
     'path' => __DIR__ . '/../../interface/reports/ippf_statistics.php',
 ];
 $ignoreErrors[] = [
+    'message' => '#^Parameter \\#2 \\$code of function process_ippf_code expects string, mixed given\\.$#',
+    'count' => 1,
+    'path' => __DIR__ . '/../../interface/reports/ippf_statistics.php',
+];
+$ignoreErrors[] = [
     'message' => '#^Parameter \\#2 \\$row of function ippfLoadColumnData expects array, mixed given\\.$#',
     'count' => 5,
     'path' => __DIR__ . '/../../interface/reports/ippf_statistics.php',
@@ -19933,7 +19933,12 @@ $ignoreErrors[] = [
 ];
 $ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$text of function attr expects string, mixed given\\.$#',
-    'count' => 34,
+    'count' => 33,
+    'path' => __DIR__ . '/../../interface/super/edit_list.php',
+];
+$ignoreErrors[] = [
+    'message' => '#^Parameter \\#1 \\$text of function attr expects string, string\\|null given\\.$#',
+    'count' => 1,
     'path' => __DIR__ . '/../../interface/super/edit_list.php',
 ];
 $ignoreErrors[] = [
@@ -72729,11 +72734,6 @@ $ignoreErrors[] = [
 $ignoreErrors[] = [
     'message' => '#^Parameter \\#2 \\$string of function explode expects string, mixed given\\.$#',
     'count' => 2,
-    'path' => __DIR__ . '/../../src/Services/Utils/SQLUpgradeService.php',
-];
-$ignoreErrors[] = [
-    'message' => '#^Parameter \\#2 \\$subject of function preg_match expects string, string\\|false given\\.$#',
-    'count' => 1,
     'path' => __DIR__ . '/../../src/Services/Utils/SQLUpgradeService.php',
 ];
 $ignoreErrors[] = [
