@@ -12322,6 +12322,11 @@ $ignoreErrors[] = [
     'path' => __DIR__ . '/../../interface/modules/zend_modules/module/Carecoordination/autoload_register.php',
 ];
 $ignoreErrors[] = [
+    'message' => '#^Parameter \\#1 \\$carecoordinationTable of class Carecoordination\\\\Controller\\\\CarecoordinationController constructor expects Carecoordination\\\\Model\\\\CarecoordinationTable, mixed given\\.$#',
+    'count' => 1,
+    'path' => __DIR__ . '/../../interface/modules/zend_modules/module/Carecoordination/config/module.config.php',
+];
+$ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$ccdTable of class Carecoordination\\\\Controller\\\\CcdController constructor expects Carecoordination\\\\Model\\\\CcdTable, mixed given\\.$#',
     'count' => 1,
     'path' => __DIR__ . '/../../interface/modules/zend_modules/module/Carecoordination/config/module.config.php',
@@ -12333,11 +12338,6 @@ $ignoreErrors[] = [
 ];
 $ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$generator of class Carecoordination\\\\Listener\\\\CCDAEventsSubscriber constructor expects Carecoordination\\\\Model\\\\CcdaGenerator, mixed given\\.$#',
-    'count' => 1,
-    'path' => __DIR__ . '/../../interface/modules/zend_modules/module/Carecoordination/config/module.config.php',
-];
-$ignoreErrors[] = [
-    'message' => '#^Parameter \\#1 \\$table of class Carecoordination\\\\Controller\\\\CarecoordinationController constructor expects Carecoordination\\\\Model\\\\CarecoordinationTable, mixed given\\.$#',
     'count' => 1,
     'path' => __DIR__ . '/../../interface/modules/zend_modules/module/Carecoordination/config/module.config.php',
 ];
@@ -12723,11 +12723,6 @@ $ignoreErrors[] = [
 ];
 $ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$source of method DOMDocument\\:\\:loadXML\\(\\) expects string, mixed given\\.$#',
-    'count' => 1,
-    'path' => __DIR__ . '/../../interface/modules/zend_modules/module/Carecoordination/src/Carecoordination/Model/CcdaUserPreferencesTransformer.php',
-];
-$ignoreErrors[] = [
-    'message' => '#^Parameter \\#2 \\$contextNode of method DOMXPath\\:\\:query\\(\\) expects DOMNode\\|null, DOMNameSpaceNode\\|DOMNode given\\.$#',
     'count' => 1,
     'path' => __DIR__ . '/../../interface/modules/zend_modules/module/Carecoordination/src/Carecoordination/Model/CcdaUserPreferencesTransformer.php',
 ];
