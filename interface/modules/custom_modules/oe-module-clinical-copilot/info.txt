@@ -1,0 +1,1 @@
+Clinical Co-Pilot (AgentForge) v0.1.0 — conversational briefing on patient summary with verification, telemetry, and OpenAI.

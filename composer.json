@@ -164,7 +164,8 @@
     ],
     "autoload": {
         "psr-4": {
-            "OpenEMR\\": "src"
+            "OpenEMR\\": "src",
+            "OpenEMR\\Modules\\ClinicalCopilot\\": "interface/modules/custom_modules/oe-module-clinical-copilot/src"
         },
         "classmap": [
             "library/classes"
@@ -234,7 +235,8 @@
             "ext-zlib": "8.2",
             "php": "8.2"
         },
-        "sort-packages": true
+        "sort-packages": true,
+        "process-timeout": 0
     },
     "extra": {
         "composer-normalize": {

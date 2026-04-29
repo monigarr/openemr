@@ -49,7 +49,7 @@ Agent tools execute in-process under the authenticated OpenEMR session, delegati
 
 ## Repository scope (Week 1 / PRD)
 
-**Single source of truth in this fork:** Week 1 AgentForge planning, hard-gate documentation, deployment URL for submissions, and summaries of eval intent and AI cost **live in this repository**—primarily in [AUDIT.md](AUDIT.md), [USERS.md](USERS.md), and this file—alongside [`Documentation/PRD_Week1_AgentForge.pdf`](Documentation/PRD_Week1_AgentForge.pdf). Avoid parallel specs in external tools that can drift from what graders see in GitHub.
+**Single source of truth in this fork:** Week 1 AgentForge planning, hard-gate documentation, deployment URL for submissions, and summaries of eval intent and AI cost **live in this repository**—primarily in [AUDIT.md](AUDIT.md), [USERS.md](USERS.md), and this file—alongside [`PRD_Week1_AgentForge.md`](PRD_Week1_AgentForge.md). Avoid parallel specs in external tools that can drift from what graders see in GitHub.
 
 **Capability boundary:** [USERS.md](USERS.md) defines the **only** user problems the agent may address; every tool, prompt, and UI behavior in later implementation must **trace to a use case** there. The audit ([AUDIT.md](AUDIT.md)) is the **input** to this architecture plan (PRD Stage 5); implementation should not outrun audited risks.
 
@@ -229,13 +229,13 @@ This subsection is the **single in-repo description** of what the eval suite is 
 | **Malformed model JSON** | Parser + one repair path; safe degradation | TBD |
 | **Tool timeout / OpenAI error** | Explicit user-visible degradation; no silent invention | TBD |
 | **Ambiguous user phrasing** | Clarification or conservative answer with uncertainty | TBD |
-| **Golden tool JSON → safe UI text** | Given fixture tool output + model output, rendered text matches expected verified payload | TBD |
+| **Golden tool JSON → safe UI text** | Given fixture tool output + model output, rendered text matches expected verified payload | Partial — `VerificationGateIsolatedTest` covers citation path resolution and stripping |
 
 All cases use **synthetic** chart and user strings only (**no real PHI**).
 
 ### How to run the eval suite
 
-- **Isolated (host, no DB):** `composer phpunit-isolated` or `vendor/bin/phpunit -c phpunit-isolated.xml` — see [README-Isolated-Testing.md](README-Isolated-Testing.md). Use this for fast feedback on pure PHP components (e.g. schema and verification gate) as they land.
+- **Isolated (host, no DB):** `composer dump-autoload -o` then `composer phpunit-isolated -- --filter ClinicalCopilot` (or `vendor/bin/phpunit -c phpunit-isolated.xml --filter ClinicalCopilot`) — see [README-Isolated-Testing.md](README-Isolated-Testing.md). Covers citation verification for the Clinical Co-Pilot module (`tests/Tests/Isolated/ClinicalCopilot/`).
 - **Full stack inside Docker:** From `docker/development-easy/`, use `/root/devtools` targets (e.g. `unit-test`, `services-test`) per [CLAUDE.md](CLAUDE.md) when tests require OpenEMR bootstrap, DB, or integration surfaces.
 
 Update this subsection when a dedicated agent/phpunit suite name exists (e.g. custom `phpunit.xml` group).
@@ -246,7 +246,7 @@ Record every meaningful eval run you want graders to credit. Link to CI job URLs
 
 | Date | Command | Pass / Fail | Notes |
 |------|---------|---------------|-------|
-| — | — | — | *Pending first run —* |
+| 2026-04-29 | `composer phpunit-isolated -- --filter ClinicalCopilot` | *(run locally / CI)* | Verifies `VerificationGate` citation stripping for `oe-module-clinical-copilot` |
 
 ---
 
@@ -303,32 +303,34 @@ The following table is **not** a bill forecast; it records **engineering respons
 ## Deployment (TBD checklist)
 
 **Canonical deployed application URL (PRD submissions):**  
-`TBD` — replace at each checkpoint (MVP, Early Submission, Final) with the **publicly reachable** URL of this fork’s deployment; keep in sync with what you submit to the course.
+`https://openemr-210925-0.cloudclusters.net/` — Cloud Clusters managed OpenEMR (Week 1 AgentForge); keep in sync with course submission forms.
 
 ### Target hosting (Stage 2 public deploy)
 
-**Provider:** **Railway + Docker deployment** (public PaaS runtime for this sprint). Keep an optional **Environment label** line here when you want a named deployment (for example `staging` or `prd-week1`) on record.
+**Provider:** **[Cloud Clusters](https://www.cloudclusters.io/cloud/openemr)** — **OpenEMR Docker** managed hosting (not Railway). Rationale: many current OpenEMR users and practices already run on or are familiar with this class of **managed, Docker-based** OpenEMR hosting, which supports trust and operational expectations for demos and SMB-style deployments.
+
+**Vendor positioning (marketing summary):** OpenEMR is described as a widely used open-source EHR and practice-management stack; Cloud Clusters advertises **easy deployments**, simplified management, **high network security**, reliability, and uptime, with entry pricing around **$4.99/mo** and a **free demo** path. Plan highlights from their OpenEMR product page: **SMB-friendly**, **managed cloud**, **OpenEMR 7.0.1 Community**, stack **Ubuntu + MySQL 8.0 + PHP 7.4 + Apache 2.4** (confirm the **live** image/version and PHP runtime in your control panel after provisioning—vendor pages can lag upstream `master`, and local Easy Docker often uses **newer PHP**; validate agent and OpenEMR compatibility on the **actual** hosted stack).
 
 **Topology:**
 
-- **Compute:** Railway service running the OpenEMR container image (Dockerfile-based deployment).
-- **Services:** Dockerized OpenEMR application plus MariaDB dependency in Railway (managed database service or attached containerized DB service, whichever is used by this fork).
-- **Networking/TLS:** Public Railway URL with platform HTTPS termination; keep OpenEMR app traffic HTTPS-only and avoid exposing plaintext-only endpoints in production routing.
-- **Configuration:** Environment variables and API keys are injected through Railway project/service settings, never committed to the repository.
-- **Scope:** Single-region, single-environment baseline for Week 1 (no HA or multi-region claim unless explicitly extended).
+- **Compute:** Managed OpenEMR **Docker** instance on Cloud Clusters’ platform (isolated resources per tenant per their documentation).
+- **Data / DB:** **MySQL 8.0** per vendor environment description; backups and on-demand restore advertised as control-panel features.
+- **Networking/TLS:** Public HTTPS URL with **free SSL** per vendor; keep OpenEMR cookies and admin URLs on HTTPS-only paths.
+- **Configuration:** Admin password, DNS, SSL, and any **OpenAI API keys** for the agent via the **Cloud Clusters control panel** (and OpenEMR globals)—**never** commit secrets to the repository.
+- **Scope:** Single-environment Week 1 baseline (no multi-region / HA claim unless you extend it).
 
-**Alignment with local:** Stage 1 uses **Easy Development Docker** under [`docker/development-easy/`](docker/development-easy/); Stage 2 uses the same Dockerized OpenEMR stack in the **Railway + Docker deployment** so PHP, MariaDB, and OpenEMR behavior stay comparable between laptop and hosted environment. See [DOCKER_README.md](DOCKER_README.md) for the broader Docker layout.
+**Alignment with local:** Stage 1 remains **Easy Development Docker** under [`docker/development-easy/`](docker/development-easy/). Stage 2 is **Cloud Clusters** managed OpenEMR, so behavior is “same product family, possibly different PHP/compose details”—**re-test** the agent and co-pilot paths on the hosted URL after deploy. See [DOCKER_README.md](DOCKER_README.md) for local Docker layout.
 
-**Runtime (pin when live):** PHP version and extensions should match [CLAUDE.md](CLAUDE.md) expectations (PHP **8.2+** for modern OpenEMR development); list any fork-specific `docker-compose` overrides in a bullet below once stable.
+**Runtime (pin when live):** Record the **actual** PHP and OpenEMR versions shown in Cloud Clusters after install; compare to [CLAUDE.md](CLAUDE.md) / [CONTRIBUTING.md](CONTRIBUTING.md) local flex image if you hit extension or version skew.
 
 Before going live even with synthetic data, complete:
 
-- [ ] Confirm Railway HTTPS endpoint, cookie security flags, and HTTPS-only access  
-- [ ] Secrets management via Railway variables (API keys, DB credentials)  
+- [ ] Confirm Cloud Clusters HTTPS endpoint, cookie security flags, and HTTPS-only access  
+- [ ] Secrets and API keys only in control panel / OpenEMR secured globals—never in git  
 - [ ] Admin password rotation / demo banner  
-- [ ] Platform and app log **redaction** rules (including prompt/tool payload controls)  
-- [ ] Backup/restore policy for DB and any persisted volumes in the Railway + Docker deployment  
-- [ ] Rollback/redeploy path (previous container image or release config)  
+- [ ] Platform and app log **redaction** rules (including prompt/tool payload controls); review host **WAF** / platform logging if enabled  
+- [ ] Backup/restore policy using Cloud Clusters backup features + OpenEMR export posture  
+- [ ] Rollback/redeploy path (snapshot, plan downgrade, or redeploy from vendor workflow)  
 
 ### Canonical local environment (Stage 1)
 
@@ -358,7 +360,7 @@ Before going live even with synthetic data, complete:
 | API / OAuth / FHIR (future path) | [`Documentation/api/`](Documentation/api/) |
 | Contributor / quality bar | [`CLAUDE.md`](CLAUDE.md) |
 | Security reporting | [`.github/SECURITY.md`](.github/SECURITY.md) |
-| PRD | [`Documentation/PRD_Week1_AgentForge.pdf`](Documentation/PRD_Week1_AgentForge.pdf) |
+| PRD | [`PRD_Week1_AgentForge.md`](PRD_Week1_AgentForge.md) |
 
 ---
 
@@ -368,4 +370,4 @@ Before going live even with synthetic data, complete:
 |--------|--------|
 | **Project** | AgentForge — Clinical Co-Pilot |
 | **Companion documents** | [USERS.md](USERS.md), [AUDIT.md](AUDIT.md) |
-| **PRD (Week 1)** | [`Documentation/PRD_Week1_AgentForge.pdf`](Documentation/PRD_Week1_AgentForge.pdf) — submission table lists `./USER.md`; this fork uses **`./USERS.md`** at repo root (align with graders if needed). |
+| **PRD (Week 1)** | [`PRD_Week1_AgentForge.md`](PRD_Week1_AgentForge.md) — submission table lists `./USER.md`; this fork uses **`./USERS.md`** at repo root (align with graders if needed). |

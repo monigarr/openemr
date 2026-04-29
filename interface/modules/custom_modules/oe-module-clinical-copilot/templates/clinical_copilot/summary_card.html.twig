@@ -1,0 +1,45 @@
+{% extends "patient/card/card_base.html.twig" %}
+
+{% block content %}
+<div class="clinical-copilot-panel ml-1 mr-1 mb-2" data-pid="{{ pid|attr }}" data-ajax-url="{{ copilotAjaxUrl|attr }}" data-csrf="{{ csrf|attr }}">
+    <p class="text-muted small mb-2">{{ "Inter-visit briefing uses chart data with citations; unverified lines are removed. Demo/synthetic data only."|xlt }}</p>
+    <button type="button" class="btn btn-primary btn-sm" id="clinical-copilot-brief-btn">{{ "Generate room briefing"|xlt }}</button>
+    <pre id="clinical-copilot-out" class="mt-2 mb-0 small bg-light p-2 border rounded" style="white-space:pre-wrap;max-height:22rem;overflow:auto;" aria-live="polite"></pre>
+</div>
+<script>
+(function () {
+    var root = document.currentScript.previousElementSibling;
+    if (!root || !root.classList.contains('clinical-copilot-panel')) { return; }
+    var btn = document.getElementById('clinical-copilot-brief-btn');
+    var out = document.getElementById('clinical-copilot-out');
+    if (!btn || !out) { return; }
+    var url = root.getAttribute('data-ajax-url');
+    var csrf = root.getAttribute('data-csrf');
+    btn.addEventListener('click', function () {
+        out.textContent = '…';
+        btn.disabled = true;
+        var body = new URLSearchParams();
+        body.set('csrf_token_form', csrf);
+        fetch(url, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: body.toString()
+        }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+        .then(function (x) {
+            if (x.j && x.j.ok) {
+                var t = x.j.text || '';
+                if (x.j.usage) {
+                    t += "\n\n---\ntokens: " + (x.j.usage.total_tokens || 0) + ", est. USD: " + (x.j.estimated_usd || 0);
+                }
+                out.textContent = t;
+            } else {
+                out.textContent = 'Request failed. ' + (x.j && x.j.error ? x.j.error : '');
+            }
+        }).catch(function () {
+            out.textContent = 'Network error.';
+        }).finally(function () { btn.disabled = false; });
+    });
+})();
+</script>
+{% endblock %}
