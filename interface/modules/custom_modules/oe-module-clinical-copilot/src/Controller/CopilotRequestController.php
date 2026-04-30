@@ -1,10 +1,33 @@
 <?php
 
 /**
- * AJAX handler: CSRF + session PID binding + orchestration.
+ * SPDX-License-Identifier: GPL-3.0-only
  *
- * @package   OpenEMR
- * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
+ * @file CopilotRequestController.php
+ *
+ * AJAX controller: CSRF validation, ACL, session-bound patient id, orchestration, JSON response.
+ *
+ * Module: Clinical Co-Pilot (`oe-module-clinical-copilot`, namespace OpenEMR\Modules\ClinicalCopilot).
+ *
+ *
+ * @author    Monica Peters <monigarr@monigarr.com> GauntletAI.com
+ * @version   0.1.0
+ * @since     2026-04-30
+ *
+ * Usage:
+ * Called only from `public/copilot_request.php` after `globals.php` bootstrap; returns JSON for the UI card.
+ *
+ * Usage example (integrator):
+ * Reuse patterns here (CSRF + session pid) if you add sibling endpoints; do not expose chart data without ACL checks.
+ *
+ * Security: Trust boundary uses the active OpenEMR session `pid` only; never honor a client-supplied
+ * patient identifier for briefing or tool JSON.
+ *
+ * @package    OpenEMR\Modules\ClinicalCopilot
+ * @subpackage Controller
+ * @license    https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
+ * @link       https://www.open-emr.org/wiki/index.php/Developers#Custom_Modules
+ * @see        README.md public/copilot_request.php Services/AgentOrchestrator.php
  */
 
 declare(strict_types=1);

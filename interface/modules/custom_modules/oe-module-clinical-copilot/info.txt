@@ -1,1 +1,4 @@
-Clinical Co-Pilot (AgentForge) v0.1.0 — conversational briefing on patient summary with verification, telemetry, and OpenAI.
+Clinical Co-Pilot (AgentForge) v0.1.0 — Patient summary with verification, telemetry, and OpenAI.
+Author Monica Peters <monigarr@monigarr.com> GauntletAI.com | SPDX-License-Identifier: GPL-3.0-only
+Module path: interface/modules/custom_modules/oe-module-clinical-copilot | Version 0.1.0 | 2026-04-30
+Line 1 is the OpenEMR module registry display name (InstModuleTable uses info.txt line 0 only).

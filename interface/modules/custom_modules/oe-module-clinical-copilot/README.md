@@ -1,3 +1,18 @@
+<!--
+  SPDX-License-Identifier: GPL-3.0-only
+
+  README.md — Clinical Co-Pilot (oe-module-clinical-copilot) integrator documentation.
+
+  Author: Monica Peters <monigarr@monigarr.com> GauntletAI.com
+  Version: 0.1.0 | Last updated: 2026-04-30
+
+  Usage: Copy module to interface/modules/custom_modules/oe-module-clinical-copilot/, enable in
+  Administration → System → Modules, configure globals and OpenAI API key, open patient summary.
+
+  Usage example: See "Install (OpenEMR Admin)" below; run PHPUnit filter ClinicalCopilot for verification tests.
+
+  @see moduleConfig.php version.php openemr.bootstrap.php
+-->
 # Clinical Co-Pilot (`oe-module-clinical-copilot`)
 
 AgentForge Week 1 module: **inter-visit briefing** on the **patient summary** (primary dashboard column) using OpenAI, **citation-backed** statements, **structured telemetry**, and **PHPUnit-isolated** verification tests.

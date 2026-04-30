@@ -1,10 +1,32 @@
 <?php
 
 /**
- * Bounded chart excerpts for the agent (server-side only).
+ * SPDX-License-Identifier: GPL-3.0-only
  *
- * @package   OpenEMR
- * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
+ * @file ChartContextTool.php
+ *
+ * Collects bounded, server-side chart excerpts (demographics, lists) for model grounding.
+ *
+ * Module: Clinical Co-Pilot (`oe-module-clinical-copilot`, namespace OpenEMR\Modules\ClinicalCopilot).
+ *
+ *
+ * @author    Monica Peters <monigarr@monigarr.com> GauntletAI.com
+ * @version   0.1.0
+ * @since     2026-04-30
+ *
+ * Usage:
+ * Call `collectForPatient($pid)` only after the controller confirms ACL and session binding for that pid.
+ *
+ * Usage example (integrator):
+ * Extend with additional bounded queries; keep row caps and PHI minimization consistent with site policy.
+ *
+ * Security: Pass validated session `pid` only; never use unvalidated client input as `$pid`.
+ *
+ * @package    OpenEMR\Modules\ClinicalCopilot
+ * @subpackage Services
+ * @license    https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
+ * @link       https://www.open-emr.org/wiki/index.php/Developers#Custom_Modules
+ * @see        README.md AgentOrchestrator.php VerificationGate.php
  */
 
 declare(strict_types=1);
@@ -33,9 +55,11 @@ final class ChartContextTool
         $row = $patientService->findByPid($pid);
         $patient = [
             'pid' => $pid,
-            'fname' => $row['fname'] ?? '',
-            'lname' => $row['lname'] ?? '',
-            'DOB' => $row['DOB'] ?? '',
+            # Neutralize for HIIPAA Compliance
+            # Remove completely or Cryptographic Hash and Salt
+            # 'fname' => $row['fname'] ?? '',
+            # 'lname' => $row['lname'] ?? '',
+            # 'DOB' => $row['DOB'] ?? '',
             'sex' => $row['sex'] ?? '',
         ];
 

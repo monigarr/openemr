@@ -1,10 +1,32 @@
 <?php
 
 /**
- * Tool → LLM → verification pipeline for inter-visit briefing.
+ * SPDX-License-Identifier: GPL-3.0-only
  *
- * @package   OpenEMR
- * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
+ * @file AgentOrchestrator.php
+ *
+ * Orchestrates chart context tool → OpenAI completion → citation verification for inter-visit briefing.
+ *
+ * Module: Clinical Co-Pilot (`oe-module-clinical-copilot`, namespace OpenEMR\Modules\ClinicalCopilot).
+ *
+ *
+ * @author    Monica Peters <monigarr@monigarr.com> GauntletAI.com
+ * @version   0.1.0
+ * @since     2026-04-30
+ *
+ * Usage:
+ * Construct with `ChartContextTool`, `OpenAiClient`, and `VerificationGate`; call `runBriefing()` with session pid.
+ *
+ * Usage example (integrator):
+ * Inject alternate clients here for tests; keep telemetry and verification hooks for observability contracts.
+ *
+ * Security: Callers must pass the session-validated patient id only; this class assumes upstream authZ/authN.
+ *
+ * @package    OpenEMR\Modules\ClinicalCopilot
+ * @subpackage Services
+ * @license    https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
+ * @link       https://www.open-emr.org/wiki/index.php/Developers#Custom_Modules
+ * @see        README.md ChartContextTool.php OpenAiClient.php VerificationGate.php
  */
 
 declare(strict_types=1);

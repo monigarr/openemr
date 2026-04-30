@@ -1,10 +1,30 @@
 <?php
 
 /**
- * Minimal OpenAI Chat Completions client (server-side only).
+ * SPDX-License-Identifier: GPL-3.0-only
  *
- * @package   OpenEMR
- * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
+ * @file OpenAiClient.php
+ *
+ * Minimal server-side OpenAI Chat Completions HTTP client (JSON messaging, usage extraction).
+ *
+ * Module: Clinical Co-Pilot (`oe-module-clinical-copilot`, namespace OpenEMR\Modules\ClinicalCopilot).
+ *
+ *
+ * @author    Monica Peters <monigarr@monigarr.com> GauntletAI.com
+ * @version   0.1.0
+ * @since     2026-04-30
+ *
+ * Usage:
+ * Construct with API key from environment/Globals; call `chatJson()` with model id and message list.
+ *
+ * Usage example (integrator):
+ * Set `CLINICAL_COPILOT_OPENAI_API_KEY` or `OPENAI_API_KEY` in the web runtime; never embed keys in source.
+ *
+ * @package    OpenEMR\Modules\ClinicalCopilot
+ * @subpackage Services
+ * @license    https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
+ * @link       https://www.open-emr.org/wiki/index.php/Developers#Custom_Modules
+ * @see        README.md moduleConfig.php AgentOrchestrator.php
  */
 
 declare(strict_types=1);

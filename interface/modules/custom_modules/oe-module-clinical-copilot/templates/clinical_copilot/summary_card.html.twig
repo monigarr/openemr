@@ -1,9 +1,25 @@
 {% extends "patient/card/card_base.html.twig" %}
+{#
+  SPDX-License-Identifier: GPL-3.0-only
+
+  summary_card.html.twig — Patient summary card UI for Clinical Co-Pilot (briefing button + output).
+
+  Module: oe-module-clinical-copilot (OpenEMR\Modules\ClinicalCopilot)
+  Author: Monica Peters <monigarr@monigarr.com> GauntletAI.com
+  Version: 0.1.0 | @since 2026-04-30
+
+  Usage: Rendered via ClinicalCopilotCard; posts to copilotAjaxUrl with CSRF (see public/copilot_request.php).
+
+  Usage example (integrator): Override this template path in Bootstrap/Twig loader only if you fork the module;
+  keep data-pid/data-ajax-url/data-csrf attributes for the bundled script.
+
+  @see README.md ClinicalCopilotCard.php
+#}
 
 {% block content %}
 <div class="clinical-copilot-panel ml-1 mr-1 mb-2" data-pid="{{ pid|attr }}" data-ajax-url="{{ copilotAjaxUrl|attr }}" data-csrf="{{ csrf|attr }}">
-    <p class="text-muted small mb-2">{{ "Demo / Synthetic Data: Inter-visit briefing uses chart data with citations; unverified lines are removed."|xlt }}</p>
-    <button type="button" class="btn btn-primary btn-sm" id="clinical-copilot-brief-btn">{{ "Generate room briefing"|xlt }}</button>
+    <p class="text-muted small mb-2">{{ "Quick clinical overview for this visit. (DEMO)"|xlt }}</p>
+    <button type="button" class="btn btn-primary btn-sm" id="clinical-copilot-brief-btn">{{ "Brief Patient"|xlt }}</button>
     <pre id="clinical-copilot-out" class="mt-2 mb-0 small bg-light p-2 border rounded" style="white-space:pre-wrap;max-height:22rem;overflow:auto;" aria-live="polite"></pre>
 </div>
 <script>
@@ -30,7 +46,7 @@
             if (x.j && x.j.ok) {
                 var t = x.j.text || '';
                 if (x.j.usage) {
-                    t += "\n\n---\ntokens: " + (x.j.usage.total_tokens || 0) + ", est. USD: " + (x.j.estimated_usd || 0);
+                    t += "\n\n---\nTOKENS: " + (x.j.usage.total_tokens || 0) + ", est. USD: " + (x.j.estimated_usd || 0);
                 }
                 out.textContent = t;
             } else {

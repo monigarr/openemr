@@ -1,10 +1,30 @@
 <?php
 
 /**
- * Strips or downgrades agent statements whose citations do not resolve to tool JSON.
+ * SPDX-License-Identifier: GPL-3.0-only
  *
- * @package   OpenEMR
- * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
+ * @file VerificationGate.php
+ *
+ * Strips or downgrades LLM statements whose citations do not resolve against tool JSON (dot paths).
+ *
+ * Module: Clinical Co-Pilot (`oe-module-clinical-copilot`, namespace OpenEMR\Modules\ClinicalCopilot).
+ *
+ *
+ * @author    Monica Peters <monigarr@monigarr.com> GauntletAI.com
+ * @version   0.1.0
+ * @since     2026-04-30
+ *
+ * Usage:
+ * Pure PHP: invoke `verify($toolData, $parsed)` in unit tests without full OpenEMR bootstrap.
+ *
+ * Usage example (integrator):
+ * Feed the same JSON structure the model was prompted to cite; assert stripped lines in PHPUnit fixtures.
+ *
+ * @package    OpenEMR\Modules\ClinicalCopilot
+ * @subpackage Services
+ * @license    https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
+ * @link       https://www.open-emr.org/wiki/index.php/Developers#Custom_Modules
+ * @see        README.md AgentOrchestrator.php
  */
 
 declare(strict_types=1);

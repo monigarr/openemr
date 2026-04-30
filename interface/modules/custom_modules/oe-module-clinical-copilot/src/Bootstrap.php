@@ -1,10 +1,29 @@
 <?php
 
 /**
- * Event wiring: patient summary section + Twig paths + optional globals.
+ * SPDX-License-Identifier: GPL-3.0-only
  *
- * @package   OpenEMR
- * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
+ * @file Bootstrap.php
+ *
+ * Event wiring: patient summary card section, Twig template path, and optional globals registration.
+ *
+ * Module: Clinical Co-Pilot (`oe-module-clinical-copilot`, namespace OpenEMR\Modules\ClinicalCopilot).
+ *
+ *
+ * @author    Monica Peters <monigarr@monigarr.com> GauntletAI.com
+ * @version   0.1.0
+ * @since     2026-04-30
+ *
+ * Usage:
+ * Instantiated from `openemr.bootstrap.php`; subscribe listeners once per request when the module loads.
+ *
+ * Usage example (integrator):
+ * Fork this class only if you need additional OpenEMR events; keep `subscribeToEvents()` idempotent patterns.
+ *
+ * @package    OpenEMR\Modules\ClinicalCopilot
+ * @license    https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
+ * @link       https://www.open-emr.org/wiki/index.php/Developers#Custom_Modules
+ * @see        README.md openemr.bootstrap.php ClinicalCopilotCard.php
  */
 
 declare(strict_types=1);
