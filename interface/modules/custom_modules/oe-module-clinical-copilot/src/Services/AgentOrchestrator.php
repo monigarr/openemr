@@ -65,12 +65,12 @@ Rules:
 - Every factual clinical statement MUST include one or more citations; each citation must be a valid path into CHART_JSON (e.g. patient.fname, allergies.0.title).
 - If data is missing, put a short note in uncertainties; do not invent facts.
 - Do not give dosing or new diagnoses.
-- Keep the briefing brief (under 120 words across statements).
+- Keep the briefing concise andbrief (under 120 words across statements).
 PROMPT;
 
         $messages = [
             ['role' => 'system', 'content' => $system],
-            ['role' => 'user', 'content' => "CHART_JSON:\n" . $toolJson . "\n\nTask: one-paragraph room briefing: who this is, why they may be here if inferable from problems only as possibilities labeled uncertain, allergies, key meds. Use citations."],
+            ['role' => 'user', 'content' => "CHART_JSON:\n" . $toolJson . "\n\nTask: one-paragraph room briefing: why this patient may be here if inferable from problems only as possibilities labeled uncertain, allergies, key medications. Use citations."],
         ];
 
         try {

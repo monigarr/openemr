@@ -73,11 +73,8 @@ class SectionEvent extends Event
             throw new DomainException("Card {$card->getIdentifier()} is not unique in current list");
         }
 
-        // @todo ensure position is an integer or null
-        // if (!is_int($position) || !is_null($position)) {
-        //     throw new LogicException('Position parameter must be either null or an interger');
-        // }
-        if ($position == null || !is_int($position)) {
+        // Use === null so 0 (prepend) is not confused with null (append): 0 == null is true in PHP.
+        if ($position === null || !is_int($position)) {
             $this->cards[] = $card;
         } else {
             array_splice($this->cards, $position, 0, [$card]);

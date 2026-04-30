@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="clinical-copilot-panel ml-1 mr-1 mb-2" data-pid="{{ pid|attr }}" data-ajax-url="{{ copilotAjaxUrl|attr }}" data-csrf="{{ csrf|attr }}">
-    <p class="text-muted small mb-2">{{ "Inter-visit briefing uses chart data with citations; unverified lines are removed. Demo/synthetic data only."|xlt }}</p>
+    <p class="text-muted small mb-2">{{ "Demo / Synthetic Data: Inter-visit briefing uses chart data with citations; unverified lines are removed."|xlt }}</p>
     <button type="button" class="btn btn-primary btn-sm" id="clinical-copilot-brief-btn">{{ "Generate room briefing"|xlt }}</button>
     <pre id="clinical-copilot-out" class="mt-2 mb-0 small bg-light p-2 border rounded" style="white-space:pre-wrap;max-height:22rem;overflow:auto;" aria-live="polite"></pre>
 </div>
