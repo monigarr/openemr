@@ -5,29 +5,9 @@
  *
  * @file CopilotRequestController.php
  *
- * AJAX controller: CSRF validation, ACL, session-bound patient id, orchestration, JSON response.
+ * AJAX controller: CSRF, ACL, session pid, multi-turn conversation, orchestration, JSON response.
  *
- * Module: Clinical Co-Pilot (`oe-module-clinical-copilot`, namespace OpenEMR\Modules\ClinicalCopilot).
- *
- *
- * @author    Monica Peters <monigarr@monigarr.com> GauntletAI.com
- * @version   0.1.0
- * @since     2026-04-30
- *
- * Usage:
- * Called only from `public/copilot_request.php` after `globals.php` bootstrap; returns JSON for the UI card.
- *
- * Usage example (integrator):
- * Reuse patterns here (CSRF + session pid) if you add sibling endpoints; do not expose chart data without ACL checks.
- *
- * Security: Trust boundary uses the active OpenEMR session `pid` only; never honor a client-supplied
- * patient identifier for briefing or tool JSON.
- *
- * @package    OpenEMR\Modules\ClinicalCopilot
- * @subpackage Controller
- * @license    https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
- * @link       https://www.open-emr.org/wiki/index.php/Developers#Custom_Modules
- * @see        README.md public/copilot_request.php Services/AgentOrchestrator.php
+ * @package OpenEMR\Modules\ClinicalCopilot
  */
 
 declare(strict_types=1);
@@ -41,7 +21,15 @@ use OpenEMR\Core\OEGlobalsBag;
 use OpenEMR\Modules\ClinicalCopilot\Services\AgentOrchestrator;
 use OpenEMR\Modules\ClinicalCopilot\Services\AgentTelemetry;
 use OpenEMR\Modules\ClinicalCopilot\Services\ChartContextTool;
+use OpenEMR\Modules\ClinicalCopilot\Services\CitationLabelBuilder;
+use OpenEMR\Modules\ClinicalCopilot\Services\ClinicalDomainRules;
+use OpenEMR\Modules\ClinicalCopilot\Services\ConversationStore;
+use OpenEMR\Modules\ClinicalCopilot\Services\DisplaySanitizer;
 use OpenEMR\Modules\ClinicalCopilot\Services\OpenAiClient;
+use OpenEMR\Modules\ClinicalCopilot\Services\Tools\ChartListsTool;
+use OpenEMR\Modules\ClinicalCopilot\Services\Tools\RecentEncountersTool;
+use OpenEMR\Modules\ClinicalCopilot\Services\Tools\RecentLabsTool;
+use OpenEMR\Modules\ClinicalCopilot\Services\Tools\ToolRegistry;
 use OpenEMR\Modules\ClinicalCopilot\Services\VerificationGate;
 
 final class CopilotRequestController
@@ -72,38 +60,111 @@ final class CopilotRequestController
         }
 
         $pid = (int) ($session->get('pid') ?? 0);
-        // Ignore any client-supplied pid (IDOR hardening)
         $requestId = bin2hex(random_bytes(8));
+        $authUser = (string) $session->get('authUser');
 
-        $apiKey = $this->resolveApiKey();
-        $orchestrator = new AgentOrchestrator(
-            new ChartContextTool(),
-            new OpenAiClient($apiKey),
-            new VerificationGate()
-        );
+        $rawAction = $_POST['clinical_copilot_action'] ?? $_POST['action'] ?? 'brief';
+        $action = strtolower(trim((string) $rawAction));
+        if (!in_array($action, ['brief', 'message', 'reset'], true)) {
+            $action = 'brief';
+        }
 
-        $telemetry = new AgentTelemetry();
-        $result = $orchestrator->runBriefing($pid, $telemetry, $requestId);
+        $conversationStore = new ConversationStore($session);
 
-        if (!($result['ok'] ?? false)) {
-            $code = ($result['error'] ?? '') === 'not_logged_in' ? 401 : 200;
-            http_response_code($code);
+        if ($action === 'reset') {
+            $conversationStore->reset();
             echo json_encode([
-                'ok' => false,
-                'error' => $result['error'] ?? 'unknown',
+                'ok' => true,
+                'action' => 'reset',
                 'request_id' => $requestId,
+                'conversation_token' => null,
+                'messages' => [],
             ]);
             return;
         }
 
-        echo json_encode([
-            'ok' => true,
-            'text' => $result['text'] ?? '',
+        if ($pid < 1) {
+            http_response_code(200);
+            echo json_encode(['ok' => false, 'error' => 'no_active_patient', 'request_id' => $requestId]);
+            return;
+        }
+
+        if ($action === 'message') {
+            $token = isset($_POST['conversation_token']) && is_string($_POST['conversation_token'])
+                ? trim($_POST['conversation_token']) : '';
+            if (!$conversationStore->validate($authUser, $pid, $token !== '' ? $token : null)) {
+                http_response_code(403);
+                echo json_encode(['ok' => false, 'error' => 'invalid_conversation', 'request_id' => $requestId]);
+                return;
+            }
+            $userMessage = isset($_POST['user_message']) && is_string($_POST['user_message'])
+                ? trim($_POST['user_message']) : '';
+            if ($userMessage === '') {
+                http_response_code(400);
+                echo json_encode(['ok' => false, 'error' => 'empty_message', 'request_id' => $requestId]);
+                return;
+            }
+            $prior = $conversationStore->getMessages();
+            $payload = $this->runOrchestrator($pid, $requestId, $prior, $userMessage);
+            if (!($payload['ok'] ?? false)) {
+                http_response_code(200);
+                echo json_encode(array_merge($payload, ['request_id' => $requestId]));
+                return;
+            }
+            $conversationStore->appendMessage('user', $userMessage);
+            $conversationStore->appendMessage('assistant', (string) ($payload['text'] ?? ''));
+            $convToken = $conversationStore->getConversationToken() ?? '';
+            echo json_encode(array_merge($payload, [
+                'request_id' => $requestId,
+                'conversation_token' => $convToken,
+                'messages' => $conversationStore->getMessages(),
+            ]));
+            return;
+        }
+
+        // brief (default): backward-compatible when only CSRF is posted
+        $conversationStore->getOrCreateToken($authUser, $pid);
+        $prior = $conversationStore->getMessages();
+        $payload = $this->runOrchestrator($pid, $requestId, $prior, '');
+        if (!($payload['ok'] ?? false)) {
+            http_response_code(200);
+            echo json_encode(array_merge($payload, ['request_id' => $requestId]));
+            return;
+        }
+        $conversationStore->appendMessage('user', 'Briefing request');
+        $conversationStore->appendMessage('assistant', (string) ($payload['text'] ?? ''));
+        $convToken = $conversationStore->getConversationToken() ?? '';
+        echo json_encode(array_merge($payload, [
             'request_id' => $requestId,
-            'usage' => $result['usage'] ?? [],
-            'model' => $result['model'] ?? '',
-            'estimated_usd' => $result['estimated_usd'] ?? 0.0,
-        ]);
+            'conversation_token' => $convToken,
+            'messages' => $conversationStore->getMessages(),
+        ]));
+    }
+
+    /**
+     * @param list<array{role:string,content:string}> $prior
+     * @return array<string,mixed>
+     */
+    private function runOrchestrator(int $pid, string $requestId, array $prior, string $userLine): array
+    {
+        $apiKey = $this->resolveApiKey();
+        $orchestrator = new AgentOrchestrator(
+            new ToolRegistry(
+                new ChartListsTool(new ChartContextTool()),
+                new RecentEncountersTool(),
+                new RecentLabsTool(),
+            ),
+            new OpenAiClient($apiKey),
+            new VerificationGate(),
+            new ClinicalDomainRules(),
+            new CitationLabelBuilder(),
+            new DisplaySanitizer(),
+        );
+        $telemetry = new AgentTelemetry();
+        if ($userLine === '') {
+            return $orchestrator->runBriefing($pid, $telemetry, $requestId, $prior, '');
+        }
+        return $orchestrator->runAgentTurn($pid, $telemetry, $requestId, $prior, $userLine);
     }
 
     private function resolveApiKey(): ?string

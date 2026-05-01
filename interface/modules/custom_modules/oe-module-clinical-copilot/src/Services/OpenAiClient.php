@@ -105,6 +105,90 @@ final class OpenAiClient
     }
 
     /**
+     * One Chat Completions round (optional tools and optional response_format).
+     *
+     * @param list<array<string,mixed>> $messages
+     * @param list<array<string,mixed>>|null $tools
+     * @return array{message:array<string,mixed>,usage:array<string,int>,model:string,raw_status:int}
+     * @throws \RuntimeException
+     */
+    public function chatCompletionRound(string $model, array $messages, ?array $tools, ?array $responseFormat): array
+    {
+        if (!$this->hasApiKey()) {
+            throw new \RuntimeException('OpenAI API key is not configured');
+        }
+
+        $payload = [
+            'model' => $model,
+            'messages' => $messages,
+            'temperature' => 0.2,
+        ];
+        if ($tools !== null && $tools !== []) {
+            $payload['tools'] = $tools;
+            $payload['tool_choice'] = 'auto';
+        }
+        if ($responseFormat !== null) {
+            $payload['response_format'] = $responseFormat;
+        }
+
+        $client = new Client(['timeout' => 90]);
+        try {
+            $response = $client->post(self::API_URL, [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->apiKey,
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => $payload,
+            ]);
+        } catch (GuzzleException $e) {
+            throw new \RuntimeException('OpenAI request failed: ' . $e->getMessage(), 0, $e);
+        }
+
+        $status = $response->getStatusCode();
+        $body = (string) $response->getBody();
+        $decoded = json_decode($body, true);
+        if (!is_array($decoded)) {
+            throw new \RuntimeException('OpenAI invalid JSON response');
+        }
+
+        $msg = $decoded['choices'][0]['message'] ?? [];
+        if (!is_array($msg)) {
+            $msg = [];
+        }
+
+        $usage = [];
+        if (isset($decoded['usage']) && is_array($decoded['usage'])) {
+            foreach (['prompt_tokens', 'completion_tokens', 'total_tokens'] as $k) {
+                if (isset($decoded['usage'][$k])) {
+                    $usage[$k] = (int) $decoded['usage'][$k];
+                }
+            }
+        }
+        $modelOut = is_string($decoded['model'] ?? null) ? $decoded['model'] : $model;
+
+        return [
+            'message' => $msg,
+            'usage' => $usage,
+            'model' => $modelOut,
+            'raw_status' => $status,
+        ];
+    }
+
+    /**
+     * @param array<string,int> $a
+     * @param array<string,int> $b
+     * @return array<string,int>
+     */
+    public static function mergeUsageTokens(array $a, array $b): array
+    {
+        return [
+            'prompt_tokens' => (int) ($a['prompt_tokens'] ?? 0) + (int) ($b['prompt_tokens'] ?? 0),
+            'completion_tokens' => (int) ($a['completion_tokens'] ?? 0) + (int) ($b['completion_tokens'] ?? 0),
+            'total_tokens' => (int) ($a['total_tokens'] ?? 0) + (int) ($b['total_tokens'] ?? 0),
+        ];
+    }
+
+    /**
      * Rough USD estimate for observability (not billing); uses public list pricing as defaults.
      *
      * @param array<string,int> $usage

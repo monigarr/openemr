@@ -1,60 +1,189 @@
 {% extends "patient/card/card_base.html.twig" %}
 {#
   SPDX-License-Identifier: GPL-3.0-only
-
-  summary_card.html.twig — Patient summary card UI for Clinical Co-Pilot (briefing button + output).
-
-  Module: oe-module-clinical-copilot (OpenEMR\Modules\ClinicalCopilot)
-  Author: Monica Peters <monigarr@monigarr.com> GauntletAI.com
-  Version: 0.1.0 | @since 2026-04-30
-
-  Usage: Rendered via ClinicalCopilotCard; posts to copilotAjaxUrl with CSRF (see public/copilot_request.php).
-
-  Usage example (integrator): Override this template path in Bootstrap/Twig loader only if you fork the module;
-  keep data-pid/data-ajax-url/data-csrf attributes for the bundled script.
-
-  @see README.md ClinicalCopilotCard.php
+  Clinical Co-Pilot — multi-turn chat, citations, briefing (DEMO).
 #}
 
 {% block content %}
-<div class="clinical-copilot-panel ml-1 mr-1 mb-2" data-pid="{{ pid|attr }}" data-ajax-url="{{ copilotAjaxUrl|attr }}" data-csrf="{{ csrf|attr }}">
-    <p class="text-muted small mb-2">{{ "Quick clinical overview for this visit. (DEMO)"|xlt }}</p>
-    <button type="button" class="btn btn-primary btn-sm" id="clinical-copilot-brief-btn">{{ "Brief Patient"|xlt }}</button>
-    <pre id="clinical-copilot-out" class="mt-2 mb-0 small bg-light p-2 border rounded" style="white-space:pre-wrap;max-height:22rem;overflow:auto;" aria-live="polite"></pre>
+<div class="clinical-copilot-panel ml-1 mr-1 mb-2" id="clinical-copilot-root"
+     data-ajax-url="{{ copilotAjaxUrl|attr }}" data-csrf="{{ csrf|attr }}">
+    <p class="text-muted small mb-2">{{ "Inter-visit co-pilot: briefing and follow-up questions. Citations reference chart tools only. (DEMO)"|xlt }}</p>
+    <div class="btn-toolbar mb-2" role="toolbar" aria-label="{{ "Co-pilot actions"|xlt }}">
+        <div class="btn-group btn-group-sm mr-1" role="group">
+            <button type="button" class="btn btn-primary btn-sm" id="clinical-copilot-brief-btn">{{ "Brief patient"|xlt }}</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="clinical-copilot-reset-btn">{{ "Clear thread"|xlt }}</button>
+        </div>
+    </div>
+    <div id="clinical-copilot-transcript"
+         class="border rounded bg-white p-2 mb-2"
+         style="max-height: 22rem; overflow-y: auto;"
+         aria-live="polite"
+         aria-label="{{ "Clinical co-pilot conversation"|xlt }}"></div>
+    <div id="clinical-copilot-sources" class="mb-2 small" aria-label="{{ "Cited sources for last reply"|xlt }}"></div>
+    <form id="clinical-copilot-form" class="form-inline d-flex flex-wrap align-items-start" onsubmit="return false;">
+        <label for="clinical-copilot-input" class="sr-only">{{ "Follow-up question"|xlt }}</label>
+        <textarea id="clinical-copilot-input" class="form-control form-control-sm flex-grow-1 mr-1 mb-1" rows="2"
+                  style="min-width: 12rem;"
+                  placeholder="{{ "Ask a follow-up grounded in this chart…"|xlt }}"></textarea>
+        <button type="button" class="btn btn-sm btn-primary mb-1" id="clinical-copilot-send-btn">{{ "Send"|xlt }}</button>
+    </form>
+    <details class="small text-muted mt-1">
+        <summary>{{ "Token usage (optional)"|xlt }}</summary>
+        <pre id="clinical-copilot-meta" class="small mb-0 mt-1 bg-light p-2 border rounded" style="white-space:pre-wrap;max-height:8rem;overflow:auto;"></pre>
+    </details>
 </div>
 <script>
 (function () {
-    var root = document.currentScript.previousElementSibling;
-    if (!root || !root.classList.contains('clinical-copilot-panel')) { return; }
-    var btn = document.getElementById('clinical-copilot-brief-btn');
-    var out = document.getElementById('clinical-copilot-out');
-    if (!btn || !out) { return; }
+    var root = document.getElementById('clinical-copilot-root');
+    if (!root) { return; }
+    var transcript = document.getElementById('clinical-copilot-transcript');
+    var input = document.getElementById('clinical-copilot-input');
+    var sendBtn = document.getElementById('clinical-copilot-send-btn');
+    var briefBtn = document.getElementById('clinical-copilot-brief-btn');
+    var resetBtn = document.getElementById('clinical-copilot-reset-btn');
+    var meta = document.getElementById('clinical-copilot-meta');
+    var sources = document.getElementById('clinical-copilot-sources');
     var url = root.getAttribute('data-ajax-url');
     var csrf = root.getAttribute('data-csrf');
-    btn.addEventListener('click', function () {
-        out.textContent = '…';
-        btn.disabled = true;
-        var body = new URLSearchParams();
-        body.set('csrf_token_form', csrf);
+    var conversationToken = null;
+
+    function esc(s) {
+        var d = document.createElement('div');
+        d.textContent = s;
+        return d.innerHTML;
+    }
+
+    function appendBubble(role, htmlBody) {
+        var wrap = document.createElement('div');
+        wrap.className = 'mb-2';
+        var isUser = role === 'user';
+        wrap.innerHTML = '<div class="d-flex ' + (isUser ? 'justify-content-end' : 'justify-content-start') + '">' +
+            '<div class="' + (isUser ? 'bg-primary text-white' : 'bg-light border') + ' rounded px-2 py-1" style="max-width:95%">' +
+            '<span class="sr-only">' + esc(isUser ? 'You' : 'Assistant') + '</span>' + htmlBody + '</div></div>';
+        transcript.appendChild(wrap);
+        transcript.scrollTop = transcript.scrollHeight;
+    }
+
+    function renderStatementsForUi(items) {
+        if (!items || !items.length) { return '<p class="mb-0 small">' + esc('(No verified statements.)') + '</p>'; }
+        var html = '';
+        for (var i = 0; i < items.length; i++) {
+            var it = items[i];
+            var sid = 'cc-s-' + Math.random().toString(36).slice(2, 9);
+            var cites = it.citations || [];
+            var citeHtml = '';
+            if (cites.length) {
+                citeHtml += '<ul class="list-unstyled small mb-0 mt-1 text-muted" aria-label="Sources">';
+                for (var j = 0; j < cites.length; j++) {
+                    var c = cites[j];
+                    citeHtml += '<li><span class="font-weight-bold">' + esc(c.label || 'Source') + '</span>' +
+                        '<span class="sr-only"> path </span><code class="small ml-1">' + esc(c.path || '') + '</code></li>';
+                }
+                citeHtml += '</ul>';
+            }
+            html += '<article class="mb-2" aria-labelledby="' + sid + '"><p id="' + sid + '" class="mb-0">' + esc(it.text || '') + '</p>' + citeHtml + '</article>';
+        }
+        return html;
+    }
+
+    function renderFromMessages(messages) {
+        transcript.innerHTML = '';
+        if (!messages || !messages.length) { return; }
+        for (var i = 0; i < messages.length; i++) {
+            var m = messages[i];
+            if (!m || !m.role) { continue; }
+            appendBubble(m.role, '<p class="mb-0 small" style="white-space:pre-wrap">' + esc(m.content || '') + '</p>');
+        }
+    }
+
+    function post(body, cb) {
+        var fd = new URLSearchParams();
+        fd.set('csrf_token_form', csrf);
+        for (var k in body) {
+            if (Object.prototype.hasOwnProperty.call(body, k) && body[k] !== null && body[k] !== undefined) {
+                fd.set(k, body[k]);
+            }
+        }
         fetch(url, {
             method: 'POST',
             credentials: 'same-origin',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: body.toString()
+            body: fd.toString()
         }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
-        .then(function (x) {
-            if (x.j && x.j.ok) {
-                var t = x.j.text || '';
-                if (x.j.usage) {
-                    t += "\n\n---\nTOKENS: " + (x.j.usage.total_tokens || 0) + ", est. USD: " + (x.j.estimated_usd || 0);
-                }
-                out.textContent = t;
+        .then(cb)
+        .catch(function () { cb({ ok: false, j: { error: 'network' } }); });
+    }
+
+    function setBusy(b) {
+        sendBtn.disabled = b;
+        briefBtn.disabled = b;
+        resetBtn.disabled = b;
+    }
+
+    function applyResponse(x) {
+        var j = x.j || {};
+        if (j.conversation_token) { conversationToken = j.conversation_token; }
+        if (j.messages) { renderFromMessages(j.messages); }
+        if (sources) {
+            if (j.ok && j.statements_for_ui && j.statements_for_ui.length) {
+                sources.innerHTML = '<div class="font-weight-bold mb-1">' + esc('Sources (last reply)') + '</div>' + renderStatementsForUi(j.statements_for_ui);
             } else {
-                out.textContent = 'Request failed. ' + (x.j && x.j.error ? x.j.error : '');
+                sources.innerHTML = '';
             }
-        }).catch(function () {
-            out.textContent = 'Network error.';
-        }).finally(function () { btn.disabled = false; });
+        }
+        if (j.usage && meta) {
+            meta.textContent = 'OpenAI TOKENS: ' + (j.usage.total_tokens || 0) + ', est. USD: ' + (j.estimated_usd || 0) + (j.model ? ', model: ' + j.model : '');
+        }
+    }
+
+    briefBtn.addEventListener('click', function () {
+        setBusy(true);
+        post({ action: 'brief' }, function (x) {
+            setBusy(false);
+            if (x.j && x.j.ok) { applyResponse(x); }
+            else {
+                if (sources) { sources.innerHTML = ''; }
+                appendBubble('assistant', '<p class="mb-0 small text-danger">' + esc((x.j && x.j.error) ? x.j.error : 'failed') + '</p>');
+            }
+        });
+    });
+
+    resetBtn.addEventListener('click', function () {
+        setBusy(true);
+        post({ action: 'reset' }, function (x) {
+            setBusy(false);
+            conversationToken = null;
+            transcript.innerHTML = '';
+            if (sources) { sources.innerHTML = ''; }
+            if (meta) { meta.textContent = ''; }
+        });
+    });
+
+    function sendFollowUp() {
+        var t = (input.value || '').trim();
+        if (!t) { return; }
+        if (!conversationToken) {
+            appendBubble('assistant', '<p class="mb-0 small text-danger">' + esc('Run a briefing first.') + '</p>');
+            return;
+        }
+        setBusy(true);
+        post({ action: 'message', user_message: t, conversation_token: conversationToken }, function (x) {
+            setBusy(false);
+            input.value = '';
+            if (x.j && x.j.ok) { applyResponse(x); }
+            else {
+                if (sources) { sources.innerHTML = ''; }
+                appendBubble('assistant', '<p class="mb-0 small text-danger">' + esc((x.j && x.j.error) ? x.j.error : 'failed') + '</p>');
+            }
+        });
+    }
+
+    sendBtn.addEventListener('click', sendFollowUp);
+    input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendFollowUp();
+        }
     });
 })();
 </script>

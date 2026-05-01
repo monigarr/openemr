@@ -55,7 +55,7 @@ final class ChartContextTool
         $row = $patientService->findByPid($pid);
         $patient = [
             'pid' => $pid,
-            # Neutralize for HIIPAA Compliance
+            # Neutralize for HIPAA compliance (identifiers omitted from model context).
             # Remove completely or Cryptographic Hash and Salt
             # 'fname' => $row['fname'] ?? '',
             # 'lname' => $row['lname'] ?? '',
