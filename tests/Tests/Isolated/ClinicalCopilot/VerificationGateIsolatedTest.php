@@ -80,4 +80,45 @@ class VerificationGateIsolatedTest extends TestCase
         $this->assertTrue($gate->citationResolves(['a' => ['b' => 'x']], 'a.b'));
         $this->assertFalse($gate->citationResolves(['a' => ['b' => '']], 'a.b'));
     }
+
+    public function testKeepsStatementWithMultipleCitationsAllValid(): void
+    {
+        $tool = [
+            'chart_lists' => [
+                'allergies' => [['title' => 'Penicillin']],
+                'medications' => [['title' => 'Lisinopril']],
+            ],
+        ];
+        $parsed = [
+            'statements' => [
+                [
+                    'text' => 'Allergy and med noted.',
+                    'citations' => ['chart_lists.allergies.0.title', 'chart_lists.medications.0.title'],
+                ],
+            ],
+            'uncertainties' => [],
+        ];
+        $gate = new VerificationGate();
+        $v = $gate->verify($tool, $parsed);
+        $this->assertCount(1, $v['statements']);
+        $this->assertCount(2, $v['statements'][0]['citations']);
+    }
+
+    public function testMergedBundleRecentEncountersPath(): void
+    {
+        $tool = [
+            'recent_encounters' => [
+                'encounters' => [['date' => '2024-01-02', 'reason' => 'Follow-up', 'visit_category' => 'Office']],
+            ],
+        ];
+        $parsed = [
+            'statements' => [
+                ['text' => 'Recent visit documented.', 'citations' => ['recent_encounters.encounters.0.reason']],
+            ],
+            'uncertainties' => [],
+        ];
+        $gate = new VerificationGate();
+        $v = $gate->verify($tool, $parsed);
+        $this->assertCount(1, $v['statements']);
+    }
 }
