@@ -32567,11 +32567,6 @@ $ignoreErrors[] = [
     'path' => __DIR__ . '/../../src/Events/Core/TemplatePageEvent.php',
 ];
 $ignoreErrors[] = [
-    'message' => '#^Parameter \\#1 \\$template of method OpenEMR\\\\Events\\\\Core\\\\TemplatePageEvent\\:\\:setTwigTemplate\\(\\) expects string, mixed given\\.$#',
-    'count' => 1,
-    'path' => __DIR__ . '/../../src/Events/Core/TemplatePageEvent.php',
-];
-$ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$variables of method OpenEMR\\\\Events\\\\Core\\\\TemplatePageEvent\\:\\:setTwigVariables\\(\\) expects array, mixed given\\.$#',
     'count' => 1,
     'path' => __DIR__ . '/../../src/Events/Core/TemplatePageEvent.php',
@@ -62442,11 +62437,6 @@ $ignoreErrors[] = [
     'path' => __DIR__ . '/../../src/RestControllers/AuthorizationController.php',
 ];
 $ignoreErrors[] = [
-    'message' => '#^Parameter \\#1 \\$pageName of class OpenEMR\\\\Events\\\\Core\\\\TemplatePageEvent constructor expects string, mixed given\\.$#',
-    'count' => 1,
-    'path' => __DIR__ . '/../../src/RestControllers/AuthorizationController.php',
-];
-$ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$redirectUri of method League\\\\OAuth2\\\\Server\\\\RequestTypes\\\\AuthorizationRequest\\:\\:setRedirectUri\\(\\) expects string\\|null, mixed given\\.$#',
     'count' => 1,
     'path' => __DIR__ . '/../../src/RestControllers/AuthorizationController.php',
@@ -63194,16 +63184,6 @@ $ignoreErrors[] = [
 $ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$content of method OpenEMR\\\\Common\\\\Http\\\\Psr17Factory\\:\\:createStream\\(\\) expects string, string\\|false given\\.$#',
     'count' => 1,
-    'path' => __DIR__ . '/../../src/RestControllers/SMART/SMARTAuthorizationController.php',
-];
-$ignoreErrors[] = [
-    'message' => '#^Parameter \\#1 \\$names of method Twig\\\\Environment\\:\\:resolveTemplate\\(\\) expects array\\<string\\|Twig\\\\TemplateWrapper\\>\\|string\\|Twig\\\\TemplateWrapper, array\\<int, mixed\\> given\\.$#',
-    'count' => 1,
-    'path' => __DIR__ . '/../../src/RestControllers/SMART/SMARTAuthorizationController.php',
-];
-$ignoreErrors[] = [
-    'message' => '#^Parameter \\#1 \\$pageName of class OpenEMR\\\\Events\\\\Core\\\\TemplatePageEvent constructor expects string, mixed given\\.$#',
-    'count' => 2,
     'path' => __DIR__ . '/../../src/RestControllers/SMART/SMARTAuthorizationController.php',
 ];
 $ignoreErrors[] = [
