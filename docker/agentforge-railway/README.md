@@ -37,9 +37,18 @@ docker build -f docker/agentforge-railway/Dockerfile -t openemr:agentforge \
 OpenEMR lists **unregistered** custom modules by scanning the directory  
 `/var/www/localhost/htdocs/openemr/interface/modules/custom_modules/` on the running container. If **Clinical Co-Pilot (AgentForge)** does not appear under **Administration → System → Modules → Manage Modules**, the folder is missing or unreadable **at runtime** (wrong branch built, volume shadowing, or you still need Register / Install / Enable).
 
-### Step 1: Confirm files on the running container (Railway shell)
+### Step 1: Confirm files on the running container
 
-In Railway: **service → … → Shell** (or `railway run bash`), then:
+The path `/var/www/localhost/htdocs/openemr/...` exists **only inside the Linux container** that runs OpenEMR on Railway. It does **not** exist on your Windows or Mac host.
+
+**Do not use** `railway run bash` or `railway shell` for this check: both run **on your machine** and only inject Railway environment variables. `ls` there will correctly report “No such file or directory” for `/var/www/...`.
+
+**Do use** one of these so commands run **inside** the deployed service:
+
+- **CLI (recommended):** from your linked project directory, run `railway ssh` to open a shell in the service container, then run the commands below. One-shot: `railway ssh -- ls -la /var/www/localhost/htdocs/openemr/interface/modules/custom_modules/`
+- **Dashboard:** **service → … → Shell** (same idea: session in the container, not your laptop).
+
+Then:
 
 ```bash
 ls -la /var/www/localhost/htdocs/openemr/interface/modules/custom_modules/
@@ -47,6 +56,8 @@ ls -la /var/www/localhost/htdocs/openemr/interface/modules/custom_modules/oe-mod
 stat -c '%U:%G %a %n' /var/www/localhost/htdocs/openemr/interface/modules/custom_modules/oe-module-clinical-copilot 2>/dev/null
 mount | grep htdocs
 ```
+
+On Alpine-based images, if `stat -c` is not available, `ls -la` on those paths is enough.
 
 Interpretation:
 
