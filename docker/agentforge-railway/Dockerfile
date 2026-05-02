@@ -24,9 +24,13 @@ RUN apk update \
         python3 \
     && rm -rf /var/cache/apk/*
 
-WORKDIR /var/www/localhost/htdocs/openemr
+RUN rm -f /etc/apache2/conf.d/mpm_event.conf || true
 
+WORKDIR /var/www/localhost/htdocs/openemr
 COPY . .
+
+RUN chown -R apache:apache /var/www/localhost/htdocs/openemr \
+    && chmod -R 755 /var/www/localhost/htdocs/openemr
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
@@ -35,7 +39,11 @@ RUN composer install --no-dev --no-interaction --prefer-dist \
     && npm run build \
     && (cd ccdaservice && npm ci) \
     && composer dump-autoload -o \
-    && rm -rf /root/.composer/cache /tmp/* /var/tmp/*
+
+    # Clean up and FIX PERMISSIONS LAST
+RUN rm -rf /root/.composer/cache /tmp/* /var/tmp/* \
+&& chown -R apache:apache /var/www/localhost/htdocs/openemr \
+&& chmod -R 755 /var/www/localhost/htdocs/openemr
 
 ARG SOURCE_BRANCH=prd_1_agentforge_monigarr
 ARG GIT_COMMIT=unknown
