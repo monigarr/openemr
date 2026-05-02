@@ -32,6 +32,66 @@ docker build -f docker/agentforge-railway/Dockerfile -t openemr:agentforge \
 6. **HTTP:** The image exposes ports **80** and **443** like other OpenEMR flex-based images. Map Railway’s public HTTP to the port your process listens on (often **80** inside the container). If Railway injects `PORT`, confirm against [OpenEMR Docker Hub](https://hub.docker.com/r/openemr/openemr/) docs for your base image behavior.
 7. **Persistence:** Mount or provision volumes for `sites/` and database data for anything beyond a demo.
 
+## Troubleshooting: `oe-module-clinical-copilot` not in Manage Modules
+
+OpenEMR lists **unregistered** custom modules by scanning the directory  
+`/var/www/localhost/htdocs/openemr/interface/modules/custom_modules/` on the running container. If **Clinical Co-Pilot (AgentForge)** does not appear under **Administration → System → Modules → Manage Modules**, the folder is missing or unreadable **at runtime** (wrong branch built, volume shadowing, or you still need Register / Install / Enable).
+
+### Step 1: Confirm files on the running container (Railway shell)
+
+In Railway: **service → … → Shell** (or `railway run bash`), then:
+
+```bash
+ls -la /var/www/localhost/htdocs/openemr/interface/modules/custom_modules/
+ls -la /var/www/localhost/htdocs/openemr/interface/modules/custom_modules/oe-module-clinical-copilot/ 2>/dev/null | head
+stat -c '%U:%G %a %n' /var/www/localhost/htdocs/openemr/interface/modules/custom_modules/oe-module-clinical-copilot 2>/dev/null
+mount | grep htdocs
+```
+
+Interpretation:
+
+| Result | Likely cause |
+|--------|----------------|
+| Folder missing; **no** other `oe-module-*` dirs | **Wrong Git branch** for the Railway build, or stale build cache — see below. |
+| Folder missing; **other** `oe-module-*` dirs exist | **Volume** mounted over the app tree hiding new image layers — see below. |
+| Folder present with `info.txt`, `moduleConfig.php`, `openemr.bootstrap.php`, `src/` | Files are OK — use **Refresh Modules** then **Register → Install → Enable** in Manage Modules. |
+
+### Cause A: Wrong branch or stale build cache
+
+The Dockerfile **does not** `git checkout` a branch; Railway builds whatever branch is connected under **Settings → Source → Branch**. Set it to **`prd_1_agentforge_monigarr`** (or the branch that contains the module). Confirm **Settings → Build → Dockerfile path** is `docker/agentforge-railway/Dockerfile`. Redeploy **without build cache**, then repeat Step 1.
+
+### Cause B: Volume shadowing the application tree
+
+Persist only **`sites/`** (and your DB service). If a Railway volume is mounted at `/var/www/localhost/htdocs/openemr` or `/var/www/localhost/htdocs/`, it replaces the image filesystem at that path and **hides** `interface/modules/custom_modules/oe-module-clinical-copilot` from new deploys. Remount the volume to **`.../openemr/sites`** only, redeploy, repeat Step 1.
+
+### Cause C: Register and enable in OpenEMR
+
+Files in the image do **not** auto-enable the module. After Step 1 shows the folder:
+
+1. **Administration → System → Modules → Manage Modules**
+2. **Refresh Modules**
+3. Under **Unregistered**, find **Clinical Co-Pilot (AgentForge)** (from `info.txt` line 1) → **Register**
+4. **Install**, then **Enable**
+5. Open a **patient summary**; the card is wired when `mod_active = 1` loads `openemr.bootstrap.php`.
+
+If the module was **Registered** earlier but files were missing on a prior deploy, OpenEMR may have set `mod_active = 0` when bootstrap was unreadable. After files are fixed, use **Enable** again on the Registered row.
+
+### Runtime configuration (after enable)
+
+- **Administration → Globals → Portal** → **Clinical Co-Pilot OpenAI API key**, and/or  
+- Railway **Variables**: `CLINICAL_COPILOT_OPENAI_API_KEY` or `OPENAI_API_KEY`  
+- Confirm globals **`clinical_copilot_enable`** = on (default in `moduleConfig.php`).
+
+### Verify locally after `docker build` (optional)
+
+From repo root, after `docker build -f docker/agentforge-railway/Dockerfile -t openemr:agentforge .`:
+
+```shell
+docker run --rm openemr:agentforge ls -la /var/www/localhost/htdocs/openemr/interface/modules/custom_modules/oe-module-clinical-copilot/
+```
+
+You should see `info.txt`, `moduleConfig.php`, `openemr.bootstrap.php`, and `src/`.
+
 ## Security
 
 Change default database and OpenEMR admin passwords before any real data. Do not commit secrets.
