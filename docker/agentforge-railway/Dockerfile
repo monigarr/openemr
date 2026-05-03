@@ -27,17 +27,11 @@ RUN apk update \
 RUN rm -f /etc/apache2/conf.d/mpm_event.conf || true
 
 WORKDIR /var/www/localhost/htdocs/openemr
-# openemr/openemr:flex ships the startup script at /var/www/localhost/htdocs/openemr.sh (not inside openemr/).
-# WORKDIR is openemr/, so CMD ./openemr.sh expects ./openemr.sh here. COPY . . replaces only this tree — stash
-# the flex script from its real path, restore after copy. Build fails if the base layout changes.
-RUN FLEX_ENTRY=/var/www/localhost/htdocs/openemr.sh \
-    && test -f "$FLEX_ENTRY" \
-    && cp -a "$FLEX_ENTRY" /tmp/openemr.sh.flex
+# Flex keeps openemr.sh, ssl.sh, xdebug.sh, pcov.sh, auto_configure.php under /var/www/localhost/htdocs/
+# (openemr-devops docker/openemr/flex). COPY . . only replaces this directory — it does not remove those
+# scripts. Do not copy openemr.sh into the app tree or leave final WORKDIR as openemr/: openemr.sh runs
+# `sh ssl.sh` before any cd; CWD must be htdocs so ssl.sh resolves (avoids "can't open 'ssl.sh'").
 COPY . .
-RUN test -f /tmp/openemr.sh.flex \
-    && cp -a /tmp/openemr.sh.flex ./openemr.sh \
-    && chmod 755 ./openemr.sh \
-    && rm -f /tmp/openemr.sh.flex
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
@@ -51,6 +45,9 @@ RUN composer install --no-dev --no-interaction --prefer-dist \
     && rm -rf /root/.composer/cache /tmp/* /var/tmp/* \
     && chown -R apache:apache /var/www/localhost/htdocs/openemr \
     && chmod -R 755 /var/www/localhost/htdocs/openemr
+
+# Inherited CMD is ./openemr.sh — same CWD as stock flex so sibling ssl.sh / auto_configure.php paths work.
+WORKDIR /var/www/localhost/htdocs
 
 ARG SOURCE_BRANCH=prd_1_agentforge_monigarr
 ARG GIT_COMMIT=unknown
