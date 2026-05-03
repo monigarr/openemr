@@ -6,118 +6,195 @@
 
 {% block content %}
 <style>
-    /* 1. Main Container & Base Text */
-    .copilot-card-container {
-        background: #ffffff;
-        border-radius: 12px;
-        padding: 20px;
-        border: 2px solid #0062ff;
-        font-size: 3rem; /* Universal base size increase */
+    #clinical-copilot-root {
+        --of-primary:rgb(23, 166, 114);
+        --of-primary-hover:rgb(18, 124, 83);
+        --of-primary-active:rgb(11, 90, 35);
+        --of-accent:rgb(47, 237, 113);
+        --of-bg: #F3F7FC;
+        --of-surface: #FFFFFF;
+        --of-text: #1F2933;
+        --of-muted: #52616B;
+        --of-border: #B8C7D9;
+        --of-focus: #F9AB00;
+
+        background: var(--of-bg);
+        border-left: 8px solid var(--of-accent);
+        border-top: 1px solid var(--of-border);
+        border-right: 1px solid var(--of-border);
+        border-bottom: 1px solid var(--of-border);
+        border-radius: 14px;
+        padding: 1rem;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.16);
+        color: var(--of-text);
     }
 
-    /* 2. Top Disclaimer/Demo Text */
-    .copilot-card-container .text-muted.large {
-        font-size: 1.7rem !important; /* No longer 'large' */
-        color: #495057 !important;
-        margin-bottom: 15px !important;
+    #clinical-copilot-root .copilot-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 0.75rem;
     }
 
-    /* 3. Hero Buttons (Large Touch Targets) */
-    .btn-echelon-primary {
-        font-size: 3rem !important;
-        padding: 18px 24px !important;
-        background: #0062ff;
-        color: #fff !important;
+    #clinical-copilot-root .copilot-kicker {
+        font-size: 0.82rem;
         font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--of-primary);
+        margin-bottom: 0.2rem;
+    }
+
+    #clinical-copilot-root .copilot-subtitle {
+        font-size: 0.95rem;
+        color: var(--of-muted);
+        margin: 0;
+        max-width: 42rem;
+    }
+
+    #clinical-copilot-root .copilot-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 0.85rem;
+    }
+
+    #clinical-copilot-root .btn-of-primary {
+        background: var(--of-primary);
+        border: 2px solid var(--of-primary);
+        color: #FFFFFF !important;
+        font-size: 1.05rem;
+        font-weight: 800;
+        padding: 0.8rem 1.15rem;
         border-radius: 10px;
-        border: none;
+        min-height: 48px;
+        box-shadow: 0 3px 8px rgba(23, 166, 161, 0.28);
     }
 
-    .btn-echelon-outline {
-        font-size: 1rem !important;
-        padding: 18px 24px !important;
-        border: 2px solid #ced4da;
-        background: #f8f9fa;
+    #clinical-copilot-root .btn-of-primary:hover {
+        background: var(--of-primary-hover);
+        border-color: var(--of-primary-hover);
     }
 
-    /* 4. Chat Transcript (Messages) */
+    #clinical-copilot-root .btn-of-primary:active {
+        background: var(--of-primary-active);
+        border-color: var(--of-primary-active);
+    }
+
+    #clinical-copilot-root .btn-of-secondary {
+        background: var(--of-surface);
+        border: 2px solid var(--of-border);
+        color: var(--of-text) !important;
+        font-size: 0.95rem;
+        font-weight: 700;
+        padding: 0.75rem 1rem;
+        border-radius: 10px;
+        min-height: 48px;
+    }
+
+    #clinical-copilot-root button:focus-visible,
+    #clinical-copilot-root textarea:focus-visible {
+        outline: 4px solid var(--of-focus);
+        outline-offset: 2px;
+        box-shadow: none;
+    }
+
     #clinical-copilot-transcript {
-        background-color: #f1f3f5 !important;
-        border-radius: 8px !important;
-        padding: 15px !important;
-        margin-bottom: 20px !important;
+        background: var(--of-surface) !important;
+        border: 1px solid var(--of-border) !important;
+        border-radius: 10px !important;
+        padding: 0.75rem !important;
+        margin-bottom: 0.85rem !important;
     }
 
-    /* Message Bubbles */
-    #clinical-copilot-transcript p {
-        font-size: 1.7rem !important; /* Very large text for messages */
-        line-height: 1.6;
-        color: #000;
+    #clinical-copilot-root .copilot-user-bubble {
+        background: var(--of-primary);
+        color: #FFFFFF;
     }
 
-    /* 5. Sources Section (Last Reply) */
+    #clinical-copilot-root .copilot-assistant-bubble {
+        background: #FFFFFF;
+        color: var(--of-text);
+        border: 1px solid var(--of-border);
+    }
+
+    #clinical-copilot-root .copilot-bubble {
+        border-radius: 10px;
+        padding: 0.55rem 0.7rem;
+        max-width: 95%;
+        font-size: 1rem;
+        line-height: 1.45;
+    }
+
+    #clinical-copilot-sources {
+        background: #FFFFFF;
+        border: 1px solid var(--of-border);
+        border-radius: 10px;
+        padding: 0.75rem;
+    }
+
     #clinical-copilot-sources .font-weight-bold {
-        font-size: 2rem !important; /* Header stands out */
-        color: #0045b5;
-        border-bottom: 2px solid #dee2e6;
-        margin-top: 15px;
+        color: var(--of-primary);
+        font-size: 0.95rem;
+        margin-bottom: 0.4rem;
         display: block;
     }
 
-    #clinical-copilot-sources article p {
-        font-size: 2rem !important;
-        font-weight: 600; /* Bold the verified statements */
-        color: #212529;
-    }
-
-    #clinical-copilot-sources ul li {
-        font-size: 2rem !important;
-        padding: 6px 0;
-        color: #495057;
-    }
-
-    /* 6. Input Area */
     #clinical-copilot-input {
-        font-size: 2rem !important;
-        padding: 12px !important;
-        border: 2px solid #ced4da;
+        font-size: 1rem !important;
+        min-height: 48px;
+        border: 2px solid var(--of-border);
+        border-radius: 10px;
     }
 
     #clinical-copilot-send-btn {
-        padding: 0 20px !important;
-        font-size: 1.1rem !important;
+        min-height: 48px;
+        border-radius: 10px;
+        font-weight: 800;
     }
 
-    /* 7. Token Metadata */
-    details summary {
-        font-size: 1.7rem !important;
-        font-weight: bold;
-        padding: 10px 0;
+    #clinical-copilot-root details summary {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--of-muted);
+        cursor: pointer;
     }
 </style>
 <div class="clinical-copilot-panel ml-1 mr-1 mb-2" id="clinical-copilot-root"
      data-ajax-url="{{ copilotAjaxUrl|attr }}" data-csrf="{{ csrf|attr }}">
-    <p class="text-muted large mb-2">{{ "Inter-visit co-pilot: briefing and follow-up questions. Citations reference chart tools only. (DEMO)"|xlt }}</p>
-    <div class="btn-group mr-2" role="group">
-        <button type="button" class="btn btn-primary btn-lg shadow-sm font-weight-bold px-4" id="clinical-copilot-brief-btn">
-            <i class="fa fa-magic mr-1"></i> {{ "Patient Brief"|xlt }}
+    
+    <div class="copilot-header">
+        <div>
+            <div class="copilot-kicker">{{ "Verified Clinical Co-Pilot"|xlt }}</div>
+            <p class="copilot-subtitle">
+                {{ "Fast chart-grounded briefing for the next patient. Citations reference chart tools only. Demo data only."|xlt }}
+            </p>
+        </div>
+    </div>
+
+    <div class="copilot-actions" role="group" aria-label="{{ "Clinical co-pilot actions"|xlt }}">
+        <button type="button" class="btn btn-of-primary" id="clinical-copilot-brief-btn">
+            <i class="fa fa-magic mr-1"></i> {{ "Generate Patient Brief"|xlt }}
         </button>
-        <button type="button" class="btn btn-outline-secondary btn-lg" id="clinical-copilot-reset-btn">
-            {{ "Clear thread"|xlt }}
+        <button type="button" class="btn btn-of-secondary" id="clinical-copilot-reset-btn">
+            {{ "Clear Thread"|xlt }}
         </button>
     </div>
+
     <div id="clinical-copilot-transcript"
          class="border rounded bg-white p-2 mb-2"
          style="max-height: 22rem; overflow-y: auto;"
          aria-live="polite"
          aria-label="{{ "Clinical co-pilot conversation"|xlt }}"></div>
     <div id="clinical-copilot-sources" class="mb-2 large" aria-label="{{ "Cited sources for last reply"|xlt }}"></div>
+    
     <form id="clinical-copilot-form" class="form-inline d-flex flex-wrap align-items-start" onsubmit="return false;">
         <label for="clinical-copilot-input" class="sr-only">{{ "Follow-up question"|xlt }}</label>
         <textarea id="clinical-copilot-input" class="form-control form-control-sm flex-grow-1 mr-1 mb-1" rows="2"
                   style="min-width: 12rem;"
                   placeholder="{{ "Ask a follow-up grounded in this chart…"|xlt }}"></textarea>
-        <button type="button" class="btn btn-sm btn-primary mb-1" id="clinical-copilot-send-btn">{{ "Send"|xlt }}</button>
+        <button type="button" class="btn btn-of-primary mb-1" id="clinical-copilot-send-btn">{{ "Send"|xlt }}</button>
     </form>
     <details class="large text-muted mt-1">
         <summary>{{ "Token usage (optional)"|xlt }}</summary>
@@ -150,7 +227,7 @@
         wrap.className = 'mb-2';
         var isUser = role === 'user';
         wrap.innerHTML = '<div class="d-flex ' + (isUser ? 'justify-content-end' : 'justify-content-start') + '">' +
-            '<div class="' + (isUser ? 'bg-primary text-white' : 'bg-light border') + ' rounded px-2 py-1" style="max-width:95%">' +
+            '<div class="copilot-bubble ' + (isUser ? 'copilot-user-bubble' : 'copilot-assistant-bubble') + '">' +
             '<span class="sr-only">' + esc(isUser ? 'You' : 'Assistant') + '</span>' + htmlBody + '</div></div>';
         transcript.appendChild(wrap);
         transcript.scrollTop = transcript.scrollHeight;
