@@ -8,9 +8,19 @@
 .github/                       export-ignore
 .phpstan/                      export-ignore
 ci/                            export-ignore
-docker/                        export-ignore
-# Keep this subtree in archives: Dockerfile-based deploys need it (overrides docker/ export-ignore).
-docker/agentforge-railway/**   -export-ignore
+# docker/: do not export-ignore the whole tree — Git omits children from archives and
+# never applies -export-ignore under an excluded parent. List sibling dirs only; keep
+# docker/agentforge-railway/ in archives for Dockerfile-based deploys (e.g. Railway).
+# If a new top-level directory is added under docker/, add export-ignore here unless it
+# must appear in git-archive build contexts.
+docker/README.md               export-ignore
+docker/development-easy/       export-ignore
+docker/development-easy-light/ export-ignore
+docker/development-easy-redis/ export-ignore
+docker/development-insane/     export-ignore
+docker/from-source/            export-ignore
+docker/library/                export-ignore
+docker/production/             export-ignore
 tests/                         export-ignore
 tools/                         export-ignore
 .gitattributes                 export-ignore

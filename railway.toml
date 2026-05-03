@@ -1,0 +1,6 @@
+# Railway: build OpenEMR from this repo using the AgentForge Dockerfile.
+# Keep service root directory at the repository root (default) so COPY . . matches docker/agentforge-railway/Dockerfile.
+# Docs: https://docs.railway.app/reference/config-as-code
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "docker/agentforge-railway/Dockerfile"
