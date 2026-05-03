@@ -154,7 +154,7 @@ COPY --from=openemr-source /openemr /openemr
 WORKDIR /openemr
 ENV COMPOSER_ALLOW_SUPERUSER=1
 # Use Docker buildkit cache mount for Composer cache (requires DOCKER_BUILDKIT=1)
-RUN --mount=type=cache,target=/root/.composer/cache \
+RUN --mount=type=cache,id=composer,target=/root/.composer/cache \
     composer install --no-dev --no-interaction --optimize-autoloader \
     && composer dump-autoload --optimize --apcu
 
@@ -165,7 +165,7 @@ COPY --from=openemr-source /openemr /openemr
 WORKDIR /openemr
 RUN apk add --no-cache build-base nodejs npm
 # Use Docker buildkit cache mount for npm cache (requires DOCKER_BUILDKIT=1)
-RUN --mount=type=cache,target=/root/.npm \
+RUN --mount=type=cache,id=npm,target=/root/.npm \
     npm install --unsafe-perm \
     && npm run build \
     && cd ccdaservice \
@@ -223,9 +223,9 @@ RUN cd /tmp \
 # Set working directory to OpenEMR installation
 WORKDIR /var/www/localhost/htdocs/openemr
 
-# Define volumes for SSL certificates and Let's Encrypt certificates
-# These volumes persist certificates across container restarts
-VOLUME [ "/etc/letsencrypt/", "/etc/ssl" ]
+# NOTE: VOLUME instruction removed — not supported on Railway.
+# Persistent storage for SSL/Let's Encrypt certificates should be configured
+# via Railway Volumes in the service settings.
 
 # ============================================================================
 # APACHE AND PHP CONFIGURATION FILES
