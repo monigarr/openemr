@@ -2,9 +2,16 @@
 
 This directory is **only** for building an image from **your** checkout so custom code (for example under `interface/modules/custom_modules/`) is included. It does not replace or modify the community `docker/from-source` or `docker/production` definitions.
 
+## Layout
+
+| File | Purpose |
+|------|---------|
+| [`Dockerfile`](Dockerfile) | **Default for Railway:** multi-stage production image aligned with [openemr-devops `docker/openemr/8.1.1`](https://github.com/openemr/openemr-devops/tree/master/docker/openemr/8.1.1). App tree is `COPY` from the repo root at build time; `php.ini`, `openemr.conf`, `openemr.sh`, `ssl.sh`, upgrades, and utilities are downloaded from that devops tree during the build (see build-args below). **No** flex runtime git clone. |
+| [`Dockerfile.flex`](Dockerfile.flex) | Previous **flex**-based image (`FROM openemr/openemr:flex`) if you need that behavior. Point Railway’s Dockerfile path here to use it. |
+
 ## Branch
 
-The default image label assumes branch **`prd_1_agentforge_monigarr`**. The Dockerfile does not run `git checkout`; whatever files are in the build context are copied in. On Railway, set the connected Git branch to `prd_1_agentforge_monigarr` (or merge your module there) so that branch is what gets built.
+The default image label assumes branch **`prd_1_agentforge_monigarr`**. The production Dockerfile does not run `git checkout`; whatever files are in the build context are copied in. On Railway, set the connected Git branch to `prd_1_agentforge_monigarr` (or merge your module there) so that branch is what gets built.
 
 ## Build locally (from repository root)
 
@@ -13,24 +20,33 @@ git checkout prd_1_agentforge_monigarr
 docker build -f docker/agentforge-railway/Dockerfile -t openemr:agentforge .
 ```
 
-Optional build args (for image metadata only):
+Optional build args:
 
 ```shell
 docker build -f docker/agentforge-railway/Dockerfile -t openemr:agentforge \
   --build-arg GIT_COMMIT="$(git rev-parse HEAD 2>/dev/null || echo unknown)" \
   --build-arg SOURCE_BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo prd_1_agentforge_monigarr)" \
+  --build-arg OPENEMR_DEVOPS_REF=master \
+  --build-arg OPENEMR_DEVOPS_DIR=8.1.1 \
   .
 ```
+
+- **`OPENEMR_DEVOPS_REF`:** Git ref for [openemr/openemr-devops](https://github.com/openemr/openemr-devops) tarball (default `master`). Pin to a **commit SHA** for reproducible builds.
+- **`OPENEMR_DEVOPS_DIR`:** Subdirectory under `docker/openemr/` in that repo (default `8.1.1`). Bump when you align with a newer published Docker version directory.
 
 ## Railway.com
 
 1. Create a service from your GitHub repo.
 2. Set the deployment **branch** to `prd_1_agentforge_monigarr` (or the branch that contains your module).
 3. Set **root directory** to the repository root (leave empty if the whole repo is the service root).
-4. Set **Dockerfile path** to `docker/agentforge-railway/Dockerfile`.
+4. Set **Dockerfile path** to `docker/agentforge-railway/Dockerfile` (or `docker/agentforge-railway/Dockerfile.flex` for the flex variant).
 5. Use a **MySQL or MariaDB** plugin (or second service) and set OpenEMR database env vars the same way as [docker/production/docker-compose.yml](../production/docker-compose.yml) (`MYSQL_HOST`, `MYSQL_ROOT_PASS`, etc.). OpenEMR’s Docker entrypoint expects those variables.
-6. **HTTP:** The image exposes ports **80** and **443** like other OpenEMR flex-based images. Map Railway’s public HTTP to the port your process listens on (often **80** inside the container). If Railway injects `PORT`, confirm against [OpenEMR Docker Hub](https://hub.docker.com/r/openemr/openemr/) docs for your base image behavior.
+6. **HTTP / `PORT`:** Railway’s edge forwards to the port in the service’s [`PORT` variable](https://docs.railway.com/guides/public-networking). Apache listens on **80** (and **443** for TLS). This image sets `ENV PORT=80`. If you still see **502**, set an explicit Railway variable **`PORT=80`**. First boot may take a few minutes until logs show **Starting apache!** while the DB and auto-setup run.
 7. **Persistence:** Mount or provision volumes for `sites/` and database data for anything beyond a demo.
+
+### Flex variant only (`Dockerfile.flex`)
+
+If you use **Dockerfile.flex**, flex may clone upstream OpenEMR at container start unless you rely on image-only content; see flex docs on Docker Hub. Optional variables: `FLEX_REPOSITORY`, `FLEX_REPOSITORY_BRANCH` / `FLEX_REPOSITORY_TAG`.
 
 ## Troubleshooting: `oe-module-clinical-copilot` not in Manage Modules
 
@@ -62,7 +78,7 @@ On Alpine-based images, if `stat -c` is not available, `ls -la` on those paths i
 Interpretation:
 
 | Result | Likely cause |
-|--------|----------------|
+|--------|--------------|
 | Folder missing; **no** other `oe-module-*` dirs | **Wrong Git branch** for the Railway build, or stale build cache — see below. |
 | Folder missing; **other** `oe-module-*` dirs exist | **Volume** mounted over the app tree hiding new image layers — see below. |
 | Folder present with `info.txt`, `moduleConfig.php`, `openemr.bootstrap.php`, `src/` | Files are OK — use **Refresh Modules** then **Register → Install → Enable** in Manage Modules. |

@@ -8,11 +8,13 @@
 <div class="clinical-copilot-panel ml-1 mr-1 mb-2" id="clinical-copilot-root"
      data-ajax-url="{{ copilotAjaxUrl|attr }}" data-csrf="{{ csrf|attr }}">
     <p class="text-muted small mb-2">{{ "Inter-visit co-pilot: briefing and follow-up questions. Citations reference chart tools only. (DEMO)"|xlt }}</p>
-    <div class="btn-toolbar mb-2" role="toolbar" aria-label="{{ "Co-pilot actions"|xlt }}">
-        <div class="btn-group btn-group-sm mr-1" role="group">
-            <button type="button" class="btn btn-primary btn-sm" id="clinical-copilot-brief-btn">{{ "Patient Brief"|xlt }}</button>
-            <button type="button" class="btn btn-outline-secondary btn-sm" id="clinical-copilot-reset-btn">{{ "Clear thread"|xlt }}</button>
-        </div>
+    <div class="btn-group mr-2" role="group">
+        <button type="button" class="btn btn-primary btn-lg shadow-sm font-weight-bold px-4" id="clinical-copilot-brief-btn">
+            <i class="fa fa-magic mr-1"></i> {{ "Patient Brief"|xlt }}
+        </button>
+        <button type="button" class="btn btn-outline-secondary btn-lg" id="clinical-copilot-reset-btn">
+            {{ "Clear thread"|xlt }}
+        </button>
     </div>
     <div id="clinical-copilot-transcript"
          class="border rounded bg-white p-2 mb-2"
