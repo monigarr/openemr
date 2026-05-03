@@ -28,9 +28,9 @@ RUN rm -f /etc/apache2/conf.d/mpm_event.conf || true
 
 WORKDIR /var/www/localhost/htdocs/openemr
 # Base image entrypoint lives here; `COPY . .` replaces the tree and removes it — stash, restore after copy.
-RUN test -f openemr.sh && cp -a openemr.sh /tmp/openemr.sh.flex
+RUN test -f openemr.sh && cp -a openemr.sh /tmp/openemr.sh.flex || true
 COPY . .
-RUN cp -a /tmp/openemr.sh.flex openemr.sh && chmod 755 openemr.sh && rm -f /tmp/openemr.sh.flex
+RUN cp -a /tmp/openemr.sh.flex openemr.sh && chmod 755 openemr.sh && rm -f /tmp/openemr.sh.flex || true
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
