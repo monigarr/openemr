@@ -1,23 +1,27 @@
 # syntax=docker/dockerfile:1
 # ============================================================================
-# OpenEMR AgentForge / Railway — production image (openemr-devops template)
+# OpenEMR Dockerfile for Version 8.1.1
 # ============================================================================
-# Based on https://github.com/openemr/openemr-devops/tree/master/docker/openemr/8.1.1
-# Differences from upstream: app source is COPY from this repo (build context root), not git clone;
-# php.ini, openemr.conf, scripts, utilities, and upgrade files are vendored under
-# docker/agentforge-railway/upstream/docker/openemr/<version>/ (see upstream/UPSTREAM.md to refresh).
-# Rollback flex-on-Docker-Hub layout: use Dockerfile.flex instead.
+# This Dockerfile builds a production-ready OpenEMR container image with:
+#   - Apache web server for serving OpenEMR
+#   - PHP 8.4 with all required extensions
+#   - OpenEMR application code with dependencies installed
+#   - Automated setup and configuration scripts
+#   - Support for SSL/TLS certificates
+#   - Multi-stage build support for coverage testing (kcov target)
 #
-# hadolint ignore=DL3008,DL3015
+# Build Targets:
+#   - base: Default production image
+#   - kcov: Coverage testing image with kcov instrumentation
+#   - final: Alias for base (for consistency)
 # ============================================================================
-
-ARG ALPINE_VERSION=3.23
-# Subdirectory name under upstream/docker/openemr/ (must match a vendored tree on disk).
-ARG OPENEMR_DEVOPS_DIR=8.1.1
 
 # ============================================================================
 # BASE IMAGE CONFIGURATION
 # ============================================================================
+# Alpine Linux version - centralized setting for easy updates
+# Note: This is NOT meant to be used as a build argument (unlike the flex series)
+ARG ALPINE_VERSION=3.23
 FROM alpine:${ALPINE_VERSION} AS base
 
 # PHP version configuration
@@ -119,8 +123,6 @@ RUN apk add --no-cache \
 # This is required for Docker containers to accept external connections
 RUN sed -i 's/^Listen 80$/Listen 0.0.0.0:80/' /etc/apache2/httpd.conf
 
-RUN rm -f /etc/apache2/conf.d/mpm_event.conf || true
-
 # ============================================================================
 # USER AND PERMISSIONS CONFIGURATION
 # ============================================================================
@@ -143,19 +145,27 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin -
 # ============================================================================
 # MULTI-STAGE BUILD: OpenEMR Source and Dependencies
 # ============================================================================
-# Stage 1: Application source from build context (repo root; see repository .dockerignore).
-FROM scratch AS openemr-source
-COPY . /openemr/
+# Stage 1: Fetch OpenEMR source code via git clone
+# Use git clone instead of GitHub archive because OpenEMR's .gitattributes
+# marks tests/, phpunit*.xml, and other dev files as export-ignore, which
+# excludes them from archives but not from clones.
+# Supports branches or tags via OPENEMR_VERSION build argument.
+# Examples:
+#   - Branch: --build-arg OPENEMR_VERSION=master
+#   - Tag:    --build-arg OPENEMR_VERSION=v7.0.5
+ARG OPENEMR_VERSION=master
+FROM base AS openemr-source
+RUN git clone https://github.com/openemr/openemr.git --branch "${OPENEMR_VERSION}" --depth 1 \
+    && rm -rf openemr/.git
 
 # Stage 2: Install PHP dependencies (Composer)
 # Separate stage allows Docker to cache this layer independently
 FROM base AS openemr-composer
 COPY --from=openemr-source /openemr /openemr
 WORKDIR /openemr
-ENV COMPOSER_ALLOW_SUPERUSER=1
 # Use Docker buildkit cache mount for Composer cache (requires DOCKER_BUILDKIT=1)
 RUN --mount=type=cache,target=/root/.composer/cache \
-    composer install --no-dev --no-interaction --optimize-autoloader \
+    composer install --no-dev --optimize-autoloader \
     && composer dump-autoload --optimize --apcu
 
 # Stage 3: Build frontend assets (npm)
@@ -177,7 +187,6 @@ RUN --mount=type=cache,target=/root/.npm \
 # Stage 4: Final assembly - combine everything in base image
 # Combine everything and set permissions
 FROM base AS production
-ARG OPENEMR_DEVOPS_DIR=8.1.1
 # Copy OpenEMR source
 COPY --from=openemr-source /openemr /tmp/openemr
 # Copy Composer dependencies
@@ -234,10 +243,10 @@ VOLUME [ "/etc/letsencrypt/", "/etc/ssl" ]
 ENV APACHE_LOG_DIR=/var/log/apache2
 
 # Copy PHP configuration file with OpenEMR-optimized settings
-COPY docker/agentforge-railway/upstream/docker/openemr/${OPENEMR_DEVOPS_DIR}/php.ini /etc/php${PHP_VERSION_ABBR}/php.ini
+COPY php.ini /etc/php${PHP_VERSION_ABBR}/php.ini
 
 # Copy Apache virtual host configuration for OpenEMR
-COPY docker/agentforge-railway/upstream/docker/openemr/${OPENEMR_DEVOPS_DIR}/openemr.conf /etc/apache2/conf.d/
+COPY openemr.conf /etc/apache2/conf.d/
 
 # ============================================================================
 # OPENEMR SCRIPTS AND UTILITIES
@@ -247,10 +256,10 @@ COPY docker/agentforge-railway/upstream/docker/openemr/${OPENEMR_DEVOPS_DIR}/ope
 # - ssl.sh: SSL/TLS certificate management script
 # - xdebug.sh: XDebug configuration script (for development)
 # - auto_configure.php: Automated OpenEMR installation script
-COPY docker/agentforge-railway/upstream/docker/openemr/${OPENEMR_DEVOPS_DIR}/openemr.sh docker/agentforge-railway/upstream/docker/openemr/${OPENEMR_DEVOPS_DIR}/ssl.sh docker/agentforge-railway/upstream/docker/openemr/${OPENEMR_DEVOPS_DIR}/xdebug.sh docker/agentforge-railway/upstream/docker/openemr/${OPENEMR_DEVOPS_DIR}/auto_configure.php /var/www/localhost/htdocs/openemr/
+COPY openemr.sh ssl.sh xdebug.sh auto_configure.php /var/www/localhost/htdocs/openemr/
 
 # Copy admin unlock utilities (for password recovery)
-COPY docker/agentforge-railway/upstream/docker/openemr/${OPENEMR_DEVOPS_DIR}/utilities/unlock_admin.php docker/agentforge-railway/upstream/docker/openemr/${OPENEMR_DEVOPS_DIR}/utilities/unlock_admin.sh /root/
+COPY utilities/unlock_admin.php utilities/unlock_admin.sh /root/
 
 # Set script permissions:
 # - Executable scripts: 500 (read and execute for owner only)
@@ -264,17 +273,17 @@ RUN chmod 500 openemr.sh ssl.sh xdebug.sh /root/unlock_admin.sh \
 # Copy upgrade scripts and version tracking file
 # These scripts handle filesystem upgrades when moving between OpenEMR versions
 # The docker-version file tracks the installed version for upgrade detection
-COPY docker/agentforge-railway/upstream/docker/openemr/${OPENEMR_DEVOPS_DIR}/upgrade/docker-version \
-     docker/agentforge-railway/upstream/docker/openemr/${OPENEMR_DEVOPS_DIR}/upgrade/fsupgrade-1.sh \
-     docker/agentforge-railway/upstream/docker/openemr/${OPENEMR_DEVOPS_DIR}/upgrade/fsupgrade-2.sh \
-     docker/agentforge-railway/upstream/docker/openemr/${OPENEMR_DEVOPS_DIR}/upgrade/fsupgrade-3.sh \
-     docker/agentforge-railway/upstream/docker/openemr/${OPENEMR_DEVOPS_DIR}/upgrade/fsupgrade-4.sh \
-     docker/agentforge-railway/upstream/docker/openemr/${OPENEMR_DEVOPS_DIR}/upgrade/fsupgrade-5.sh \
-     docker/agentforge-railway/upstream/docker/openemr/${OPENEMR_DEVOPS_DIR}/upgrade/fsupgrade-6.sh \
-     docker/agentforge-railway/upstream/docker/openemr/${OPENEMR_DEVOPS_DIR}/upgrade/fsupgrade-7.sh \
-     docker/agentforge-railway/upstream/docker/openemr/${OPENEMR_DEVOPS_DIR}/upgrade/fsupgrade-8.sh \
-     docker/agentforge-railway/upstream/docker/openemr/${OPENEMR_DEVOPS_DIR}/upgrade/fsupgrade-9.sh \
-     docker/agentforge-railway/upstream/docker/openemr/${OPENEMR_DEVOPS_DIR}/upgrade/fsupgrade-10.sh \
+COPY upgrade/docker-version \
+     upgrade/fsupgrade-1.sh \
+     upgrade/fsupgrade-2.sh \
+     upgrade/fsupgrade-3.sh \
+     upgrade/fsupgrade-4.sh \
+     upgrade/fsupgrade-5.sh \
+     upgrade/fsupgrade-6.sh \
+     upgrade/fsupgrade-7.sh \
+     upgrade/fsupgrade-8.sh \
+     upgrade/fsupgrade-9.sh \
+     upgrade/fsupgrade-10.sh \
      /root/
 
 # Set upgrade scripts as executable (read and execute for owner only)
@@ -302,7 +311,7 @@ RUN mkdir -p /run/apache2
 # ============================================================================
 # Copy shared library of utility functions used by OpenEMR scripts
 # This library provides database operations, configuration helpers, etc.
-COPY docker/agentforge-railway/upstream/docker/openemr/${OPENEMR_DEVOPS_DIR}/utilities/devtoolsLibrary.source /root/
+COPY utilities/devtoolsLibrary.source /root/
 
 # ============================================================================
 # SWARM MODE SUPPORT
@@ -331,7 +340,6 @@ EXPOSE 80 443
 # Used for generating code coverage reports during testing
 # Build with: docker build --target kcov -t openemr:kcov .
 FROM base AS kcov
-ARG OPENEMR_DEVOPS_DIR=8.1.1
 
 # Install kcov build dependencies
 # kcov is a code coverage tool that requires compilation from source
@@ -396,7 +404,7 @@ COPY --from=production /swarm-pieces /swarm-pieces
 RUN mkdir -p /run/apache2
 
 # Copy kcov wrapper script
-COPY docker/agentforge-railway/upstream/docker/openemr/${OPENEMR_DEVOPS_DIR}/kcov-wrapper.sh /var/www/localhost/htdocs/openemr/kcov-wrapper.sh
+COPY kcov-wrapper.sh /var/www/localhost/htdocs/openemr
 RUN chmod 500 /var/www/localhost/htdocs/openemr/kcov-wrapper.sh
 
 # Create directory for coverage report output
@@ -414,13 +422,3 @@ CMD [ "./kcov-wrapper.sh" ]
 # This target is an alias for the production target
 # Placed last to ensure kcov is not included in default builds
 FROM production AS final
-
-# Railway public HTTP targets $PORT; production Apache listens on 80.
-ENV PORT=80
-
-ARG SOURCE_BRANCH=prd_1_agentforge_monigarr
-ARG GIT_COMMIT=unknown
-LABEL org.opencontainers.image.title="OpenEMR (AgentForge PRD 1)" \
-      org.opencontainers.image.source="https://github.com/openemr/openemr" \
-      org.opencontainers.image.version="${SOURCE_BRANCH}" \
-      org.opencontainers.image.revision="${GIT_COMMIT}"

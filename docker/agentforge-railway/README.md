@@ -6,7 +6,7 @@ This directory is **only** for building an image from **your** checkout so custo
 
 | File | Purpose |
 |------|---------|
-| [`Dockerfile`](Dockerfile) | **Default for Railway:** multi-stage production image aligned with [openemr-devops `docker/openemr/8.1.1`](https://github.com/openemr/openemr-devops/tree/master/docker/openemr/8.1.1). App tree is `COPY` from the repo root at build time; `php.ini`, `openemr.conf`, `openemr.sh`, `ssl.sh`, upgrades, and utilities are downloaded from that devops tree during the build (see build-args below). **No** flex runtime git clone. |
+| [`Dockerfile`](Dockerfile) | **Default for Railway:** multi-stage production image aligned with [openemr-devops `docker/openemr/8.1.1`](https://github.com/openemr/openemr-devops/tree/master/docker/openemr/8.1.1). App tree is `COPY` from the repo root at build time; `php.ini`, `openemr.conf`, `openemr.sh`, `ssl.sh`, upgrades, and utilities are **vendored** under [`upstream/docker/openemr/8.1.1/`](upstream/docker/openemr/8.1.1/) (see [`upstream/UPSTREAM.md`](upstream/UPSTREAM.md)). **No** flex runtime git clone. |
 | [`Dockerfile.flex`](Dockerfile.flex) | Previous **flex**-based image (`FROM openemr/openemr:flex`) if you need that behavior. Point Railway’s Dockerfile path here to use it. |
 
 ## Branch
@@ -26,13 +26,11 @@ Optional build args:
 docker build -f docker/agentforge-railway/Dockerfile -t openemr:agentforge \
   --build-arg GIT_COMMIT="$(git rev-parse HEAD 2>/dev/null || echo unknown)" \
   --build-arg SOURCE_BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo prd_1_agentforge_monigarr)" \
-  --build-arg OPENEMR_DEVOPS_REF=master \
   --build-arg OPENEMR_DEVOPS_DIR=8.1.1 \
   .
 ```
 
-- **`OPENEMR_DEVOPS_REF`:** Git ref for [openemr/openemr-devops](https://github.com/openemr/openemr-devops) tarball (default `master`). Pin to a **commit SHA** for reproducible builds.
-- **`OPENEMR_DEVOPS_DIR`:** Subdirectory under `docker/openemr/` in that repo (default `8.1.1`). Bump when you align with a newer published Docker version directory.
+- **`OPENEMR_DEVOPS_DIR`:** Name of the directory under [`upstream/docker/openemr/`](upstream/docker/openemr/) (default `8.1.1`). Change this only if you vendor a different devops version folder (and copy files accordingly). To pick up upstream script or `php.ini` changes, refresh the vendored tree per [`upstream/UPSTREAM.md`](upstream/UPSTREAM.md).
 
 ## Railway.com
 
@@ -41,7 +39,7 @@ docker build -f docker/agentforge-railway/Dockerfile -t openemr:agentforge \
 3. Set **root directory** to the repository root (leave empty if the whole repo is the service root).
 4. Set **Dockerfile path** to `docker/agentforge-railway/Dockerfile` (or `docker/agentforge-railway/Dockerfile.flex` for the flex variant).
 5. Use a **MySQL or MariaDB** plugin (or second service) and set OpenEMR database env vars the same way as [docker/production/docker-compose.yml](../production/docker-compose.yml) (`MYSQL_HOST`, `MYSQL_ROOT_PASS`, etc.). OpenEMR’s Docker entrypoint expects those variables.
-6. **Confirm the production Dockerfile is what Railway built:** In **Build** logs you should see stages such as `[devops-artifacts]`, `[base …]`, `[openemr-source]`, `[openemr-composer]`, `[openemr-assets]`, `[production …]`. You should **not** see `FROM openemr/openemr:flex` or a single combined `RUN` that runs `npm ci` immediately after `composer install` in the flex style. If you still see **“Configuring a new flex openemr docker”** or **git clone** of `github.com/openemr/openemr` in **Deploy** logs, the running image is still flex: fix **Git branch** (contains the production `Dockerfile`), **Dockerfile path** (`docker/agentforge-railway/Dockerfile`), and redeploy **without build cache** so Railway does not reuse an old image.
+6. **Confirm the production Dockerfile is what Railway built:** In **Build** logs you should see stages such as `[base …]`, `[openemr-source]`, `[openemr-composer]`, `[openemr-assets]`, `[production …]`. You should **not** see `FROM openemr/openemr:flex` or a single combined `RUN` that runs `npm ci` immediately after `composer install` in the flex style. If you still see **“Configuring a new flex openemr docker”** or **git clone** of `github.com/openemr/openemr` in **Deploy** logs, the running image is still flex: fix **Git branch** (contains the production `Dockerfile`), **Dockerfile path** (`docker/agentforge-railway/Dockerfile`), and redeploy **without build cache** so Railway does not reuse an old image.
 7. **HTTP / `PORT`:** Railway’s edge forwards to the port in the service’s [`PORT` variable](https://docs.railway.com/guides/public-networking). Apache listens on **80** (and **443** for TLS). This image sets `ENV PORT=80`. If you still see **502**, set an explicit Railway variable **`PORT=80`**. First boot may take a few minutes until logs show **Starting apache!** while the DB and auto-setup run.
 8. **Persistence:** Mount or provision volumes for `sites/` and database data for anything beyond a demo.
 
