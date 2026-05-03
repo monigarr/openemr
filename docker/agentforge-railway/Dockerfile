@@ -27,10 +27,17 @@ RUN apk update \
 RUN rm -f /etc/apache2/conf.d/mpm_event.conf || true
 
 WORKDIR /var/www/localhost/htdocs/openemr
-# Base image entrypoint lives here; `COPY . .` replaces the tree and removes it — stash, restore after copy.
-RUN test -f openemr.sh && cp -a openemr.sh /tmp/openemr.sh.flex || true
+# openemr/openemr:flex ships the startup script at /var/www/localhost/htdocs/openemr.sh (not inside openemr/).
+# WORKDIR is openemr/, so CMD ./openemr.sh expects ./openemr.sh here. COPY . . replaces only this tree — stash
+# the flex script from its real path, restore after copy. Build fails if the base layout changes.
+RUN FLEX_ENTRY=/var/www/localhost/htdocs/openemr.sh \
+    && test -f "$FLEX_ENTRY" \
+    && cp -a "$FLEX_ENTRY" /tmp/openemr.sh.flex
 COPY . .
-RUN cp -a /tmp/openemr.sh.flex openemr.sh && chmod 755 openemr.sh && rm -f /tmp/openemr.sh.flex || true
+RUN test -f /tmp/openemr.sh.flex \
+    && cp -a /tmp/openemr.sh.flex ./openemr.sh \
+    && chmod 755 ./openemr.sh \
+    && rm -f /tmp/openemr.sh.flex
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
