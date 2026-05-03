@@ -27,7 +27,10 @@ RUN apk update \
 RUN rm -f /etc/apache2/conf.d/mpm_event.conf || true
 
 WORKDIR /var/www/localhost/htdocs/openemr
+# Base image entrypoint lives here; `COPY . .` replaces the tree and removes it — stash, restore after copy.
+RUN test -f openemr.sh && cp -a openemr.sh /tmp/openemr.sh.flex
 COPY . .
+RUN cp -a /tmp/openemr.sh.flex openemr.sh && chmod 755 openemr.sh && rm -f /tmp/openemr.sh.flex
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
