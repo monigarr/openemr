@@ -154,7 +154,7 @@ COPY --from=openemr-source /openemr /openemr
 WORKDIR /openemr
 ENV COMPOSER_ALLOW_SUPERUSER=1
 # Use Docker buildkit cache mount for Composer cache (requires DOCKER_BUILDKIT=1)
-RUN --mount=type=cache,id=composer,target=/root/.composer/cache \
+RUN --mount=type=cache,id=cacheKey:composer,target=/root/.composer/cache \
     composer install --no-dev --no-interaction --optimize-autoloader \
     && composer dump-autoload --optimize --apcu
 
@@ -165,7 +165,7 @@ COPY --from=openemr-source /openemr /openemr
 WORKDIR /openemr
 RUN apk add --no-cache build-base nodejs npm
 # Use Docker buildkit cache mount for npm cache (requires DOCKER_BUILDKIT=1)
-RUN --mount=type=cache,id=npm,target=/root/.npm \
+RUN --mount=type=cache,id=cacheKey:npm,target=/root/.npm \
     npm install --unsafe-perm \
     && npm run build \
     && cd ccdaservice \
