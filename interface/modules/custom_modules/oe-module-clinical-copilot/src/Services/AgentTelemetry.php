@@ -79,9 +79,6 @@ final class AgentTelemetry
 
     private function redact(string $s): string
     {
-        if (strlen($s) > 500) {
-            $s = substr($s, 0, 500) . '…';
-        }
-        return $s;
+        return TelemetryText::clipForLog($s, 500);
     }
 }

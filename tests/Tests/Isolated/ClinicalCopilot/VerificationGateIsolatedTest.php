@@ -1,7 +1,27 @@
 <?php
 
 /**
- * Isolated tests for Clinical Co-Pilot verification (no database).
+ * @version 0.1.0
+ * @date 2026-05-03
+ * @author Monica Peters <monica.peters@gfachallenger.gauntletai.com>
+ *
+ * Purpose: Isolated PHPUnit tests for `VerificationGate` — citation-backed truth filtering for Clinical
+ * CoPilot (no database): keeps statements only when every citation resolves to non-empty tool JSON paths.
+ *
+ * Usage: Run when modifying verification rules, citation path syntax, or merged-bundle shapes used by the gate.
+ *
+ * Example:
+ *   php vendor/bin/phpunit -c phpunit-isolated.xml tests/Tests/Isolated/ClinicalCopilot/VerificationGateIsolatedTest.php
+ *
+ * Dependencies: `OpenEMR\Modules\ClinicalCopilot\Services\VerificationGate`, PHPUnit `TestCase`.
+ *
+ * Security/PHI: Fixtures use synthetic names/paths; production gate must never log raw model output with PHI.
+ * HIPAA: N/A in tests — production path is audit-relevant when filtering assistant statements tied to chart citations.
+ * FHIR: N/A — not interoperability.
+ * Accessibility: N/A — non-UI test.
+ * Performance: In-memory graph walks only; scales with statement/citation count in one response.
+ * Stability: Defines expected `verify()` outputs (`statements`, `stripped`, multi-citation cases, list indices).
+ * Legal/compliance: OpenEMR GPLv3; verification is a safety layer, not a substitute for clinician judgment.
  *
  * @package   OpenEMR
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3

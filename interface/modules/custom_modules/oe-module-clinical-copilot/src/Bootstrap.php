@@ -35,6 +35,7 @@ use OpenEMR\Events\Core\TwigEnvironmentEvent;
 use OpenEMR\Events\Globals\GlobalsInitializedEvent;
 use OpenEMR\Events\Patient\Summary\Card\SectionEvent;
 use OpenEMR\Services\Globals\GlobalSetting;
+use OpenEMR\Services\Globals\GlobalsService;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Twig\Error\LoaderError;
 use Twig\Loader\FilesystemLoader;
@@ -95,11 +96,31 @@ final class Bootstrap
         if (!isset($meta['Portal'])) {
             return;
         }
-        if (isset($meta['Portal']['clinical_copilot_openai_api_key'])) {
-            return;
-        }
-        $service->appendToSection(
-            'Portal',
+
+        $this->appendPortalGlobalIfMissing(
+            $service,
+            'clinical_copilot_enable',
+            new GlobalSetting(
+                xl('Clinical Co-Pilot: enable patient summary card'),
+                GlobalSetting::DATA_TYPE_BOOL,
+                '1',
+                xl('Show the Clinical Co-Pilot card on the patient dashboard.'),
+                false
+            )
+        );
+        $this->appendPortalGlobalIfMissing(
+            $service,
+            'clinical_copilot_openai_model',
+            new GlobalSetting(
+                xl('Clinical Co-Pilot OpenAI model'),
+                GlobalSetting::DATA_TYPE_TEXT,
+                'gpt-4o-mini',
+                xl('OpenAI chat model id (e.g. gpt-4o-mini).'),
+                false
+            )
+        );
+        $this->appendPortalGlobalIfMissing(
+            $service,
             'clinical_copilot_openai_api_key',
             new GlobalSetting(
                 xl('Clinical Co-Pilot OpenAI API key'),
@@ -109,5 +130,25 @@ final class Bootstrap
                 false
             )
         );
+        $this->appendPortalGlobalIfMissing(
+            $service,
+            'clinical_copilot_langfuse_enable',
+            new GlobalSetting(
+                xl('Clinical Co-Pilot: allow Langfuse observability export'),
+                GlobalSetting::DATA_TYPE_BOOL,
+                '0',
+                xl('When enabled and LANGFUSE_PUBLIC_KEY / LANGFUSE_SECRET_KEY are set, export dual-write telemetry to Langfuse (metadata-first; see module README).'),
+                false
+            )
+        );
+    }
+
+    private function appendPortalGlobalIfMissing(GlobalsService $service, string $key, GlobalSetting $setting): void
+    {
+        $portal = $service->getGlobalsMetadata()['Portal'] ?? [];
+        if (isset($portal[$key])) {
+            return;
+        }
+        $service->appendToSection('Portal', $key, $setting);
     }
 }

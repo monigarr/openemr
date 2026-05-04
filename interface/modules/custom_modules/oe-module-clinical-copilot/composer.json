@@ -1,0 +1,30 @@
+{
+    "name": "openemr/oe-module-clinical-copilot",
+    "description": "Clinical Co-Pilot (AgentForge) — patient summary briefing with optional Langfuse observability",
+    "type": "openemr-module",
+    "license": "GPL-3.0-only",
+    "authors": [
+        {
+            "name": "Monica Peters",
+            "email": "monigarr@monigarr.com"
+        }
+    ],
+    "require": {
+        "php": ">=8.2"
+    },
+    "extra": {
+        "openemr": {
+            "type": "custom-module",
+            "directory": "oe-module-clinical-copilot"
+        }
+    },
+    "keywords": [
+        "openemr",
+        "openemr-module",
+        "clinical-copilot",
+        "agentforge"
+    ],
+    "support": {
+        "issues": "https://github.com/openemr/openemr/issues"
+    }
+}

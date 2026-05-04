@@ -1,12 +1,29 @@
 <?php
 
 /**
- * Isolated tests for ReminderIntervals collection logic
+ * @version 0.1.0
+ * @date 2026-05-03
+ * @author Monica Peters <monica.peters@gfachallenger.gauntletai.com>
+ *
+ * Purpose: Isolated PHPUnit tests for CDR `ReminderIntervals` — aggregation of reminder interval details by type/range,
+ * uniqueness of types, lookup helpers, and human-readable `displayDetails()` output (translation disabled in setup).
+ *
+ * Usage: Run when changing reminder interval rule library models or display formatting; uses `$GLOBALS['disable_translation']` in setUp/tearDown.
+ *
+ * Example:
+ *   php vendor/bin/phpunit -c phpunit-isolated.xml tests/Tests/Isolated/ClinicalDecisionRules/ReminderIntervalsTest.php
+ *
+ * Dependencies: `ReminderIntervals`, `ReminderIntervalDetail`, `ReminderIntervalRange`, `ReminderIntervalType`, `TimeUnit`, PHPUnit.
+ *
+ * Security/PHI: Fixtures are synthetic intervals only; no chart or demographic data.
+ * HIPAA: N/A — tests; production reminders tie to clinical workflows — keep PHI out of logs when integrating.
+ * FHIR: N/A — not interoperability.
+ * Accessibility: N/A — non-UI test (`displayDetails` strings affect UI copy upstream).
+ * Performance: Small in-memory collections; suitable for rule-builder UI scale.
+ * Stability: Documents PHPStan suppressions around upstream `from()` docblocks; preserve when refactoring factories.
+ * Legal/compliance: OpenEMR GPLv3.
  *
  * @package   OpenEMR
- * @link      https://www.open-emr.org
- * @author    Michael A. Smith <michael@opencoreemr.com>
- * @copyright Copyright (c) 2026 OpenCoreEMR Inc <https://opencoreemr.com/>
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
 

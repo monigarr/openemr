@@ -35,45 +35,58 @@ final class AgentOrchestrator
      * Backward-compatible entry: optional prior chat and user line (defaults to inter-visit briefing).
      *
      * @param list<array{role:string,content:string}> $priorChat
+     * @param CopilotRunInstrumentation|null $instrumentation Optional Langfuse + trace context (controller-supplied).
      * @return array{
      *   ok:bool,text?:string,error?:string,verified?:array,domain?:array,statements_for_ui?:list<array{text:string,citations:list<array{path:string,label:string}>}>,
      *   telemetry?:AgentTelemetry,usage?:array<string,int>,model?:string,estimated_usd?:float,fallback_premerged?:bool
      * }
      */
-    public function runBriefing(int $sessionPid, AgentTelemetry $telemetry, string $requestId, array $priorChat = [], string $userLine = ''): array
+    public function runBriefing(int $sessionPid, AgentTelemetry $telemetry, string $requestId, array $priorChat = [], string $userLine = '', ?CopilotRunInstrumentation $instrumentation = null): array
     {
         $userLine = trim($userLine);
         if ($userLine === '') {
             $userLine = 'Provide a concise inter-visit briefing: visit framing from problems and encounters only as possibilities (label uncertainty), allergies, medications, and notable labs if present. If today\'s visit reason is not documented, say so in uncertainties. Do not repeat patient name or DOB in statement text.';
         }
-        return $this->runAgentTurn($sessionPid, $telemetry, $requestId, $priorChat, $userLine);
+        return $this->runAgentTurn($sessionPid, $telemetry, $requestId, $priorChat, $userLine, $instrumentation);
     }
 
     /**
      * @param list<array{role:string,content:string}> $priorChat
+     * @param CopilotRunInstrumentation|null $instrumentation Optional Langfuse + trace context (controller-supplied).
      * @return array{
      *   ok:bool,text?:string,error?:string,verified?:array,domain?:array,statements_for_ui?:list<array{text:string,citations:list<array{path:string,label:string}>}>,
      *   telemetry?:AgentTelemetry,usage?:array<string,int>,model?:string,estimated_usd?:float,fallback_premerged?:bool
      * }
      */
-    public function runAgentTurn(int $sessionPid, AgentTelemetry $telemetry, string $requestId, array $priorChat, string $userLine): array
+    public function runAgentTurn(int $sessionPid, AgentTelemetry $telemetry, string $requestId, array $priorChat, string $userLine, ?CopilotRunInstrumentation $instrumentation = null): array
     {
+        $obs = $instrumentation?->observability ?? new NullCopilotObservability();
+        $traceCtx = $instrumentation?->traceContext;
+
         $telemetry->mark('start', true);
+        if ($traceCtx !== null) {
+            $obs->beginTrace($requestId, $traceCtx);
+        }
+
         if ($sessionPid < 1) {
             $telemetry->mark('pid_check', false, 'no active patient');
+            $obs->finalizeTrace(['outcome' => 'error', 'error' => 'no_active_patient']);
             $telemetry->flush($requestId, $sessionPid);
             return ['ok' => false, 'error' => 'no_active_patient', 'telemetry' => $telemetry];
         }
 
         if (!$this->openAi->hasApiKey()) {
             $telemetry->mark('openai', false, 'missing_api_key');
+            $obs->finalizeTrace(['outcome' => 'error', 'error' => 'missing_openai_api_key']);
             $telemetry->flush($requestId, $sessionPid);
             return ['ok' => false, 'error' => 'missing_openai_api_key', 'telemetry' => $telemetry];
         }
 
         $model = OEGlobalsBag::getInstance()->getString('clinical_copilot_openai_model') ?: 'gpt-4o-mini';
 
+        $tCollect0 = microtime(true);
         $merged = $this->toolRegistry->collectMerged($sessionPid);
+        $obs->recordSpan('tools_collect_merged', $tCollect0, microtime(true), true, null, []);
         $telemetry->mark('tools_collect_merged', true);
 
         $system = $this->buildSystemPrompt();
@@ -94,16 +107,28 @@ final class AgentOrchestrator
             $roundMessages = $messages;
             for ($round = 0; $round < self::MAX_TOOL_ROUNDS; $round++) {
                 $t0 = microtime(true);
+                $inputPreview = $this->messagesPreviewForObs($roundMessages);
                 $resp = $this->openAi->chatCompletionRound(
                     $model,
                     $roundMessages,
                     $this->toolRegistry->openAiToolsArray(),
                     null
                 );
-                $telemetry->mark('openai_round', true, 'round=' . $round . ',ms=' . round((microtime(true) - $t0) * 1000));
+                $t1 = microtime(true);
+                $telemetry->mark('openai_round', true, 'round=' . $round . ',ms=' . round(($t1 - $t0) * 1000));
                 $mergedUsage = OpenAiClient::mergeUsageTokens($mergedUsage, $resp['usage']);
                 $modelOut = $resp['model'];
                 $assistantMsg = $resp['message'];
+                $outputPreview = $this->assistantMessagePreviewForObs($assistantMsg);
+                $obs->recordOpenAiGeneration(
+                    'openai_tool_loop_round_' . $round,
+                    $modelOut,
+                    $t0,
+                    $t1,
+                    $resp['usage'],
+                    $inputPreview,
+                    $outputPreview,
+                );
                 $roundMessages[] = $assistantMsg;
 
                 $toolCalls = $assistantMsg['tool_calls'] ?? null;
@@ -123,7 +148,16 @@ final class AgentOrchestrator
                         }
                         $tTool = microtime(true);
                         $payload = $this->toolRegistry->runTool($name, $sessionPid);
-                        $telemetry->mark('tool:' . $name, true, 'ms=' . round((microtime(true) - $tTool) * 1000));
+                        $tToolEnd = microtime(true);
+                        $telemetry->mark('tool:' . $name, true, 'ms=' . round(($tToolEnd - $tTool) * 1000));
+                        $obs->recordSpan(
+                            'tool:' . $name,
+                            $tTool,
+                            $tToolEnd,
+                            true,
+                            'chars=' . strlen($payload),
+                            ['tool' => $name],
+                        );
                         $roundMessages[] = [
                             'role' => 'tool',
                             'tool_call_id' => $id,
@@ -142,10 +176,14 @@ final class AgentOrchestrator
 
             if ($finalContent === '') {
                 $telemetry->mark('openai_tool_loop_empty', false);
+                $ts = microtime(true);
+                $obs->recordSpan('openai_tool_loop_empty', $ts, $ts, false, 'no assistant content after rounds', []);
                 $fallback = true;
             }
         } catch (\Throwable $e) {
             $telemetry->mark('openai', false, $e->getMessage());
+            $ts = microtime(true);
+            $obs->recordSpan('openai_exception', $ts, $ts, false, $e->getMessage(), []);
             $fallback = true;
         }
 
@@ -155,6 +193,7 @@ final class AgentOrchestrator
             $toolJson = json_encode($merged, JSON_UNESCAPED_SLASHES);
             if ($toolJson === false) {
                 $telemetry->mark('encode_tool', false);
+                $obs->finalizeTrace(['outcome' => 'error', 'error' => 'encode_failure', 'fallback_premerged' => true]);
                 $telemetry->flush($requestId, $sessionPid, $mergedUsage);
                 return ['ok' => false, 'error' => 'encode_failure', 'telemetry' => $telemetry];
             }
@@ -168,13 +207,30 @@ final class AgentOrchestrator
             $fbMessages[] = ['role' => 'user', 'content' => "TOOL_BUNDLE_JSON:\n" . $toolJson . "\n\nClinician request:\n" . $userLine];
             try {
                 $t0 = microtime(true);
+                $fbInput = $this->messagesPreviewForObs($fbMessages);
                 $resp = $this->openAi->chatJson($model, $fbMessages);
-                $telemetry->mark('openai_fallback', true, 'latency_ms=' . round((microtime(true) - $t0) * 1000));
+                $t1 = microtime(true);
+                $telemetry->mark('openai_fallback', true, 'latency_ms=' . round(($t1 - $t0) * 1000));
                 $mergedUsage = OpenAiClient::mergeUsageTokens($mergedUsage, $resp['usage']);
                 $modelOut = $resp['model'];
                 $finalContent = trim($resp['content']);
+                $obs->recordOpenAiGeneration(
+                    'openai_fallback_json',
+                    $modelOut,
+                    $t0,
+                    $t1,
+                    $resp['usage'],
+                    $fbInput,
+                    TelemetryText::clipForLog($finalContent, 4000),
+                );
             } catch (\Throwable $e) {
                 $telemetry->mark('openai_fallback', false, $e->getMessage());
+                $obs->finalizeTrace([
+                    'outcome' => 'error',
+                    'error' => 'openai_failure',
+                    'fallback_premerged' => true,
+                    'model' => $modelOut,
+                ]);
                 $telemetry->flush($requestId, $sessionPid, $this->usageCtx($mergedUsage, $modelOut));
                 return ['ok' => false, 'error' => 'openai_failure', 'telemetry' => $telemetry];
             }
@@ -185,15 +241,39 @@ final class AgentOrchestrator
         $parsed = json_decode($finalContent, true);
         if (!is_array($parsed)) {
             $telemetry->mark('parse_model_json', false);
+            $obs->finalizeTrace([
+                'outcome' => 'error',
+                'error' => 'malformed_model_json',
+                'fallback_premerged' => $fallback,
+                'model' => $modelOut,
+            ]);
             $telemetry->flush($requestId, $sessionPid, $this->usageCtx($mergedUsage, $modelOut));
             return ['ok' => false, 'error' => 'malformed_model_json', 'telemetry' => $telemetry];
         }
         $telemetry->mark('parse_model_json', true);
 
+        $tVer0 = microtime(true);
         $verified = $this->verification->verify($merged, $parsed);
+        $obs->recordSpan(
+            'verification',
+            $tVer0,
+            microtime(true),
+            true,
+            'kept=' . count($verified['statements']) . ',stripped=' . count($verified['stripped']),
+            [],
+        );
         $telemetry->mark('verification', true, 'kept=' . count($verified['statements']) . ',stripped=' . count($verified['stripped']));
 
+        $tDom0 = microtime(true);
         $domain = $this->domainRules->apply($verified, $merged);
+        $obs->recordSpan(
+            'domain_rules',
+            $tDom0,
+            microtime(true),
+            true,
+            'domain_stripped=' . count($domain['domain_stripped']),
+            [],
+        );
         $telemetry->mark('domain_rules', true, 'domain_stripped=' . count($domain['domain_stripped']));
 
         $displaySlice = [
@@ -217,6 +297,19 @@ final class AgentOrchestrator
 
         $usageCtx = $this->usageCtx($mergedUsage, $modelOut);
         $telemetry->flush($requestId, $sessionPid, $usageCtx);
+
+        $obs->finalizeTrace([
+            'outcome' => 'ok',
+            'fallback_premerged' => $fallback,
+            'model' => $modelOut,
+            'estimated_usd' => OpenAiClient::estimateCostUsd($modelOut, $mergedUsage),
+            'prompt_tokens' => $mergedUsage['prompt_tokens'] ?? 0,
+            'completion_tokens' => $mergedUsage['completion_tokens'] ?? 0,
+            'total_tokens' => $mergedUsage['total_tokens'] ?? 0,
+            'statements_for_ui_count' => count($statementsForUi),
+            'stripped_count' => count($verified['stripped']),
+            'domain_stripped_count' => count($domain['domain_stripped']),
+        ]);
 
         return [
             'ok' => true,
@@ -289,5 +382,23 @@ PROMPT;
             'model' => $model,
             'estimated_usd' => OpenAiClient::estimateCostUsd($model, $usage),
         ];
+    }
+
+    /**
+     * @param list<array<string,mixed>> $messages
+     */
+    private function messagesPreviewForObs(array $messages): string
+    {
+        $enc = json_encode($messages, JSON_UNESCAPED_SLASHES);
+        return is_string($enc) ? $enc : '';
+    }
+
+    /**
+     * @param array<string,mixed> $assistantMsg
+     */
+    private function assistantMessagePreviewForObs(array $assistantMsg): string
+    {
+        $enc = json_encode($assistantMsg, JSON_UNESCAPED_SLASHES);
+        return is_string($enc) ? $enc : '';
     }
 }

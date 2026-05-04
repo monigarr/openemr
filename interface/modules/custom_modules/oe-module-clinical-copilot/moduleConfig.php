@@ -52,5 +52,11 @@ return [
             'default' => 'gpt-4o-mini',
             'description' => 'OpenAI chat model id (e.g. gpt-4o-mini)',
         ],
+        [
+            'name' => 'clinical_copilot_langfuse_enable',
+            'type' => 'bool',
+            'default' => '0',
+            'description' => 'Allow Langfuse observability export when LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY are set (metadata-first; see module README)',
+        ],
     ],
 ];

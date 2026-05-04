@@ -21,6 +21,9 @@ use OpenEMR\Core\OEGlobalsBag;
 use OpenEMR\Modules\ClinicalCopilot\Services\AgentOrchestrator;
 use OpenEMR\Modules\ClinicalCopilot\Services\AgentTelemetry;
 use OpenEMR\Modules\ClinicalCopilot\Services\ChartContextTool;
+use OpenEMR\Modules\ClinicalCopilot\Services\CopilotObservabilityFactory;
+use OpenEMR\Modules\ClinicalCopilot\Services\CopilotRunInstrumentation;
+use OpenEMR\Modules\ClinicalCopilot\Services\CopilotTraceContext;
 use OpenEMR\Modules\ClinicalCopilot\Services\CitationLabelBuilder;
 use OpenEMR\Modules\ClinicalCopilot\Services\ClinicalDomainRules;
 use OpenEMR\Modules\ClinicalCopilot\Services\ConversationStore;
@@ -105,7 +108,7 @@ final class CopilotRequestController
                 return;
             }
             $prior = $conversationStore->getMessages();
-            $payload = $this->runOrchestrator($pid, $requestId, $prior, $userMessage);
+            $payload = $this->runOrchestrator($pid, $requestId, $prior, $userMessage, 'message', $conversationStore, $authUser);
             if (!($payload['ok'] ?? false)) {
                 http_response_code(200);
                 echo json_encode(array_merge($payload, ['request_id' => $requestId]));
@@ -125,7 +128,7 @@ final class CopilotRequestController
         // brief (default): backward-compatible when only CSRF is posted
         $conversationStore->getOrCreateToken($authUser, $pid);
         $prior = $conversationStore->getMessages();
-        $payload = $this->runOrchestrator($pid, $requestId, $prior, '');
+        $payload = $this->runOrchestrator($pid, $requestId, $prior, '', 'brief', $conversationStore, $authUser);
         if (!($payload['ok'] ?? false)) {
             http_response_code(200);
             echo json_encode(array_merge($payload, ['request_id' => $requestId]));
@@ -145,26 +148,54 @@ final class CopilotRequestController
      * @param list<array{role:string,content:string}> $prior
      * @return array<string,mixed>
      */
-    private function runOrchestrator(int $pid, string $requestId, array $prior, string $userLine): array
-    {
-        $apiKey = $this->resolveApiKey();
-        $orchestrator = new AgentOrchestrator(
-            new ToolRegistry(
-                new ChartListsTool(new ChartContextTool()),
-                new RecentEncountersTool(),
-                new RecentLabsTool(),
-            ),
-            new OpenAiClient($apiKey),
-            new VerificationGate(),
-            new ClinicalDomainRules(),
-            new CitationLabelBuilder(),
-            new DisplaySanitizer(),
+    private function runOrchestrator(
+        int $pid,
+        string $requestId,
+        array $prior,
+        string $userLine,
+        string $httpAction,
+        ConversationStore $conversationStore,
+        string $authUser,
+    ): array {
+        $saltRaw = getenv('LANGFUSE_ID_SALT');
+        $salt = is_string($saltRaw) ? $saltRaw : '';
+        $userOpaque = hash('sha256', $authUser . "\0" . $salt);
+        $convTok = $conversationStore->getConversationToken() ?? '';
+        $sessionOpaque = hash('sha256', $authUser . "\0" . $convTok . "\0" . $pid . "\0" . $salt);
+
+        $traceCtx = new CopilotTraceContext(
+            $userOpaque,
+            $sessionOpaque,
+            $httpAction,
+            $pid > 0,
+            count($prior),
+            strlen($userLine),
         );
-        $telemetry = new AgentTelemetry();
-        if ($userLine === '') {
-            return $orchestrator->runBriefing($pid, $telemetry, $requestId, $prior, '');
+        $obs = CopilotObservabilityFactory::create();
+        $instr = new CopilotRunInstrumentation($obs, $traceCtx, $httpAction);
+
+        try {
+            $apiKey = $this->resolveApiKey();
+            $orchestrator = new AgentOrchestrator(
+                new ToolRegistry(
+                    new ChartListsTool(new ChartContextTool()),
+                    new RecentEncountersTool(),
+                    new RecentLabsTool(),
+                ),
+                new OpenAiClient($apiKey),
+                new VerificationGate(),
+                new ClinicalDomainRules(),
+                new CitationLabelBuilder(),
+                new DisplaySanitizer(),
+            );
+            $telemetry = new AgentTelemetry();
+            if ($userLine === '') {
+                return $orchestrator->runBriefing($pid, $telemetry, $requestId, $prior, '', $instr);
+            }
+            return $orchestrator->runAgentTurn($pid, $telemetry, $requestId, $prior, $userLine, $instr);
+        } finally {
+            $obs->flush();
         }
-        return $orchestrator->runAgentTurn($pid, $telemetry, $requestId, $prior, $userLine);
     }
 
     private function resolveApiKey(): ?string

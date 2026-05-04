@@ -8,6 +8,7 @@ This directory is **only** for building an image from **your** checkout so custo
 |------|---------|
 | [`Dockerfile`](Dockerfile) | **Default for Railway:** multi-stage production image aligned with [openemr-devops `docker/openemr/8.1.1`](https://github.com/openemr/openemr-devops/tree/master/docker/openemr/8.1.1). App tree is `COPY` from the repo root at build time; `php.ini`, `openemr.conf`, `openemr.sh`, `ssl.sh`, upgrades, and utilities are **vendored** under [`upstream/docker/openemr/8.1.1/`](upstream/docker/openemr/8.1.1/) (see [`upstream/UPSTREAM.md`](upstream/UPSTREAM.md)). **No** flex runtime git clone. |
 | [`Dockerfile.flex`](Dockerfile.flex) | Previous **flex**-based image (`FROM openemr/openemr:flex`) if you need that behavior. Point Railway’s Dockerfile path here to use it. |
+| [`env.langfuse.example`](env.langfuse.example) | Placeholder-only list of Langfuse-related variable **names** for copying into Railway Variables or a local `.env` (no secrets committed). |
 
 ## Branch
 
@@ -45,7 +46,41 @@ docker build -f docker/agentforge-railway/Dockerfile -t openemr:agentforge \
 
 ### Flex variant only (`Dockerfile.flex`)
 
-If you use **Dockerfile.flex**, flex may clone upstream OpenEMR at container start unless you rely on image-only content; see flex docs on Docker Hub. Optional variables: `FLEX_REPOSITORY`, `FLEX_REPOSITORY_BRANCH` / `FLEX_REPOSITORY_TAG`.
+If you use **Dockerfile.flex**, flex may clone upstream OpenEMR at container start unless you rely on image-only content; see flex docs on Docker Hub. Optional variables: `FLEX_REPOSITORY`, `FLEX_REPOSITORY_BRANCH` / `FLEX_REPOSITORY_TAG`. Langfuse variables below apply the same way: PHP reads the container environment at runtime.
+
+### Langfuse (Clinical Co-Pilot)
+
+Optional observability for the **Clinical Co-Pilot** module uses `getenv()` in PHP; the Docker image does **not** bake Langfuse settings and does **not** copy a repo `.env` file into the image.
+
+**Railway:** If your keys live only in a **gitignored** `.env` on your laptop, they are **not** sent to Railway on Git push. Add the same variables under **your OpenEMR service → Variables** (or `railway variables` / shared secrets). They must be on the **web** service that runs this image, not only on a database plugin.
+
+**OpenEMR Admin:** Enable **Administration → Globals → Config → Portal** → **Clinical Co-Pilot: allow Langfuse observability export** (`clinical_copilot_langfuse_enable`). Without this toggle, export stays off even when keys are set.
+
+**HIPAA Langfuse cloud:** Set **`LANGFUSE_BASE_URL=https://hipaa.cloud.langfuse.com`** (or **`LANGFUSE_HOST`** to the same value). If both are unset, the application defaults to `https://cloud.langfuse.com`, which is the wrong host for HIPAA-region project keys.
+
+| Variable | Purpose |
+|----------|---------|
+| `LANGFUSE_PUBLIC_KEY` | Project public key (HTTP Basic username) |
+| `LANGFUSE_SECRET_KEY` | Secret key (HTTP Basic password) |
+| `LANGFUSE_BASE_URL` | API base URL (preferred). Example: `https://hipaa.cloud.langfuse.com` |
+| `LANGFUSE_HOST` | Alternative to `LANGFUSE_BASE_URL` when only the host is set |
+| `LANGFUSE_ENABLED` | Optional: `0` / `false` to disable export even if Globals allow |
+| `LANGFUSE_RELEASE` | Optional trace `release` label (e.g. Git commit or deploy id) |
+| `LANGFUSE_TRACING_ENVIRONMENT` | Optional trace environment (falls back to `LANGFUSE_ENV`) |
+| `LANGFUSE_ENV` | Optional trace environment if `LANGFUSE_TRACING_ENVIRONMENT` is unset |
+| `LANGFUSE_CLINICAL_COPILOT_IO` | Omit or empty: metadata-only generations. `redacted`: truncated previews (compliance-sensitive) |
+| `LANGFUSE_IO_MAX_CHARS` | Max length for redacted previews (default `500`) |
+| `LANGFUSE_ID_SALT` | Optional secret for hashing opaque `userId` / `sessionId` in traces |
+
+See also [`interface/modules/custom_modules/oe-module-clinical-copilot/README.md`](../../interface/modules/custom_modules/oe-module-clinical-copilot/README.md) and the template [`env.langfuse.example`](env.langfuse.example).
+
+**Local smoke test with `.env`:** from repo root, after `docker build`, pass variables into the container explicitly (the image never loads `.env` by itself):
+
+```shell
+docker run --rm --env-file .env openemr:agentforge sh -c "env | grep LANGFUSE"
+```
+
+**Troubleshooting:** If traces never appear, confirm Railway Variables on the OpenEMR service, the Portal global toggle, and the correct Langfuse host for your project. Check deploy/application logs for Langfuse flush or HTTP errors; ingestion is fail-open and does not block the co-pilot UI.
 
 ## Troubleshooting: `oe-module-clinical-copilot` not in Manage Modules
 

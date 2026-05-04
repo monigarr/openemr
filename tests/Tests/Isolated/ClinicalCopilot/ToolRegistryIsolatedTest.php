@@ -1,6 +1,28 @@
 <?php
 
 /**
+ * @version 0.1.0
+ * @date 2026-05-03
+ * @author Monica Peters <monica.peters@gfachallenger.gauntletai.com>
+ *
+ * Purpose: Isolated tests for `ToolRegistry` — validates merged chart-context payload shape for pid `0`
+ * (no DB) and non-empty OpenAI tool definitions for chart list / encounters / labs tools (PRD 1).
+ *
+ * Usage: Run when changing tool registration, `collectMerged()` contract, or OpenAI tool schema assembly.
+ *
+ * Example:
+ *   php vendor/bin/phpunit -c phpunit-isolated.xml tests/Tests/Isolated/ClinicalCopilot/ToolRegistryIsolatedTest.php
+ *
+ * Dependencies: `ToolRegistry`, `ChartListsTool`, `ChartContextTool`, `RecentEncountersTool`, `RecentLabsTool`, PHPUnit.
+ *
+ * Security/PHI: Uses invalid pid path only; expects defensive `invalid_pid` note, not live chart reads.
+ * HIPAA: N/A — synthetic pid `0` fixture path documents safe degradation without touching PHI stores.
+ * FHIR: N/A — not interoperability.
+ * Accessibility: N/A — non-UI test.
+ * Performance: No external calls in these scenarios; registry wiring should stay lightweight.
+ * Stability: Asserts stable keys on merged bundle and tool array entries (`type` => `function`).
+ * Legal/compliance: OpenEMR GPLv3.
+ *
  * @package   OpenEMR
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
