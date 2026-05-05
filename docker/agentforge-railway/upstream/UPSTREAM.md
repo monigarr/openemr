@@ -5,7 +5,8 @@ These files mirror [openemr/openemr-devops](https://github.com/openemr/openemr-d
 ## Last refresh
 
 - **Source path in devops repo:** `docker/openemr/8.1.1/`
-- **Pin:** Update this section when you refresh (commit SHA or tag from openemr-devops).
+- **openemr-devops ref:** `master` at commit `e4ae86d0251dafaf8f2a388e511ce1588522c6ca` (2026-05-04).
+- **PHP note:** Vendored `php.ini` is aligned with PHP 8.5 (`include_path` uses `/usr/share/php85`), matching `PHP_VERSION` in [`../Dockerfile`](../Dockerfile).
 
 ## How to refresh
 
