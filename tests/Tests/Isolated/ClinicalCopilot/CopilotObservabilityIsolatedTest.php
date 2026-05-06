@@ -59,7 +59,8 @@ final class CopilotObservabilityIsolatedTest extends TestCase
     {
         $long = str_repeat('a', 600);
         $out = TelemetryText::clipForLog($long, 500);
-        $this->assertSame(501, strlen($out));
+        // UTF-8 ellipsis is 3 bytes; total output must not exceed maxLength.
+        $this->assertSame(500, strlen($out));
         $this->assertStringEndsWith('…', $out);
     }
 
@@ -238,13 +239,13 @@ final class CopilotObservabilityIsolatedTest extends TestCase
             if (($ev['type'] ?? '') === 'generation-create') {
                 $in = $ev['body']['input'] ?? '';
                 $this->assertIsString($in);
-                $this->assertLessThanOrEqual(121, strlen($in));
+                $this->assertLessThanOrEqual(120, strlen($in));
                 $this->assertStringEndsWith('…', $in);
             }
             if (($ev['type'] ?? '') === 'generation-update') {
                 $out = $ev['body']['output'] ?? '';
                 $this->assertIsString($out);
-                $this->assertLessThanOrEqual(121, strlen($out));
+                $this->assertLessThanOrEqual(120, strlen($out));
                 $this->assertStringEndsWith('…', $out);
             }
         }

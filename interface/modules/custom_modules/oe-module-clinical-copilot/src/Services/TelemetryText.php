@@ -22,9 +22,16 @@ final class TelemetryText
         if ($maxLength < 1) {
             return '';
         }
+        $suffix = '…';
+        $suffixLen = strlen($suffix);
         if (strlen($value) <= $maxLength) {
             return $value;
         }
-        return substr($value, 0, $maxLength) . '…';
+        $take = $maxLength - $suffixLen;
+        if ($take < 1) {
+            return $suffix;
+        }
+
+        return substr($value, 0, $take) . $suffix;
     }
 }

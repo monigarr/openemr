@@ -46,6 +46,7 @@ class FhirObservationDraftBuilderIsolatedTest extends TestCase
         $this->assertSame('Observation', $d['resourceType'] ?? null);
         $this->assertSame('Patient/42', $d['subject']['reference'] ?? null);
         $this->assertArrayHasKey('derivedFrom', $d);
-        $this->assertStringContainsString('DocumentReference/1001', (string) json_encode($d['derivedFrom']));
+        $encoded = (string) json_encode($d['derivedFrom'], JSON_UNESCAPED_SLASHES);
+        $this->assertStringContainsString('DocumentReference/1001', $encoded);
     }
 }

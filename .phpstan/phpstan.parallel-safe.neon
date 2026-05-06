@@ -1,0 +1,8 @@
+# Local / CI helper: single worker + long worker timeout (avoids Windows parallel 600s timeouts).
+includes:
+    - ../phpstan.neon.dist
+
+parameters:
+    parallel:
+        maximumNumberOfProcesses: 1
+        processTimeout: 7200.0
