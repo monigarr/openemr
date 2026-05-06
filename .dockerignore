@@ -1,0 +1,9 @@
+# Build context for repo-root Docker builds (e.g. docker/from-source, docker/agentforge-railway).
+.git
+.github
+node_modules
+vendor
+ccdaservice/node_modules
+ccdaservice/packages/*/node_modules
+.phpunit.cache
+tests

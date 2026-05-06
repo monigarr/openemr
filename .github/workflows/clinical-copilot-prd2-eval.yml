@@ -1,0 +1,48 @@
+##
+# PRD 2 (AgentForge): deterministic 50-case Clinical Co-Pilot eval gate — no DB, no API keys.
+#
+name: Clinical Co-Pilot PRD 2 Eval
+
+on:
+  pull_request:
+    paths:
+      - 'interface/modules/custom_modules/oe-module-clinical-copilot/**'
+      - '.github/workflows/clinical-copilot-prd2-eval.yml'
+  push:
+    paths:
+      - 'interface/modules/custom_modules/oe-module-clinical-copilot/**'
+      - '.github/workflows/clinical-copilot-prd2-eval.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name == 'pull_request' && github.event.number || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  prd2-eval:
+    runs-on: ubuntu-24.04
+    name: PRD 2 golden eval (50 cases)
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup PHP and Composer
+        uses: ./.github/actions/setup-php-composer
+        with:
+          php-version: '8.2'
+          coverage: none
+
+      - name: Run PRD 2 eval gate
+        shell: bash
+        run: |
+          set -o pipefail
+          php interface/modules/custom_modules/oe-module-clinical-copilot/eval/run_eval.php --summary-json | tee eval-summary.json
+
+      - name: Upload PRD 2 eval summary artifact
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: prd2-eval-summary
+          path: eval-summary.json
+
+      - name: PHPUnit Clinical Co-Pilot isolated tests
+        run: vendor/bin/phpunit -c phpunit-isolated.xml tests/Tests/Isolated/ClinicalCopilot
