@@ -39,7 +39,7 @@ final class RecentLabsTool implements ToolInterface
         ];
     }
 
-    public function execute(int $pid): array
+    public function execute(int $pid, ?string $argumentsJson = null): array
     {
         if ($pid < 1) {
             return ['labs' => [], 'note' => 'invalid_pid'];

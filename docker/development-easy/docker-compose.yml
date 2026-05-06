@@ -27,6 +27,11 @@ services:
   openemr:
     restart: always
     image: openemr/openemr:flex@sha256:e4562b0c7d3f222ec8f72122ce00d10ffa93f559c38c00ab12c1355394c35d1c
+    # Repo-root .env is not loaded by Compose into containers by default. When present, pass
+    # LANGFUSE_*, OPENAI_*, CLINICAL_COPILOT_* (etc.) into PHP so CopilotObservabilityFactory::create() sees keys.
+    env_file:
+      - path: ../../.env
+        required: false
     ports:
     - "${WT_HTTP_PORT:-8300}:80"
     - "${WT_HTTPS_PORT:-9300}:443"

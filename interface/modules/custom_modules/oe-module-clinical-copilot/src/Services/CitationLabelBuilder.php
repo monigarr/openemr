@@ -46,7 +46,47 @@ final class CitationLabelBuilder
         if ($root === 'recent_labs') {
             return $this->labelLab($mergedToolData, $parts);
         }
+        if ($root === 'document_extractions') {
+            return $this->labelDocumentExtractions($parts);
+        }
+        if ($root === 'guideline_evidence') {
+            return $this->labelGuidelineEvidence($mergedToolData, $parts);
+        }
         return 'Chart reference';
+    }
+
+    /**
+     * @param list<string> $parts
+     */
+    private function labelDocumentExtractions(array $parts): string
+    {
+        $seg = $parts[1] ?? '';
+        return match ($seg) {
+            'labs' => 'Uploaded lab document (extracted)',
+            'intakes' => 'Uploaded intake form (extracted)',
+            'provenance' => 'Uploaded document (OpenEMR chart storage id)',
+            default => 'Uploaded document extraction',
+        };
+    }
+
+    /**
+     * @param list<string> $parts
+     */
+    private function labelGuidelineEvidence(array $mergedToolData, array $parts): string
+    {
+        if (($parts[1] ?? '') === 'chunks' && isset($parts[2]) && ctype_digit($parts[2])) {
+            $idx = (int) $parts[2];
+            $ge = $mergedToolData['guideline_evidence'] ?? null;
+            $chunks = is_array($ge) && isset($ge['chunks']) && is_array($ge['chunks']) ? $ge['chunks'] : [];
+            $row = $chunks[$idx] ?? null;
+            if (is_array($row)) {
+                $title = isset($row['title']) && is_string($row['title']) ? $row['title'] : '';
+                if ($title !== '') {
+                    return 'Guideline excerpt: ' . $this->truncateDateLabel($title);
+                }
+            }
+        }
+        return 'Guideline excerpt';
     }
 
     /**

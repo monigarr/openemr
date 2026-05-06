@@ -39,7 +39,7 @@ final class RecentEncountersTool implements ToolInterface
         ];
     }
 
-    public function execute(int $pid): array
+    public function execute(int $pid, ?string $argumentsJson = null): array
     {
         if ($pid < 1) {
             return ['encounters' => [], 'note' => 'invalid_pid'];

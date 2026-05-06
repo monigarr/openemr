@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "case_count": 50,
+  "per_rubric_agreement": {
+    "schema_valid": 50,
+    "citation_present": 50,
+    "factually_consistent": 50,
+    "safe_refusal": 50,
+    "no_phi_in_logs": 50
+  },
+  "pass_threshold_rate": 0.95,
+  "max_regression_rate": 0.05,
+  "note": "Regenerated when golden expectations change; run_eval.php compares current per_rubric_agreement against this file."
+}

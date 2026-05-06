@@ -21,6 +21,20 @@ final class AgentOrchestrator
 {
     private const MAX_TOOL_ROUNDS = 5;
 
+    /**
+     * Maps OpenAI tool names to PRD Week 2 worker roles for inspectable supervisor handoffs.
+     *
+     * @var array<string,string>
+     */
+    private const TOOL_TO_WORKER = [
+        'attach_and_extract' => 'intake_extractor',
+        'get_document_extractions' => 'intake_extractor',
+        'retrieve_guidelines' => 'evidence_retriever',
+        'get_chart_lists' => 'chart_context',
+        'get_recent_encounters' => 'chart_context',
+        'get_recent_labs' => 'chart_context',
+    ];
+
     public function __construct(
         private readonly ToolRegistry $toolRegistry,
         private readonly OpenAiClient $openAi,
@@ -38,7 +52,9 @@ final class AgentOrchestrator
      * @param CopilotRunInstrumentation|null $instrumentation Optional Langfuse + trace context (controller-supplied).
      * @return array{
      *   ok:bool,text?:string,error?:string,verified?:array,domain?:array,statements_for_ui?:list<array{text:string,citations:list<array{path:string,label:string}>}>,
-     *   telemetry?:AgentTelemetry,usage?:array<string,int>,model?:string,estimated_usd?:float,fallback_premerged?:bool
+     *   telemetry?:AgentTelemetry,usage?:array<string,int>,model?:string,estimated_usd?:float,fallback_premerged?:bool,
+     *   extraction_overlays?:list<array{path:string,label:string,bbox_norm:array{x:float,y:float,w:float,h:float}}>,
+     *   supervisor_handoffs?:list<array{round:int,tool:string,worker:string,handoff:string,latency_ms:float}>
      * }
      */
     public function runBriefing(int $sessionPid, AgentTelemetry $telemetry, string $requestId, array $priorChat = [], string $userLine = '', ?CopilotRunInstrumentation $instrumentation = null): array
@@ -55,7 +71,9 @@ final class AgentOrchestrator
      * @param CopilotRunInstrumentation|null $instrumentation Optional Langfuse + trace context (controller-supplied).
      * @return array{
      *   ok:bool,text?:string,error?:string,verified?:array,domain?:array,statements_for_ui?:list<array{text:string,citations:list<array{path:string,label:string}>}>,
-     *   telemetry?:AgentTelemetry,usage?:array<string,int>,model?:string,estimated_usd?:float,fallback_premerged?:bool
+     *   telemetry?:AgentTelemetry,usage?:array<string,int>,model?:string,estimated_usd?:float,fallback_premerged?:bool,
+     *   extraction_overlays?:list<array{path:string,label:string,bbox_norm:array{x:float,y:float,w:float,h:float}}>,
+     *   supervisor_handoffs?:list<array{round:int,tool:string,worker:string,handoff:string,latency_ms:float}>
      * }
      */
     public function runAgentTurn(int $sessionPid, AgentTelemetry $telemetry, string $requestId, array $priorChat, string $userLine, ?CopilotRunInstrumentation $instrumentation = null): array
@@ -85,9 +103,9 @@ final class AgentOrchestrator
         $model = OEGlobalsBag::getInstance()->getString('clinical_copilot_openai_model') ?: 'gpt-4o-mini';
 
         $tCollect0 = microtime(true);
-        $merged = $this->toolRegistry->collectMerged($sessionPid);
-        $obs->recordSpan('tools_collect_merged', $tCollect0, microtime(true), true, null, []);
-        $telemetry->mark('tools_collect_merged', true);
+        $merged = $this->toolRegistry->collectMergedBase($sessionPid);
+        $obs->recordSpan('tools_collect_merged_base', $tCollect0, microtime(true), true, null, []);
+        $telemetry->mark('tools_collect_merged_base', true);
 
         $system = $this->buildSystemPrompt();
 
@@ -102,6 +120,10 @@ final class AgentOrchestrator
         $mergedUsage = ['prompt_tokens' => 0, 'completion_tokens' => 0, 'total_tokens' => 0];
         $modelOut = $model;
         $finalContent = '';
+        /** @var array<string,mixed> */
+        $mergedDynamic = [];
+        /** @var list<array{round:int,tool:string,worker:string,handoff:string,latency_ms:float}> */
+        $supervisorHandoffs = [];
 
         try {
             $roundMessages = $messages;
@@ -146,9 +168,24 @@ final class AgentOrchestrator
                         if ($id === '' || $name === '') {
                             continue;
                         }
+                        $argsJson = null;
+                        if (is_array($fn) && array_key_exists('arguments', $fn)) {
+                            $argRaw = $fn['arguments'];
+                            if (is_string($argRaw) && $argRaw !== '') {
+                                $argsJson = $argRaw;
+                            }
+                        }
                         $tTool = microtime(true);
-                        $payload = $this->toolRegistry->runTool($name, $sessionPid);
+                        $payload = $this->toolRegistry->runTool($name, $sessionPid, $argsJson);
                         $tToolEnd = microtime(true);
+                        $worker = self::TOOL_TO_WORKER[$name] ?? 'chart_context';
+                        $supervisorHandoffs[] = [
+                            'round' => $round,
+                            'tool' => $name,
+                            'worker' => $worker,
+                            'handoff' => 'supervisor_to_' . $worker,
+                            'latency_ms' => round(($tToolEnd - $tTool) * 1000, 3),
+                        ];
                         $telemetry->mark('tool:' . $name, true, 'ms=' . round(($tToolEnd - $tTool) * 1000));
                         $obs->recordSpan(
                             'tool:' . $name,
@@ -163,6 +200,13 @@ final class AgentOrchestrator
                             'tool_call_id' => $id,
                             'content' => $payload,
                         ];
+                        $mergeKey = $this->toolRegistry->mergeKeyFor($name);
+                        if ($mergeKey !== null && $mergeKey !== '') {
+                            $decodedTool = json_decode($payload, true);
+                            if (is_array($decodedTool)) {
+                                $mergedDynamic[$mergeKey] = $decodedTool;
+                            }
+                        }
                     }
                     continue;
                 }
@@ -189,7 +233,7 @@ final class AgentOrchestrator
 
         if ($fallback) {
             $telemetry->mark('fallback_premerged', true);
-            $merged = $this->toolRegistry->collectMerged($sessionPid);
+            $merged = $this->toolRegistry->collectMergedBase($sessionPid);
             $toolJson = json_encode($merged, JSON_UNESCAPED_SLASHES);
             if ($toolJson === false) {
                 $telemetry->mark('encode_tool', false);
@@ -236,7 +280,7 @@ final class AgentOrchestrator
             }
         }
 
-        $merged = $this->toolRegistry->collectMerged($sessionPid);
+        $merged = array_merge($this->toolRegistry->collectMergedBase($sessionPid), $mergedDynamic);
 
         $parsed = json_decode($finalContent, true);
         if (!is_array($parsed)) {
@@ -309,6 +353,7 @@ final class AgentOrchestrator
             'statements_for_ui_count' => count($statementsForUi),
             'stripped_count' => count($verified['stripped']),
             'domain_stripped_count' => count($domain['domain_stripped']),
+            'supervisor_handoff_count' => count($supervisorHandoffs),
         ]);
 
         return [
@@ -317,6 +362,8 @@ final class AgentOrchestrator
             'verified' => $verified,
             'domain' => $domain,
             'statements_for_ui' => $statementsForUi,
+            'extraction_overlays' => $this->buildExtractionOverlays($merged),
+            'supervisor_handoffs' => $supervisorHandoffs,
             'telemetry' => $telemetry,
             'usage' => $mergedUsage,
             'model' => $modelOut,
@@ -325,15 +372,87 @@ final class AgentOrchestrator
         ];
     }
 
+    /**
+     * Normalized PDF bounding boxes for UI overlay (0–1 coordinates).
+     *
+     * @param array<string,mixed> $merged
+     * @return list<array{path:string,label:string,bbox_norm:array{x:float,y:float,w:float,h:float}}>
+     */
+    private function buildExtractionOverlays(array $merged): array
+    {
+        $out = [];
+        $de = $merged['document_extractions'] ?? null;
+        if (!is_array($de)) {
+            return $out;
+        }
+        $labs = $de['labs'] ?? [];
+        if (is_array($labs)) {
+            foreach ($labs as $i => $row) {
+                if (!is_array($row)) {
+                    continue;
+                }
+                $cite = $row['citation'] ?? null;
+                $bbox = is_array($cite) ? ($cite['bbox_norm'] ?? null) : null;
+                $tn = isset($row['test_name']) && is_string($row['test_name']) ? $row['test_name'] : '';
+                if (!is_array($bbox) || $tn === '') {
+                    continue;
+                }
+                if (!isset($bbox['x'], $bbox['y'], $bbox['w'], $bbox['h'])) {
+                    continue;
+                }
+                $out[] = [
+                    'path' => 'document_extractions.labs.' . $i . '.test_name',
+                    'label' => $tn,
+                    'bbox_norm' => [
+                        'x' => (float) $bbox['x'],
+                        'y' => (float) $bbox['y'],
+                        'w' => (float) $bbox['w'],
+                        'h' => (float) $bbox['h'],
+                    ],
+                ];
+            }
+        }
+        $intakes = $de['intakes'] ?? [];
+        if (is_array($intakes)) {
+            foreach ($intakes as $i => $row) {
+                if (!is_array($row)) {
+                    continue;
+                }
+                $cite = $row['citation'] ?? null;
+                $bbox = is_array($cite) ? ($cite['bbox_norm'] ?? null) : null;
+                $chief = isset($row['chief_concern']) && is_string($row['chief_concern']) ? $row['chief_concern'] : '';
+                if (!is_array($bbox) || $chief === '') {
+                    continue;
+                }
+                if (!isset($bbox['x'], $bbox['y'], $bbox['w'], $bbox['h'])) {
+                    continue;
+                }
+                $out[] = [
+                    'path' => 'document_extractions.intakes.' . $i . '.chief_concern',
+                    'label' => $chief,
+                    'bbox_norm' => [
+                        'x' => (float) $bbox['x'],
+                        'y' => (float) $bbox['y'],
+                        'w' => (float) $bbox['w'],
+                        'h' => (float) $bbox['h'],
+                    ],
+                ];
+            }
+        }
+        return $out;
+    }
+
     private function buildSystemPrompt(): string
     {
         return <<<PROMPT
 You are a clinical chart assistant for an authorized clinician viewing ONE patient in OpenEMR.
-You may call the provided tools to load chart facts. Use ONLY data returned by tools (and uncertainties when data is missing).
+You may call the provided tools to load chart facts, uploaded document extractions, and guideline excerpts. Use ONLY data returned by tools (and uncertainties when data is missing).
+When a clinician has uploaded a lab PDF or intake form, call attach_and_extract with the matching doc_type before citing extracted facts, then call get_document_extractions if needed for refreshed rows.
+Separate patient-specific facts (chart_lists, recent_encounters, recent_labs, document_extractions) from general guideline text (guideline_evidence). Never present guideline text as patient-specific results.
 When you have enough context, respond with a single JSON object (no markdown) exactly in this shape:
 {"statements":[{"text":"string","citations":["dot.path.in.TOOL_BUNDLE"]}],"uncertainties":["string"]}
 Citation rules:
-- Paths must resolve under merged tool roots: chart_lists.*, recent_encounters.*, recent_labs.* (e.g. chart_lists.allergies.0.title, recent_encounters.encounters.0.reason, recent_labs.labs.0.result).
+- Paths must resolve under merged tool roots: chart_lists.*, recent_encounters.*, recent_labs.*, document_extractions.*, guideline_evidence.* (e.g. document_extractions.labs.0.test_name, document_extractions.provenance.chart_document_id, guideline_evidence.chunks.0.text).
 - Every factual clinical statement MUST include one or more valid citations.
 - Do not include patient name, initials, DOB, MRN, address, or phone in statement text (the chart header already shows identifiers).
 - If something is unknown or not in the chart, add a short note to uncertainties — never invent facts.

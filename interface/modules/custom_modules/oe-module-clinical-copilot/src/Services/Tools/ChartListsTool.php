@@ -41,7 +41,7 @@ final class ChartListsTool implements ToolInterface
         ];
     }
 
-    public function execute(int $pid): array
+    public function execute(int $pid, ?string $argumentsJson = null): array
     {
         $raw = $this->inner->collectForPatient($pid);
         if (isset($raw['patient']) && is_array($raw['patient'])) {

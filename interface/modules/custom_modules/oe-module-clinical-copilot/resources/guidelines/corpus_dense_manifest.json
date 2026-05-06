@@ -1,0 +1,22 @@
+{
+    "version": 1,
+    "generated_at": "2026-05-06T00:45:35+00:00",
+    "embedder": "DeterministicDenseEmbedder",
+    "chunks": [
+        {
+            "chunk_id": "glycemic-targets-001",
+            "embedding_dim": 128,
+            "vector_sha256": "b4118f8c8960497bccbb6640e7b2c1efe5fdba36f82f8a692819b3b1564d1f27"
+        },
+        {
+            "chunk_id": "lipid-review-002",
+            "embedding_dim": 128,
+            "vector_sha256": "05a236cc4aa999a4ce67c568b4092da4e93981a2a5770e0c8d3b0a69dc2bd6f9"
+        },
+        {
+            "chunk_id": "htn-followup-003",
+            "embedding_dim": 128,
+            "vector_sha256": "0580c9f6f8ca18e0894927229ec0598c001036e0aa4f8acbb1444a0e8cf9a977"
+        }
+    ]
+}

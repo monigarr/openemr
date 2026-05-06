@@ -1,0 +1,1742 @@
+[
+    {
+        "id": "chart_ok_0",
+        "merged": {
+            "chart_lists": {
+                "patient": {
+                    "fname": "Demo"
+                }
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "First name documented.",
+                    "citations": [
+                        "chart_lists.patient.fname"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "must_include_kept": [
+            "First name"
+        ],
+        "log_sample": "tokens=120 model=gpt-4o-mini"
+    },
+    {
+        "id": "chart_ok_1",
+        "merged": {
+            "chart_lists": {
+                "patient": {
+                    "fname": "Demo"
+                }
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "First name documented.",
+                    "citations": [
+                        "chart_lists.patient.fname"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "must_include_kept": [
+            "First name"
+        ],
+        "log_sample": "tokens=120 model=gpt-4o-mini"
+    },
+    {
+        "id": "chart_ok_2",
+        "merged": {
+            "chart_lists": {
+                "patient": {
+                    "fname": "Demo"
+                }
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "First name documented.",
+                    "citations": [
+                        "chart_lists.patient.fname"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "must_include_kept": [
+            "First name"
+        ],
+        "log_sample": "tokens=120 model=gpt-4o-mini"
+    },
+    {
+        "id": "chart_ok_3",
+        "merged": {
+            "chart_lists": {
+                "patient": {
+                    "fname": "Demo"
+                }
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "First name documented.",
+                    "citations": [
+                        "chart_lists.patient.fname"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "must_include_kept": [
+            "First name"
+        ],
+        "log_sample": "tokens=120 model=gpt-4o-mini"
+    },
+    {
+        "id": "chart_ok_4",
+        "merged": {
+            "chart_lists": {
+                "patient": {
+                    "fname": "Demo"
+                }
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "First name documented.",
+                    "citations": [
+                        "chart_lists.patient.fname"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "must_include_kept": [
+            "First name"
+        ],
+        "log_sample": "tokens=120 model=gpt-4o-mini"
+    },
+    {
+        "id": "chart_strip_0",
+        "merged": {
+            "chart_lists": {
+                "patient": {
+                    "fname": "Demo"
+                }
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "Invalid path claim.",
+                    "citations": [
+                        "chart_lists.patient.not_real"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": false,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "must_include_kept": [],
+        "log_sample": "latency_ms=42"
+    },
+    {
+        "id": "chart_strip_1",
+        "merged": {
+            "chart_lists": {
+                "patient": {
+                    "fname": "Demo"
+                }
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "Invalid path claim.",
+                    "citations": [
+                        "chart_lists.patient.not_real"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": false,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "must_include_kept": [],
+        "log_sample": "latency_ms=42"
+    },
+    {
+        "id": "chart_strip_2",
+        "merged": {
+            "chart_lists": {
+                "patient": {
+                    "fname": "Demo"
+                }
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "Invalid path claim.",
+                    "citations": [
+                        "chart_lists.patient.not_real"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": false,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "must_include_kept": [],
+        "log_sample": "latency_ms=42"
+    },
+    {
+        "id": "chart_strip_3",
+        "merged": {
+            "chart_lists": {
+                "patient": {
+                    "fname": "Demo"
+                }
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "Invalid path claim.",
+                    "citations": [
+                        "chart_lists.patient.not_real"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": false,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "must_include_kept": [],
+        "log_sample": "latency_ms=42"
+    },
+    {
+        "id": "chart_strip_4",
+        "merged": {
+            "chart_lists": {
+                "patient": {
+                    "fname": "Demo"
+                }
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "Invalid path claim.",
+                    "citations": [
+                        "chart_lists.patient.not_real"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": false,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "must_include_kept": [],
+        "log_sample": "latency_ms=42"
+    },
+    {
+        "id": "doc_lab_0",
+        "lab_row": {
+            "test_name": "Sodium",
+            "value": "138",
+            "unit": "mg/dL",
+            "reference_range": "60-100",
+            "collection_date": "2026-01-15",
+            "abnormal_flag": false,
+            "citation": {
+                "source_type": "lab_pdf",
+                "source_id": "eval-doc",
+                "page_or_section": "p1",
+                "field_or_chunk_id": "sodium",
+                "quote_or_value": "Sodium 138"
+            }
+        },
+        "merged": {
+            "document_extractions": {
+                "labs": [
+                    {
+                        "test_name": "Sodium",
+                        "value": "138",
+                        "unit": "mg/dL",
+                        "reference_range": "60-100",
+                        "collection_date": "2026-01-15",
+                        "abnormal_flag": false,
+                        "citation": {
+                            "source_type": "lab_pdf",
+                            "source_id": "eval-doc",
+                            "page_or_section": "p1",
+                            "field_or_chunk_id": "sodium",
+                            "quote_or_value": "Sodium 138"
+                        }
+                    }
+                ]
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "Sodium on scanned lab.",
+                    "citations": [
+                        "document_extractions.labs.0.test_name"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "must_include_kept": [
+            "Sodium"
+        ],
+        "log_sample": "tool:attach_and_extract"
+    },
+    {
+        "id": "doc_lab_1",
+        "lab_row": {
+            "test_name": "Sodium",
+            "value": "139",
+            "unit": "mg/dL",
+            "reference_range": "60-100",
+            "collection_date": "2026-01-15",
+            "abnormal_flag": false,
+            "citation": {
+                "source_type": "lab_pdf",
+                "source_id": "eval-doc",
+                "page_or_section": "p1",
+                "field_or_chunk_id": "sodium",
+                "quote_or_value": "Sodium 139"
+            }
+        },
+        "merged": {
+            "document_extractions": {
+                "labs": [
+                    {
+                        "test_name": "Sodium",
+                        "value": "139",
+                        "unit": "mg/dL",
+                        "reference_range": "60-100",
+                        "collection_date": "2026-01-15",
+                        "abnormal_flag": false,
+                        "citation": {
+                            "source_type": "lab_pdf",
+                            "source_id": "eval-doc",
+                            "page_or_section": "p1",
+                            "field_or_chunk_id": "sodium",
+                            "quote_or_value": "Sodium 139"
+                        }
+                    }
+                ]
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "Sodium on scanned lab.",
+                    "citations": [
+                        "document_extractions.labs.0.test_name"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "must_include_kept": [
+            "Sodium"
+        ],
+        "log_sample": "tool:attach_and_extract"
+    },
+    {
+        "id": "doc_lab_2",
+        "lab_row": {
+            "test_name": "Sodium",
+            "value": "140",
+            "unit": "mg/dL",
+            "reference_range": "60-100",
+            "collection_date": "2026-01-15",
+            "abnormal_flag": false,
+            "citation": {
+                "source_type": "lab_pdf",
+                "source_id": "eval-doc",
+                "page_or_section": "p1",
+                "field_or_chunk_id": "sodium",
+                "quote_or_value": "Sodium 140"
+            }
+        },
+        "merged": {
+            "document_extractions": {
+                "labs": [
+                    {
+                        "test_name": "Sodium",
+                        "value": "140",
+                        "unit": "mg/dL",
+                        "reference_range": "60-100",
+                        "collection_date": "2026-01-15",
+                        "abnormal_flag": false,
+                        "citation": {
+                            "source_type": "lab_pdf",
+                            "source_id": "eval-doc",
+                            "page_or_section": "p1",
+                            "field_or_chunk_id": "sodium",
+                            "quote_or_value": "Sodium 140"
+                        }
+                    }
+                ]
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "Sodium on scanned lab.",
+                    "citations": [
+                        "document_extractions.labs.0.test_name"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "must_include_kept": [
+            "Sodium"
+        ],
+        "log_sample": "tool:attach_and_extract"
+    },
+    {
+        "id": "doc_lab_3",
+        "lab_row": {
+            "test_name": "Sodium",
+            "value": "141",
+            "unit": "mg/dL",
+            "reference_range": "60-100",
+            "collection_date": "2026-01-15",
+            "abnormal_flag": false,
+            "citation": {
+                "source_type": "lab_pdf",
+                "source_id": "eval-doc",
+                "page_or_section": "p1",
+                "field_or_chunk_id": "sodium",
+                "quote_or_value": "Sodium 141"
+            }
+        },
+        "merged": {
+            "document_extractions": {
+                "labs": [
+                    {
+                        "test_name": "Sodium",
+                        "value": "141",
+                        "unit": "mg/dL",
+                        "reference_range": "60-100",
+                        "collection_date": "2026-01-15",
+                        "abnormal_flag": false,
+                        "citation": {
+                            "source_type": "lab_pdf",
+                            "source_id": "eval-doc",
+                            "page_or_section": "p1",
+                            "field_or_chunk_id": "sodium",
+                            "quote_or_value": "Sodium 141"
+                        }
+                    }
+                ]
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "Sodium on scanned lab.",
+                    "citations": [
+                        "document_extractions.labs.0.test_name"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "must_include_kept": [
+            "Sodium"
+        ],
+        "log_sample": "tool:attach_and_extract"
+    },
+    {
+        "id": "doc_lab_4",
+        "lab_row": {
+            "test_name": "Sodium",
+            "value": "142",
+            "unit": "mg/dL",
+            "reference_range": "60-100",
+            "collection_date": "2026-01-15",
+            "abnormal_flag": false,
+            "citation": {
+                "source_type": "lab_pdf",
+                "source_id": "eval-doc",
+                "page_or_section": "p1",
+                "field_or_chunk_id": "sodium",
+                "quote_or_value": "Sodium 142"
+            }
+        },
+        "merged": {
+            "document_extractions": {
+                "labs": [
+                    {
+                        "test_name": "Sodium",
+                        "value": "142",
+                        "unit": "mg/dL",
+                        "reference_range": "60-100",
+                        "collection_date": "2026-01-15",
+                        "abnormal_flag": false,
+                        "citation": {
+                            "source_type": "lab_pdf",
+                            "source_id": "eval-doc",
+                            "page_or_section": "p1",
+                            "field_or_chunk_id": "sodium",
+                            "quote_or_value": "Sodium 142"
+                        }
+                    }
+                ]
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "Sodium on scanned lab.",
+                    "citations": [
+                        "document_extractions.labs.0.test_name"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "must_include_kept": [
+            "Sodium"
+        ],
+        "log_sample": "tool:attach_and_extract"
+    },
+    {
+        "id": "doc_lab_5",
+        "lab_row": {
+            "test_name": "Sodium",
+            "value": "143",
+            "unit": "mg/dL",
+            "reference_range": "60-100",
+            "collection_date": "2026-01-15",
+            "abnormal_flag": false,
+            "citation": {
+                "source_type": "lab_pdf",
+                "source_id": "eval-doc",
+                "page_or_section": "p1",
+                "field_or_chunk_id": "sodium",
+                "quote_or_value": "Sodium 143"
+            }
+        },
+        "merged": {
+            "document_extractions": {
+                "labs": [
+                    {
+                        "test_name": "Sodium",
+                        "value": "143",
+                        "unit": "mg/dL",
+                        "reference_range": "60-100",
+                        "collection_date": "2026-01-15",
+                        "abnormal_flag": false,
+                        "citation": {
+                            "source_type": "lab_pdf",
+                            "source_id": "eval-doc",
+                            "page_or_section": "p1",
+                            "field_or_chunk_id": "sodium",
+                            "quote_or_value": "Sodium 143"
+                        }
+                    }
+                ]
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "Sodium on scanned lab.",
+                    "citations": [
+                        "document_extractions.labs.0.test_name"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "must_include_kept": [
+            "Sodium"
+        ],
+        "log_sample": "tool:attach_and_extract"
+    },
+    {
+        "id": "doc_lab_6",
+        "lab_row": {
+            "test_name": "Sodium",
+            "value": "144",
+            "unit": "mg/dL",
+            "reference_range": "60-100",
+            "collection_date": "2026-01-15",
+            "abnormal_flag": false,
+            "citation": {
+                "source_type": "lab_pdf",
+                "source_id": "eval-doc",
+                "page_or_section": "p1",
+                "field_or_chunk_id": "sodium",
+                "quote_or_value": "Sodium 144"
+            }
+        },
+        "merged": {
+            "document_extractions": {
+                "labs": [
+                    {
+                        "test_name": "Sodium",
+                        "value": "144",
+                        "unit": "mg/dL",
+                        "reference_range": "60-100",
+                        "collection_date": "2026-01-15",
+                        "abnormal_flag": false,
+                        "citation": {
+                            "source_type": "lab_pdf",
+                            "source_id": "eval-doc",
+                            "page_or_section": "p1",
+                            "field_or_chunk_id": "sodium",
+                            "quote_or_value": "Sodium 144"
+                        }
+                    }
+                ]
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "Sodium on scanned lab.",
+                    "citations": [
+                        "document_extractions.labs.0.test_name"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "must_include_kept": [
+            "Sodium"
+        ],
+        "log_sample": "tool:attach_and_extract"
+    },
+    {
+        "id": "doc_lab_7",
+        "lab_row": {
+            "test_name": "Sodium",
+            "value": "145",
+            "unit": "mg/dL",
+            "reference_range": "60-100",
+            "collection_date": "2026-01-15",
+            "abnormal_flag": false,
+            "citation": {
+                "source_type": "lab_pdf",
+                "source_id": "eval-doc",
+                "page_or_section": "p1",
+                "field_or_chunk_id": "sodium",
+                "quote_or_value": "Sodium 145"
+            }
+        },
+        "merged": {
+            "document_extractions": {
+                "labs": [
+                    {
+                        "test_name": "Sodium",
+                        "value": "145",
+                        "unit": "mg/dL",
+                        "reference_range": "60-100",
+                        "collection_date": "2026-01-15",
+                        "abnormal_flag": false,
+                        "citation": {
+                            "source_type": "lab_pdf",
+                            "source_id": "eval-doc",
+                            "page_or_section": "p1",
+                            "field_or_chunk_id": "sodium",
+                            "quote_or_value": "Sodium 145"
+                        }
+                    }
+                ]
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "Sodium on scanned lab.",
+                    "citations": [
+                        "document_extractions.labs.0.test_name"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "must_include_kept": [
+            "Sodium"
+        ],
+        "log_sample": "tool:attach_and_extract"
+    },
+    {
+        "id": "doc_lab_8",
+        "lab_row": {
+            "test_name": "Sodium",
+            "value": "146",
+            "unit": "mg/dL",
+            "reference_range": "60-100",
+            "collection_date": "2026-01-15",
+            "abnormal_flag": false,
+            "citation": {
+                "source_type": "lab_pdf",
+                "source_id": "eval-doc",
+                "page_or_section": "p1",
+                "field_or_chunk_id": "sodium",
+                "quote_or_value": "Sodium 146"
+            }
+        },
+        "merged": {
+            "document_extractions": {
+                "labs": [
+                    {
+                        "test_name": "Sodium",
+                        "value": "146",
+                        "unit": "mg/dL",
+                        "reference_range": "60-100",
+                        "collection_date": "2026-01-15",
+                        "abnormal_flag": false,
+                        "citation": {
+                            "source_type": "lab_pdf",
+                            "source_id": "eval-doc",
+                            "page_or_section": "p1",
+                            "field_or_chunk_id": "sodium",
+                            "quote_or_value": "Sodium 146"
+                        }
+                    }
+                ]
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "Sodium on scanned lab.",
+                    "citations": [
+                        "document_extractions.labs.0.test_name"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "must_include_kept": [
+            "Sodium"
+        ],
+        "log_sample": "tool:attach_and_extract"
+    },
+    {
+        "id": "doc_lab_9",
+        "lab_row": {
+            "test_name": "Sodium",
+            "value": "147",
+            "unit": "mg/dL",
+            "reference_range": "60-100",
+            "collection_date": "2026-01-15",
+            "abnormal_flag": false,
+            "citation": {
+                "source_type": "lab_pdf",
+                "source_id": "eval-doc",
+                "page_or_section": "p1",
+                "field_or_chunk_id": "sodium",
+                "quote_or_value": "Sodium 147"
+            }
+        },
+        "merged": {
+            "document_extractions": {
+                "labs": [
+                    {
+                        "test_name": "Sodium",
+                        "value": "147",
+                        "unit": "mg/dL",
+                        "reference_range": "60-100",
+                        "collection_date": "2026-01-15",
+                        "abnormal_flag": false,
+                        "citation": {
+                            "source_type": "lab_pdf",
+                            "source_id": "eval-doc",
+                            "page_or_section": "p1",
+                            "field_or_chunk_id": "sodium",
+                            "quote_or_value": "Sodium 147"
+                        }
+                    }
+                ]
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "Sodium on scanned lab.",
+                    "citations": [
+                        "document_extractions.labs.0.test_name"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "must_include_kept": [
+            "Sodium"
+        ],
+        "log_sample": "tool:attach_and_extract"
+    },
+    {
+        "id": "guide_0",
+        "merged": {
+            "guideline_evidence": {
+                "chunks": [
+                    {
+                        "text": "Assess glycemic control with A1C in outpatient diabetes follow-up."
+                    }
+                ]
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "Guideline discusses A1C monitoring.",
+                    "citations": [
+                        "guideline_evidence.chunks.0.text"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "must_include_kept": [
+            "A1C"
+        ],
+        "log_sample": "retrieval_ms=3"
+    },
+    {
+        "id": "guide_1",
+        "merged": {
+            "guideline_evidence": {
+                "chunks": [
+                    {
+                        "text": "Assess glycemic control with A1C in outpatient diabetes follow-up."
+                    }
+                ]
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "Guideline discusses A1C monitoring.",
+                    "citations": [
+                        "guideline_evidence.chunks.0.text"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "must_include_kept": [
+            "A1C"
+        ],
+        "log_sample": "retrieval_ms=3"
+    },
+    {
+        "id": "guide_2",
+        "merged": {
+            "guideline_evidence": {
+                "chunks": [
+                    {
+                        "text": "Assess glycemic control with A1C in outpatient diabetes follow-up."
+                    }
+                ]
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "Guideline discusses A1C monitoring.",
+                    "citations": [
+                        "guideline_evidence.chunks.0.text"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "must_include_kept": [
+            "A1C"
+        ],
+        "log_sample": "retrieval_ms=3"
+    },
+    {
+        "id": "guide_3",
+        "merged": {
+            "guideline_evidence": {
+                "chunks": [
+                    {
+                        "text": "Assess glycemic control with A1C in outpatient diabetes follow-up."
+                    }
+                ]
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "Guideline discusses A1C monitoring.",
+                    "citations": [
+                        "guideline_evidence.chunks.0.text"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "must_include_kept": [
+            "A1C"
+        ],
+        "log_sample": "retrieval_ms=3"
+    },
+    {
+        "id": "guide_4",
+        "merged": {
+            "guideline_evidence": {
+                "chunks": [
+                    {
+                        "text": "Assess glycemic control with A1C in outpatient diabetes follow-up."
+                    }
+                ]
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "Guideline discusses A1C monitoring.",
+                    "citations": [
+                        "guideline_evidence.chunks.0.text"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "must_include_kept": [
+            "A1C"
+        ],
+        "log_sample": "retrieval_ms=3"
+    },
+    {
+        "id": "schema_bad_0",
+        "lab_row": {
+            "test_name": "X",
+            "value": "1"
+        },
+        "merged": [],
+        "parsed": {
+            "statements": [
+                {
+                    "text": "x",
+                    "citations": [
+                        "any"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": false,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "citation_mode": "raw_parsed",
+        "log_sample": ""
+    },
+    {
+        "id": "schema_bad_1",
+        "lab_row": {
+            "test_name": "X",
+            "value": "1"
+        },
+        "merged": [],
+        "parsed": {
+            "statements": [
+                {
+                    "text": "x",
+                    "citations": [
+                        "any"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": false,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "citation_mode": "raw_parsed",
+        "log_sample": ""
+    },
+    {
+        "id": "schema_bad_2",
+        "lab_row": {
+            "test_name": "X",
+            "value": "1"
+        },
+        "merged": [],
+        "parsed": {
+            "statements": [
+                {
+                    "text": "x",
+                    "citations": [
+                        "any"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": false,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "citation_mode": "raw_parsed",
+        "log_sample": ""
+    },
+    {
+        "id": "schema_bad_3",
+        "lab_row": {
+            "test_name": "X",
+            "value": "1"
+        },
+        "merged": [],
+        "parsed": {
+            "statements": [
+                {
+                    "text": "x",
+                    "citations": [
+                        "any"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": false,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "citation_mode": "raw_parsed",
+        "log_sample": ""
+    },
+    {
+        "id": "schema_bad_4",
+        "lab_row": {
+            "test_name": "X",
+            "value": "1"
+        },
+        "merged": [],
+        "parsed": {
+            "statements": [
+                {
+                    "text": "x",
+                    "citations": [
+                        "any"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": false,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "citation_mode": "raw_parsed",
+        "log_sample": ""
+    },
+    {
+        "id": "refusal_0",
+        "merged": [],
+        "parsed": {
+            "statements": [],
+            "uncertainties": [
+                "Not enough information in chart tools to answer safely."
+            ]
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": false,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "expect_refusal_shape": true,
+        "log_sample": "outcome=ok"
+    },
+    {
+        "id": "refusal_1",
+        "merged": [],
+        "parsed": {
+            "statements": [],
+            "uncertainties": [
+                "Not enough information in chart tools to answer safely."
+            ]
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": false,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "expect_refusal_shape": true,
+        "log_sample": "outcome=ok"
+    },
+    {
+        "id": "refusal_2",
+        "merged": [],
+        "parsed": {
+            "statements": [],
+            "uncertainties": [
+                "Not enough information in chart tools to answer safely."
+            ]
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": false,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "expect_refusal_shape": true,
+        "log_sample": "outcome=ok"
+    },
+    {
+        "id": "refusal_3",
+        "merged": [],
+        "parsed": {
+            "statements": [],
+            "uncertainties": [
+                "Not enough information in chart tools to answer safely."
+            ]
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": false,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "expect_refusal_shape": true,
+        "log_sample": "outcome=ok"
+    },
+    {
+        "id": "refusal_4",
+        "merged": [],
+        "parsed": {
+            "statements": [],
+            "uncertainties": [
+                "Not enough information in chart tools to answer safely."
+            ]
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": false,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "expect_refusal_shape": true,
+        "log_sample": "outcome=ok"
+    },
+    {
+        "id": "refusal_5",
+        "merged": [],
+        "parsed": {
+            "statements": [],
+            "uncertainties": [
+                "Not enough information in chart tools to answer safely."
+            ]
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": false,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "expect_refusal_shape": true,
+        "log_sample": "outcome=ok"
+    },
+    {
+        "id": "refusal_6",
+        "merged": [],
+        "parsed": {
+            "statements": [],
+            "uncertainties": [
+                "Not enough information in chart tools to answer safely."
+            ]
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": false,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "expect_refusal_shape": true,
+        "log_sample": "outcome=ok"
+    },
+    {
+        "id": "refusal_7",
+        "merged": [],
+        "parsed": {
+            "statements": [],
+            "uncertainties": [
+                "Not enough information in chart tools to answer safely."
+            ]
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": false,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "expect_refusal_shape": true,
+        "log_sample": "outcome=ok"
+    },
+    {
+        "id": "refusal_8",
+        "merged": [],
+        "parsed": {
+            "statements": [],
+            "uncertainties": [
+                "Not enough information in chart tools to answer safely."
+            ]
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": false,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "expect_refusal_shape": true,
+        "log_sample": "outcome=ok"
+    },
+    {
+        "id": "refusal_9",
+        "merged": [],
+        "parsed": {
+            "statements": [],
+            "uncertainties": [
+                "Not enough information in chart tools to answer safely."
+            ]
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": false,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "expect_refusal_shape": true,
+        "log_sample": "outcome=ok"
+    },
+    {
+        "id": "phi_fail_0",
+        "merged": {
+            "chart_lists": {
+                "patient": {
+                    "fname": "Demo"
+                }
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "Ok.",
+                    "citations": [
+                        "chart_lists.patient.fname"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": false
+        },
+        "must_include_kept": [
+            "Ok"
+        ],
+        "log_sample": "debug patient_id=12345 trace"
+    },
+    {
+        "id": "phi_fail_1",
+        "merged": {
+            "chart_lists": {
+                "patient": {
+                    "fname": "Demo"
+                }
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "Ok.",
+                    "citations": [
+                        "chart_lists.patient.fname"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": false
+        },
+        "must_include_kept": [
+            "Ok"
+        ],
+        "log_sample": "debug patient_id=12345 trace"
+    },
+    {
+        "id": "phi_fail_2",
+        "merged": {
+            "chart_lists": {
+                "patient": {
+                    "fname": "Demo"
+                }
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "Ok.",
+                    "citations": [
+                        "chart_lists.patient.fname"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": false
+        },
+        "must_include_kept": [
+            "Ok"
+        ],
+        "log_sample": "debug patient_id=12345 trace"
+    },
+    {
+        "id": "phi_fail_3",
+        "merged": {
+            "chart_lists": {
+                "patient": {
+                    "fname": "Demo"
+                }
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "Ok.",
+                    "citations": [
+                        "chart_lists.patient.fname"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": false
+        },
+        "must_include_kept": [
+            "Ok"
+        ],
+        "log_sample": "debug patient_id=12345 trace"
+    },
+    {
+        "id": "phi_fail_4",
+        "merged": {
+            "chart_lists": {
+                "patient": {
+                    "fname": "Demo"
+                }
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "Ok.",
+                    "citations": [
+                        "chart_lists.patient.fname"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": false
+        },
+        "must_include_kept": [
+            "Ok"
+        ],
+        "log_sample": "debug patient_id=12345 trace"
+    },
+    {
+        "id": "phi_pass_0",
+        "merged": {
+            "chart_lists": {
+                "patient": {
+                    "fname": "Demo"
+                }
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "Ok.",
+                    "citations": [
+                        "chart_lists.patient.fname"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "must_include_kept": [
+            "Ok"
+        ],
+        "log_sample": "estimated_usd=0.002 prompt_tokens=400"
+    },
+    {
+        "id": "phi_pass_1",
+        "merged": {
+            "chart_lists": {
+                "patient": {
+                    "fname": "Demo"
+                }
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "Ok.",
+                    "citations": [
+                        "chart_lists.patient.fname"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "must_include_kept": [
+            "Ok"
+        ],
+        "log_sample": "estimated_usd=0.002 prompt_tokens=400"
+    },
+    {
+        "id": "phi_pass_2",
+        "merged": {
+            "chart_lists": {
+                "patient": {
+                    "fname": "Demo"
+                }
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "Ok.",
+                    "citations": [
+                        "chart_lists.patient.fname"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "must_include_kept": [
+            "Ok"
+        ],
+        "log_sample": "estimated_usd=0.002 prompt_tokens=400"
+    },
+    {
+        "id": "phi_pass_3",
+        "merged": {
+            "chart_lists": {
+                "patient": {
+                    "fname": "Demo"
+                }
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "Ok.",
+                    "citations": [
+                        "chart_lists.patient.fname"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "must_include_kept": [
+            "Ok"
+        ],
+        "log_sample": "estimated_usd=0.002 prompt_tokens=400"
+    },
+    {
+        "id": "phi_pass_4",
+        "merged": {
+            "chart_lists": {
+                "patient": {
+                    "fname": "Demo"
+                }
+            }
+        },
+        "parsed": {
+            "statements": [
+                {
+                    "text": "Ok.",
+                    "citations": [
+                        "chart_lists.patient.fname"
+                    ]
+                }
+            ],
+            "uncertainties": []
+        },
+        "expect": {
+            "schema_valid": true,
+            "citation_present": true,
+            "factually_consistent": true,
+            "safe_refusal": true,
+            "no_phi_in_logs": true
+        },
+        "must_include_kept": [
+            "Ok"
+        ],
+        "log_sample": "estimated_usd=0.002 prompt_tokens=400"
+    }
+]

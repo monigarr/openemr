@@ -37,5 +37,14 @@ require_once(__DIR__ . '/../../../../globals.php');
 
 use OpenEMR\Modules\ClinicalCopilot\Controller\CopilotRequestController;
 
-$controller = new CopilotRequestController();
-$controller->handle();
+try {
+    $controller = new CopilotRequestController();
+    $controller->handle();
+} catch (\Throwable $e) {
+    if (!headers_sent()) {
+        header('Content-Type: application/json; charset=UTF-8');
+        http_response_code(500);
+    }
+    error_log('ClinicalCopilot copilot_request: ' . $e->getMessage());
+    echo json_encode(['ok' => false, 'error' => 'server_error']);
+}

@@ -141,4 +141,44 @@ class VerificationGateIsolatedTest extends TestCase
         $v = $gate->verify($tool, $parsed);
         $this->assertCount(1, $v['statements']);
     }
+
+    public function testDocumentExtractionsLabPath(): void
+    {
+        $tool = [
+            'document_extractions' => [
+                'labs' => [
+                    ['test_name' => 'Glucose', 'value' => '100'],
+                ],
+            ],
+        ];
+        $parsed = [
+            'statements' => [
+                ['text' => 'Uploaded lab shows glucose.', 'citations' => ['document_extractions.labs.0.test_name']],
+            ],
+            'uncertainties' => [],
+        ];
+        $gate = new VerificationGate();
+        $v = $gate->verify($tool, $parsed);
+        $this->assertCount(1, $v['statements']);
+    }
+
+    public function testGuidelineEvidenceChunkPath(): void
+    {
+        $tool = [
+            'guideline_evidence' => [
+                'chunks' => [
+                    ['text' => 'Assess glycemic control with A1C in outpatient diabetes care.'],
+                ],
+            ],
+        ];
+        $parsed = [
+            'statements' => [
+                ['text' => 'Guideline supports A1C review.', 'citations' => ['guideline_evidence.chunks.0.text']],
+            ],
+            'uncertainties' => [],
+        ];
+        $gate = new VerificationGate();
+        $v = $gate->verify($tool, $parsed);
+        $this->assertCount(1, $v['statements']);
+    }
 }

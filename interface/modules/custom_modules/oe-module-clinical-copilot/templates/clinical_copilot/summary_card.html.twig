@@ -182,12 +182,32 @@
         </button>
     </div>
 
+    <div class="copilot-upload mb-2" role="region" aria-label="{{ "Upload clinical document (demo PDF)"|xlt }}">
+        <label for="clinical-copilot-file" class="d-block font-weight-bold mb-1">{{ "Demo PDF upload (lab or intake)"|xlt }}</label>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <input type="file" id="clinical-copilot-file" class="form-control-file" accept="application/pdf" />
+            <label for="clinical-copilot-doctype" class="sr-only">{{ "Document type"|xlt }}</label>
+            <select id="clinical-copilot-doctype" class="form-control form-control-sm" style="width:auto;min-width:10rem;">
+                <option value="lab_pdf">{{ "lab PDF"|xlt }}</option>
+                <option value="intake_form">{{ "intake form"|xlt }}</option>
+            </select>
+            <button type="button" class="btn btn-of-secondary" id="clinical-copilot-upload-btn">{{ "Stage upload"|xlt }}</button>
+        </div>
+        <p class="text-muted large mb-0 mt-1">{{ "PDF only for demo. After staging, run a briefing or ask a question so the agent can call attach_and_extract."|xlt }}</p>
+    </div>
+
     <div id="clinical-copilot-transcript"
          class="border rounded bg-white p-2 mb-2"
          style="max-height: 22rem; overflow-y: auto;"
          aria-live="polite"
          aria-label="{{ "Clinical co-pilot conversation"|xlt }}"></div>
     <div id="clinical-copilot-sources" class="mb-2 large" aria-label="{{ "Cited sources for last reply"|xlt }}"></div>
+    <div id="clinical-copilot-overlay-wrap" class="mb-2" style="display:none;" aria-label="{{ "Extracted document regions (normalized overlay)"|xlt }}">
+        <div class="font-weight-bold mb-1">{{ "Document region overlay (demo bbox)"|xlt }}</div>
+        <p class="text-muted large mb-1">{{ "Approximate source regions on a letter-shaped placeholder; upload a PDF and run a briefing after extraction."|xlt }}</p>
+        <div id="clinical-copilot-overlay-stage" class="copilot-bbox-stage" role="presentation"
+             style="position:relative;width:100%;max-width:320px;aspect-ratio:8.5/11;background:#eef2f7;border:1px solid var(--of-border);border-radius:8px;"></div>
+    </div>
     
     <form id="clinical-copilot-form" class="form-inline d-flex flex-wrap align-items-start" onsubmit="return false;">
         <label for="clinical-copilot-input" class="sr-only">{{ "Follow-up question"|xlt }}</label>
@@ -210,9 +230,18 @@
     var sendBtn = document.getElementById('clinical-copilot-send-btn');
     var briefBtn = document.getElementById('clinical-copilot-brief-btn');
     var resetBtn = document.getElementById('clinical-copilot-reset-btn');
+    var uploadBtn = document.getElementById('clinical-copilot-upload-btn');
+    var fileInput = document.getElementById('clinical-copilot-file');
+    var docTypeSel = document.getElementById('clinical-copilot-doctype');
     var meta = document.getElementById('clinical-copilot-meta');
     var sources = document.getElementById('clinical-copilot-sources');
-    var url = root.getAttribute('data-ajax-url');
+    var overlayWrap = document.getElementById('clinical-copilot-overlay-wrap');
+    var overlayStage = document.getElementById('clinical-copilot-overlay-stage');
+    var url = (root.getAttribute('data-ajax-url') || '').trim();
+    /* Collapse accidental "//path" (not "scheme://") so fetch stays same-origin. */
+    if (url.indexOf('//') === 0 && url.indexOf('://') < 0) {
+        url = url.replace(/^\/+/, '/');
+    }
     var csrf = root.getAttribute('data-csrf');
     var conversationToken = null;
 
@@ -265,7 +294,25 @@
         }
     }
 
+    function jsonFromResponse(r) {
+        return r.text().then(function (text) {
+            var j = {};
+            if (text) {
+                try {
+                    j = JSON.parse(text);
+                } catch (ignore) {
+                    j = { error: 'invalid_response', http_status: r.status };
+                }
+            }
+            return { ok: r.ok, j: j };
+        });
+    }
+
     function post(body, cb) {
+        if (!url) {
+            cb({ ok: false, j: { error: 'missing_ajax_url' } });
+            return;
+        }
         var fd = new URLSearchParams();
         fd.set('csrf_token_form', csrf);
         for (var k in body) {
@@ -278,7 +325,7 @@
             credentials: 'same-origin',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: fd.toString()
-        }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+        }).then(jsonFromResponse)
         .then(cb)
         .catch(function () { cb({ ok: false, j: { error: 'network' } }); });
     }
@@ -287,6 +334,35 @@
         sendBtn.disabled = b;
         briefBtn.disabled = b;
         resetBtn.disabled = b;
+        if (uploadBtn) { uploadBtn.disabled = b; }
+    }
+
+    function renderExtractionOverlays(items) {
+        if (!overlayWrap || !overlayStage) { return; }
+        overlayStage.innerHTML = '';
+        if (!items || !items.length) {
+            overlayWrap.style.display = 'none';
+            return;
+        }
+        overlayWrap.style.display = 'block';
+        for (var i = 0; i < items.length; i++) {
+            var o = items[i];
+            var b = o.bbox_norm;
+            if (!b || typeof b.x !== 'number') { continue; }
+            var d = document.createElement('div');
+            d.setAttribute('role', 'img');
+            d.setAttribute('aria-label', (o.label || 'region') + ' — ' + (o.path || ''));
+            d.style.position = 'absolute';
+            d.style.left = (b.x * 100) + '%';
+            d.style.top = (b.y * 100) + '%';
+            d.style.width = (b.w * 100) + '%';
+            d.style.height = (b.h * 100) + '%';
+            d.style.border = '2px solid rgba(23,166,114,0.95)';
+            d.style.background = 'rgba(47,237,113,0.18)';
+            d.style.boxSizing = 'border-box';
+            d.style.pointerEvents = 'none';
+            overlayStage.appendChild(d);
+        }
     }
 
     function applyResponse(x) {
@@ -300,6 +376,7 @@
                 sources.innerHTML = '';
             }
         }
+        renderExtractionOverlays(j.ok ? j.extraction_overlays : null);
         if (j.usage && meta) {
             meta.textContent = 'OpenAI TOKENS: ' + (j.usage.total_tokens || 0) + ', est. USD: ' + (j.estimated_usd || 0) + (j.model ? ', model: ' + j.model : '');
         }
@@ -325,6 +402,7 @@
             transcript.innerHTML = '';
             if (sources) { sources.innerHTML = ''; }
             if (meta) { meta.textContent = ''; }
+            renderExtractionOverlays(null);
         });
     });
 
@@ -344,6 +422,42 @@
                 if (sources) { sources.innerHTML = ''; }
                 appendBubble('assistant', '<p class="mb-0 large text-danger">' + esc((x.j && x.j.error) ? x.j.error : 'failed') + '</p>');
             }
+        });
+    }
+
+    if (uploadBtn && fileInput && docTypeSel) {
+        uploadBtn.addEventListener('click', function () {
+            if (!fileInput.files || !fileInput.files[0]) {
+                appendBubble('assistant', '<p class="mb-0 large text-warning">' + esc('Choose a PDF first.') + '</p>');
+                return;
+            }
+            setBusy(true);
+            var fd = new FormData();
+            fd.set('csrf_token_form', csrf);
+            fd.set('clinical_copilot_action', 'upload_document');
+            fd.set('doc_type', docTypeSel.value || 'lab_pdf');
+            fd.set('clinical_copilot_file', fileInput.files[0]);
+            if (!url) {
+                setBusy(false);
+                appendBubble('assistant', '<p class="mb-0 large text-danger">' + esc('missing_ajax_url') + '</p>');
+                return;
+            }
+            fetch(url, { method: 'POST', body: fd, credentials: 'same-origin' })
+                .then(jsonFromResponse)
+                .then(function (x) {
+                    setBusy(false);
+                    var j = x.j || {};
+                    if (j.ok) {
+                        var extra = (j.chart_document_id) ? (' ' + esc('Chart document id: ') + esc(String(j.chart_document_id))) : '';
+                        appendBubble('assistant', '<p class="mb-0 large">' + esc('Document staged for this patient. Generate a briefing or ask a follow-up so the agent can process it.') + extra + '</p>');
+                    } else {
+                        appendBubble('assistant', '<p class="mb-0 large text-danger">' + esc(j.error || 'upload failed') + '</p>');
+                    }
+                })
+                .catch(function () {
+                    setBusy(false);
+                    appendBubble('assistant', '<p class="mb-0 large text-danger">' + esc('network') + '</p>');
+                });
         });
     }
 

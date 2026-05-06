@@ -17,6 +17,11 @@
 
 AgentForge module: **multi-turn** co-pilot on the **patient summary** card using OpenAI **tool calling** (with **pre-merge fallback**), **citation verification**, **`ClinicalDomainRules`** safety pass, **session conversation** (no chart JSON in session), **structured telemetry**, and **PHPUnit-isolated** tests.
 
+### Week 1 vs Week 2 (PRD 2)
+
+- **Week 1 (baseline):** chart tools only (`get_chart_lists`, `get_recent_encounters`, `get_recent_labs`), verification over merged chart JSON.
+- **Week 2 (multimodal + RAG):** **`upload_document`** stages a demo **PDF** for the session `pid`; the agent may call **`attach_and_extract`** (`lab_pdf` | `intake_form`), **`get_document_extractions`**, and **`retrieve_guidelines`** (`query`). Citations may use `document_extractions.*` and `guideline_evidence.chunks.*`. See repo-root **`W2_ARCHITECTURE.md`** and bundled **`resources/guidelines/corpus.json`**. Optional rerank: env **`CLINICAL_COPILOT_COHERE_API_KEY`**.
+
 ## Install (OpenEMR Admin)
 
 1. Copy or merge this folder to `interface/modules/custom_modules/oe-module-clinical-copilot/`.
@@ -30,8 +35,18 @@ Registered on **Admin → Config** → **Portal** tab when this module loads (`B
 - **Enable:** **Clinical Co-Pilot: enable patient summary card** (`clinical_copilot_enable`, default on).
 - **Model:** **Clinical Co-Pilot OpenAI model** (`clinical_copilot_openai_model`, default `gpt-4o-mini`).
 - **OpenAI API key (pick one):**
-  - Environment: `CLINICAL_COPILOT_OPENAI_API_KEY` or `OPENAI_API_KEY` (railway and Docker), or
-  - **Admin → Config** → **Portal** tab → **Clinical Co-Pilot OpenAI API key** (password field).
+  - **Admin → Config** → **Portal** tab → **Clinical Co-Pilot OpenAI API key** (password field), or
+  - Environment: `CLINICAL_COPILOT_OPENAI_API_KEY` or `OPENAI_API_KEY` (Railway, Docker, etc.).
+  - **Precedence:** If the Portal password field is non-empty, it wins over environment variables (avoids a stale `OPENAI_API_KEY` in a dev `.env` overriding a good Admin key).
+
+**Week 2 optional persistence**
+
+- **`CLINICAL_COPILOT_PERSIST_UPLOADS`**: set to `1` or `true` to store uploaded PDFs into OpenEMR **Documents** for the active patient (via `library/documents.php` `addNewDocument`). Requires full web bootstrap and appropriate ACL; failures do not block staging the temp file for extraction.
+- **`CLINICAL_COPILOT_COHERE_API_KEY`**: optional guideline rerank (see Week 2 section above).
+
+**Week 2 optional multimodal extraction (Gemini)**
+
+- **`CLINICAL_COPILOT_EXTRACTION_PIPELINE`**: set to `gemini` to send PDFs (≤ 4 MB inline limit) to Google **Gemini** JSON extraction; requires **`CLINICAL_COPILOT_GEMINI_API_KEY`**. Optional **`CLINICAL_COPILOT_GEMINI_MODEL`** (default `gemini-1.5-flash`). Omit or use `stub` for deterministic demo extraction (default). Sending PHI to Google requires appropriate agreements.
 
 Use **demo / synthetic data only** per course rules.
 
@@ -58,15 +73,49 @@ Same-origin **POST** with `csrf_token_form` (required). **Backward compatible:**
 | Field | Required | Description |
 |-------|----------|-------------|
 | `csrf_token_form` | yes | Same as other OpenEMR forms |
-| `action` | no | `brief` (default), `message`, or `reset` |
+| `action` | no | `brief` (default), `message`, `reset`, or **`upload_document`** (Week 2) |
 | `user_message` | for `message` | Follow-up question (plain text) |
 | `conversation_token` | for `message` | Opaque token from prior success response |
+| `doc_type` | for `upload_document` | `lab_pdf` or `intake_form` |
+| `clinical_copilot_file` | for `upload_document` | Multipart file field (`application/pdf`, demo) |
 
 **Success JSON** (additive): existing keys `ok`, `text`, `usage`, `model`, `estimated_usd`, `request_id` plus **`conversation_token`**, **`messages`** (session transcript, text only), **`statements_for_ui`** (verified statements with PII-safe citation labels), optional **`fallback_premerged`**.
 
 **UI / a11y:** Transcript uses `aria-live="polite"`; sources for the last reply render under **Sources (last reply)** with semantic lists; token usage is in a `<details>` block.
 
 ## Eval / tests
+
+**PRD 2 golden gate (50 cases, no API calls):**
+
+```bash
+php interface/modules/custom_modules/oe-module-clinical-copilot/eval/run_eval.php
+```
+
+Regenerate `eval/cases.json` after changing `Prd2EvalRunner::buildDefaultCases()`:
+
+```bash
+php interface/modules/custom_modules/oe-module-clinical-copilot/eval/run_eval.php --export-cases
+```
+
+After intentional rubric expectation changes, refresh **`eval/prd2_eval_baseline.json`** (only when the golden run is fully green):
+
+```bash
+php interface/modules/custom_modules/oe-module-clinical-copilot/eval/run_eval.php --export-baseline
+```
+
+Guideline **dense manifest** (deterministic embedding checksums per chunk):
+
+```bash
+php interface/modules/custom_modules/oe-module-clinical-copilot/resources/guidelines/build_dense_manifest.php
+```
+
+Machine-readable summary (e.g. CI artifacts): `--summary-json` (still exits non-zero on failures or baseline regression).
+
+Pre-commit (repo root): changing any file under this module runs the eval hook (`clinical-copilot-prd2-eval`).
+
+**GitHub Actions:** `.github/workflows/clinical-copilot-prd2-eval.yml` runs the same eval and PHPUnit under `tests/Tests/Isolated/ClinicalCopilot/` (golden pass + **regression** `Prd2EvalGateRegressionIsolatedTest`) on pushes/PRs touching this module.
+
+**Cost / latency (submission):** fill in repo-root `W2_COST_LATENCY_REPORT.md`.
 
 ```bash
 composer dump-autoload -o

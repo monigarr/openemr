@@ -1,0 +1,28 @@
+{
+  "chunks": [
+    {
+      "chunk_id": "glycemic-targets-001",
+      "source_id": "demo-primary-care-diabetes",
+      "title": "Glycemic assessment (demo guideline excerpt)",
+      "section": "Outpatient follow-up",
+      "text": "For many non-pregnant adults with type 2 diabetes, assess glycemic control with A1C and discuss targets individualized to comorbidities and hypoglycemia risk. When A1C is above goal, evaluate adherence, lifestyle, and medication factors before intensifying therapy.",
+      "keywords": ["a1c", "hba1c", "glycemic", "diabetes", "type 2", "outpatient"]
+    },
+    {
+      "chunk_id": "lipid-review-002",
+      "source_id": "demo-primary-care-lipids",
+      "title": "Lipid monitoring (demo guideline excerpt)",
+      "section": "Laboratory follow-up",
+      "text": "Review fasting lipid panel results in context of ASCVD risk. Repeat testing intervals depend on prior values, therapy changes, and secondary causes; emphasize shared decision-making for statin therapy when indicated.",
+      "keywords": ["ldl", "hdl", "triglyceride", "lipid", "statin", "ascvd", "cholesterol"]
+    },
+    {
+      "chunk_id": "htn-followup-003",
+      "source_id": "demo-primary-care-htn",
+      "title": "Hypertension follow-up (demo guideline excerpt)",
+      "section": "Blood pressure review",
+      "text": "Confirm home or office blood pressure readings when diagnosing or adjusting therapy. Screen for secondary causes when resistant hypertension is suspected and reinforce sodium reduction and physical activity counseling.",
+      "keywords": ["blood pressure", "hypertension", "bp", "sodium", "lifestyle"]
+    }
+  ]
+}

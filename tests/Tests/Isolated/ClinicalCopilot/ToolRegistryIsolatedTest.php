@@ -2,26 +2,13 @@
 
 /**
  * @version 0.1.0
- * @date 2026-05-03
+ * @date 2026-05-05
  * @author Monica Peters <monica.peters@gfachallenger.gauntletai.com>
  *
- * Purpose: Isolated tests for `ToolRegistry` — validates merged chart-context payload shape for pid `0`
- * (no DB) and non-empty OpenAI tool definitions for chart list / encounters / labs tools (PRD 1).
+ * Purpose: Isolated tests for `ToolRegistry` — Week 2 parametric + base merge wiring.
  *
- * Usage: Run when changing tool registration, `collectMerged()` contract, or OpenAI tool schema assembly.
- *
- * Example:
+ * Usage:
  *   php vendor/bin/phpunit -c phpunit-isolated.xml tests/Tests/Isolated/ClinicalCopilot/ToolRegistryIsolatedTest.php
- *
- * Dependencies: `ToolRegistry`, `ChartListsTool`, `ChartContextTool`, `RecentEncountersTool`, `RecentLabsTool`, PHPUnit.
- *
- * Security/PHI: Uses invalid pid path only; expects defensive `invalid_pid` note, not live chart reads.
- * HIPAA: N/A — synthetic pid `0` fixture path documents safe degradation without touching PHI stores.
- * FHIR: N/A — not interoperability.
- * Accessibility: N/A — non-UI test.
- * Performance: No external calls in these scenarios; registry wiring should stay lightweight.
- * Stability: Asserts stable keys on merged bundle and tool array entries (`type` => `function`).
- * Legal/compliance: OpenEMR GPLv3.
  *
  * @package   OpenEMR
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
@@ -32,37 +19,67 @@ declare(strict_types=1);
 namespace OpenEMR\Tests\Isolated\ClinicalCopilot;
 
 use OpenEMR\Modules\ClinicalCopilot\Services\ChartContextTool;
+use OpenEMR\Modules\ClinicalCopilot\Services\Document\InMemoryDocumentExtractionsStore;
+use OpenEMR\Modules\ClinicalCopilot\Services\Document\StubDocumentExtractionPipeline;
+use OpenEMR\Modules\ClinicalCopilot\Services\Fhir\FhirDocumentReferenceDraftBuilder;
+use OpenEMR\Modules\ClinicalCopilot\Services\Fhir\FhirObservationDraftBuilder;
+use OpenEMR\Modules\ClinicalCopilot\Services\Guideline\GuidelineChunkRepository;
+use OpenEMR\Modules\ClinicalCopilot\Services\Guideline\HybridGuidelineRetriever;
+use OpenEMR\Modules\ClinicalCopilot\Services\Guideline\PassThroughReranker;
+use OpenEMR\Modules\ClinicalCopilot\Services\Tools\AttachAndExtractTool;
 use OpenEMR\Modules\ClinicalCopilot\Services\Tools\ChartListsTool;
+use OpenEMR\Modules\ClinicalCopilot\Services\Tools\DocumentExtractionsTool;
 use OpenEMR\Modules\ClinicalCopilot\Services\Tools\RecentEncountersTool;
 use OpenEMR\Modules\ClinicalCopilot\Services\Tools\RecentLabsTool;
+use OpenEMR\Modules\ClinicalCopilot\Services\Tools\RetrieveGuidelinesTool;
 use OpenEMR\Modules\ClinicalCopilot\Services\Tools\ToolRegistry;
 use PHPUnit\Framework\TestCase;
 
 class ToolRegistryIsolatedTest extends TestCase
 {
-    public function testCollectMergedPidZeroDoesNotRequireDatabase(): void
+    private function makeRegistry(InMemoryDocumentExtractionsStore $store): ToolRegistry
     {
-        $registry = new ToolRegistry(
+        $retriever = new HybridGuidelineRetriever(new GuidelineChunkRepository(), new PassThroughReranker());
+        return new ToolRegistry(
             new ChartListsTool(new ChartContextTool()),
             new RecentEncountersTool(),
             new RecentLabsTool(),
+            new DocumentExtractionsTool($store),
+            new RetrieveGuidelinesTool($retriever),
+            new AttachAndExtractTool(
+                $store,
+                new StubDocumentExtractionPipeline(),
+                new FhirObservationDraftBuilder(),
+                new FhirDocumentReferenceDraftBuilder(),
+            ),
         );
-        $merged = $registry->collectMerged(0);
+    }
+
+    public function testCollectMergedPidZeroDoesNotRequireDatabase(): void
+    {
+        $registry = $this->makeRegistry(new InMemoryDocumentExtractionsStore());
+        $merged = $registry->collectMergedBase(0);
         $this->assertArrayHasKey('chart_lists', $merged);
         $this->assertArrayHasKey('recent_encounters', $merged);
         $this->assertArrayHasKey('recent_labs', $merged);
+        $this->assertArrayHasKey('document_extractions', $merged);
         $this->assertSame('invalid_pid', $merged['chart_lists']['note'] ?? null);
+        $this->assertArrayNotHasKey('guideline_evidence', $merged);
     }
 
     public function testOpenAiToolsArrayNonEmpty(): void
     {
-        $registry = new ToolRegistry(
-            new ChartListsTool(new ChartContextTool()),
-            new RecentEncountersTool(),
-            new RecentLabsTool(),
-        );
+        $registry = $this->makeRegistry(new InMemoryDocumentExtractionsStore());
         $tools = $registry->openAiToolsArray();
-        $this->assertCount(3, $tools);
+        $this->assertCount(6, $tools);
         $this->assertSame('function', $tools[0]['type'] ?? null);
+    }
+
+    public function testRetrieveGuidelinesParametricMergeKey(): void
+    {
+        $registry = $this->makeRegistry(new InMemoryDocumentExtractionsStore());
+        $this->assertTrue($registry->isParametric('retrieve_guidelines'));
+        $this->assertSame('guideline_evidence', $registry->mergeKeyFor('retrieve_guidelines'));
+        $this->assertNull($registry->mergeKeyFor('attach_and_extract'));
     }
 }

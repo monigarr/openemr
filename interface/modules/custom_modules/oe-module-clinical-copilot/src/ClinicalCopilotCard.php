@@ -60,13 +60,15 @@ final class ClinicalCopilotCard extends CardModel
     {
         $session = SessionWrapperFactory::getInstance()->getActiveSession();
         $csrf = CsrfUtils::collectCsrfToken($session, 'default');
-        $webroot = OEGlobalsBag::getInstance()->getWebRoot();
+        // rtrim: web root "/" must not concatenate to "//interface/..." (browser treats as host "interface").
+        $webRootPrefix = rtrim(OEGlobalsBag::getInstance()->getWebRoot(), '/');
+        $ajaxPath = '/interface/modules/custom_modules/oe-module-clinical-copilot/public/copilot_request.php';
         $pid = (int) ($session->get('pid') ?? 0);
 
         return [
             'card' => $this,
             'auth' => false,
-            'copilotAjaxUrl' => $webroot . '/interface/modules/custom_modules/oe-module-clinical-copilot/public/copilot_request.php',
+            'copilotAjaxUrl' => ($webRootPrefix === '' ? '' : $webRootPrefix) . $ajaxPath,
             'csrf' => $csrf,
             'pid' => $pid,
         ];
