@@ -1,6 +1,6 @@
 # OpenEMR from this repository for Railway (flex base image). Build context = repo root.
 # Prefer `Dockerfile` (production-style, openemr-devops 8.1.1 template) for Railway unless you need flex runtime behavior.
-# Default label branch: prd_1_agentforge_monigarr (see README).
+# Default label branch: prd2_agentforge (see README).
 #
 # hadolint ignore=DL3008,DL3015
 FROM openemr/openemr:flex
@@ -42,7 +42,7 @@ RUN composer install --no-dev --no-interaction --prefer-dist \
 
 WORKDIR /var/www/localhost/htdocs
 
-ARG SOURCE_BRANCH=prd_1_agentforge_monigarr
+ARG SOURCE_BRANCH=prd2_agentforge
 ARG GIT_COMMIT=unknown
 LABEL org.opencontainers.image.title="OpenEMR (AgentForge flex)" \
       org.opencontainers.image.source="https://github.com/openemr/openemr" \

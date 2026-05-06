@@ -414,9 +414,9 @@ FROM production AS final
 # Railway public HTTP targets $PORT; production Apache listens on 80.
 ENV PORT=80
 
-ARG SOURCE_BRANCH=prd_1_agentforge_monigarr
+ARG SOURCE_BRANCH=prd2_agentforge
 ARG GIT_COMMIT=unknown
-LABEL org.opencontainers.image.title="OpenEMR (AgentForge PRD 1)" \
+LABEL org.opencontainers.image.title="OpenEMR (AgentForge PRD 2)" \
       org.opencontainers.image.source="https://github.com/openemr/openemr" \
       org.opencontainers.image.version="${SOURCE_BRANCH}" \
       org.opencontainers.image.revision="${GIT_COMMIT}"

@@ -10,14 +10,18 @@ This directory is **only** for building an image from **your** checkout so custo
 | [`Dockerfile.flex`](Dockerfile.flex) | Previous **flex**-based image (`FROM openemr/openemr:flex`) if you need that behavior. Point Railway’s Dockerfile path here to use it. |
 | [`env.langfuse.example`](env.langfuse.example) | Placeholder-only list of Langfuse-related variable **names** for copying into Railway Variables or a local `.env` (no secrets committed). |
 
-## Branch
+## Branch (`prd2_agentforge` and `upstream/`)
 
-The default image label assumes branch **`prd_1_agentforge_monigarr`**. The production Dockerfile does not run `git checkout`; whatever files are in the build context are copied in. On Railway, set the connected Git branch to `prd_1_agentforge_monigarr` (or merge your module there) so that branch is what gets built.
+**Application code:** Railway and local builds use whatever is in the Git **build context**. Use branch **`prd2_agentforge`** (PRD 2 Clinical Co-Pilot) so `interface/modules/custom_modules/oe-module-clinical-copilot/` and the rest of the tree match what you ship. The Dockerfile does **not** run `git checkout`.
+
+**Vendored devops slice:** Runtime scripts, `php.ini`, Apache config, and upgrade helpers come from **`docker/agentforge-railway/upstream/docker/openemr/8.1.1/`** (mirrors [openemr-devops](https://github.com/openemr/openemr-devops) — see [`upstream/UPSTREAM.md`](upstream/UPSTREAM.md)). That tree must stay **committed** in the repo; the image build does not download it from GitHub.
+
+**`master`:** Keep your fork’s **`master`** aligned with `openemr/openemr:master`; merge **`master` → `prd2_agentforge`** for compatibility. Do not merge feature work into **`master`** just to deploy.
 
 ## Build locally (from repository root)
 
 ```shell
-git checkout prd_1_agentforge_monigarr
+git checkout prd2_agentforge
 docker build -f docker/agentforge-railway/Dockerfile -t openemr:agentforge .
 ```
 
@@ -26,7 +30,7 @@ Optional build args:
 ```shell
 docker build -f docker/agentforge-railway/Dockerfile -t openemr:agentforge \
   --build-arg GIT_COMMIT="$(git rev-parse HEAD 2>/dev/null || echo unknown)" \
-  --build-arg SOURCE_BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo prd_1_agentforge_monigarr)" \
+  --build-arg SOURCE_BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo prd2_agentforge)" \
   --build-arg OPENEMR_DEVOPS_DIR=8.1.1 \
   .
 ```
@@ -36,7 +40,7 @@ docker build -f docker/agentforge-railway/Dockerfile -t openemr:agentforge \
 ## Railway.com
 
 1. Create a service from your GitHub repo.
-2. Set the deployment **branch** to `prd_1_agentforge_monigarr` (or the branch that contains your module).
+2. Set the deployment **branch** to **`prd2_agentforge`** (or the branch that contains your module).
 3. Set **root directory** to the repository root (leave empty if the whole repo is the service root).
 4. Set **Dockerfile path** to `docker/agentforge-railway/Dockerfile` (or `docker/agentforge-railway/Dockerfile.flex` for the flex variant).
 5. Use a **MySQL or MariaDB** plugin (or second service) and set OpenEMR database env vars the same way as [docker/production/docker-compose.yml](../production/docker-compose.yml) (`MYSQL_HOST`, `MYSQL_ROOT_PASS`, etc.). OpenEMR’s Docker entrypoint expects those variables.
@@ -119,7 +123,7 @@ Interpretation:
 
 ### Cause A: Wrong branch or stale build cache
 
-The Dockerfile **does not** `git checkout` a branch; Railway builds whatever branch is connected under **Settings → Source → Branch**. Set it to **`prd_1_agentforge_monigarr`** (or the branch that contains the module). Confirm **Settings → Build → Dockerfile path** is `docker/agentforge-railway/Dockerfile`. Redeploy **without build cache**, then repeat Step 1.
+The Dockerfile **does not** `git checkout` a branch; Railway builds whatever branch is connected under **Settings → Source → Branch**. Set it to **`prd2_agentforge`** (or the branch that contains the module). Confirm **Settings → Build → Dockerfile path** is `docker/agentforge-railway/Dockerfile`. Redeploy **without build cache**, then repeat Step 1.
 
 ### Cause B: Volume shadowing the application tree
 
