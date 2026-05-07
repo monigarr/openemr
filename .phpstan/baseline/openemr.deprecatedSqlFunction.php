@@ -5932,11 +5932,6 @@ $ignoreErrors[] = [
     'path' => __DIR__ . '/../../portal/index.php',
 ];
 $ignoreErrors[] = [
-    'message' => '#^Use QueryUtils\\:\\:querySingleRow\\(\\) instead of sqlQueryNoLog\\(\\)\\.$#',
-    'count' => 1,
-    'path' => __DIR__ . '/../../portal/index.php',
-];
-$ignoreErrors[] = [
     'message' => '#^Use QueryUtils\\:\\:sqlStatementThrowException\\(\\) or QueryUtils\\:\\:fetchRecords\\(\\) instead of sqlStatement\\(\\)\\.$#',
     'count' => 2,
     'path' => __DIR__ . '/../../portal/index.php',
@@ -7558,7 +7553,7 @@ $ignoreErrors[] = [
 ];
 $ignoreErrors[] = [
     'message' => '#^Use QueryUtils\\:\\:fetchRecordsNoLog\\(\\) instead of sqlStatementNoLog\\(\\)\\.$#',
-    'count' => 24,
+    'count' => 23,
     'path' => __DIR__ . '/../../src/Services/Utils/SQLUpgradeService.php',
 ];
 $ignoreErrors[] = [
