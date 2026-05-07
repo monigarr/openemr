@@ -42,5 +42,31 @@ docker/development-easy/docker-compose.override.yml
 docker/development-easy-light/docker-compose.override.yml
 docker/development-easy-redis/docker-compose.override.yml
 
-# MoniGarr Dev Resources
-/interface/modules/custom_modules/oe-module-clinical-copilot/docs/*
+# MoniGarr Dev Resources — large/local only; Markdown under module docs/ stays tracked
+/interface/modules/custom_modules/oe-module-clinical-copilot/docs/*.pdf
+/interface/modules/custom_modules/oe-module-clinical-copilot/docs/local/
+
+# MoniGarr fork-only: PRD 2 & PRD2 Modernized documentation (internal; omit from public GitHub/GitLab)
+# Note: if these paths were already committed, run: git rm -r --cached -- <paths> && git commit
+**/*PRD2_MODERNIZED*.md
+**/PRD2_MODERNIZE.md
+**/PATIENT_DASHBOARD_MIGRATION.md
+**/AUDIT_PRD2.md
+**/USERS_PRD2.md
+**/ARCHITECTURE_PRD2.md
+**/ARCHITECTURE_RISKS_PRD2.md
+**/USERS_ARCHITECTURE_RISKS_PRD2.md
+**/AGENT_TEAM_PRD2*.md
+**/PRD_2_*.md
+**/PRD_2*.pdf
+**/PRD_Week*.pdf
+
+# Track PRD2 Modernized documentation canon under Documentation/ (exceptions to rules above)
+!Documentation/
+!Documentation/**/*.md
+
+# Next.js patient dashboard (`frontend/`)
+frontend/.next/
+frontend/node_modules/
+frontend/test-results/
+frontend/playwright-report/
