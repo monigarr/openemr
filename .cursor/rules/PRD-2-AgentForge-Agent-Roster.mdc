@@ -1,0 +1,76 @@
+---
+description: PRD 2 Clinical CoPilot — default LLM roles and model picks for Lead, Supervisor, and SubAgents.
+globs:
+  - interface/modules/custom_modules/oe-module-clinical-copilot/**
+  - PRD_2_AgentForge_Clinical_CoPilot.md
+  - ARCHITECTURE.md
+  - ARCHITECTURE_RISKS.md
+  - AUDIT.md
+  - USERS.md
+alwaysApply: false
+---
+
+# PRD 2 AgentForge — default agent roster (runtime LLMs)
+
+This rule complements `.cursor/rules/PRD-2-AgentForge-Clinical-Copilot.mdc` (git/module scope). It aligns implementation with repo-root `PRD_2_AgentForge_Clinical_CoPilot.md`, `ARCHITECTURE.md`, `ARCHITECTURE_RISKS.md`, `AUDIT.md`, and `USERS.md`.
+
+## Scope and doc alignment
+
+- PRD 2 is implemented primarily under `interface/modules/custom_modules/oe-module-clinical-copilot/`.
+- Do **not** change repo-root `CONTRIBUTING.md` or upstream **README** files; operational detail lives in module docs and (per PRD submission) `W2_ARCHITECTURE.md` when present.
+- Feature branch discipline: `prd2_agentforge` (see PRD-2-AgentForge-Clinical-Copilot rule).
+
+## Default model roster
+
+| Role | Responsibility (concise) | Default model |
+|------|---------------------------|---------------|
+| **Lead agent** | Final grounded answer; merges patient-record facts vs guideline evidence; citation contract at response boundary | **GPT-4o** *or* **Claude 3.5 Sonnet** (choose one per deployment; document in env/config) |
+| **Supervisor** | Routing only: when to run file processing, summarization/evidence path, EHR persistence step; **inspectable** handoffs | **GPT-4o-mini** |
+| **SubAgent 1 — File Processor** | Multimodal ingest: lab PDF + intake form; structured extraction with citations/bboxes; output is **untrusted** until validated | **Gemini 1.5 Flash** |
+| **SubAgent 2 — Summarizer** | Guideline-oriented synthesis over retrieved chunks (hybrid RAG + rerank); keeps evidence separate from patient facts | **Llama 3.1 70B** |
+| **SubAgent 3 — EHR Writer** | Proposes **structured** writes (FHIR/OpenEMR-shaped); **no direct DB access** — persistence only via server-controlled pipeline after validation | **GPT-4o-mini** |
+
+**Provider routing** (API keys, endpoints) is configuration-only; never commit secrets.
+
+## Map to PRD 2 “supervisor + two workers”
+
+- **intake-extractor (PRD)** → **SubAgent 1 (File Processor)** (Gemini 1.5 Flash).
+- **evidence-retriever (PRD)** → **SubAgent 2 (Summarizer)** over **retrieve_guidelines** / hybrid RAG output (Llama 3.1 70B). **Retrieval** (sparse + dense + rerank) stays **deterministic application code**, not an LLM.
+- **EHR Writer** is not a third PRD “worker” in the syllabus sense: it is the **persistence-facing subagent** that formats validated artifacts for the **server-side** `attach_and_extract` / write pipeline — consistent with ARCHITECTURE.md write boundary (model does not write the DB).
+
+**Lead agent** runs **after** supervisor-orchestrated steps and **verification**, producing the user-facing response (maps to the PRD “answer model” fed only top grounded evidence).
+
+## Non-negotiables
+
+- **Extraction is untrusted** until schema-valid, citation-linked, and passed through verification (ARCHITECTURE.md, AUDIT.md).
+- **Citation contract**: `{source_type, source_id, page_or_section, field_or_chunk_id, quote_or_value}`; PDF bounding-box overlay in UI where applicable (PRD).
+- **Observability**: tool sequence, latency by step, tokens, cost estimate, retrieval hits, extraction confidence, eval outcome — **no raw PHI** in logs (USERS.md, PRD).
+- **Eval gate**: 50-case golden set, boolean rubrics, PR-blocking CI/hook; blocks meaningful regression (ARCHITECTURE_RISKS.md, PRD).
+
+## Flow (reference)
+
+```mermaid
+flowchart TB
+  userNode[User]
+  supNode[Supervisor_GPT4o_mini]
+  fpNode[FileProcessor_Gemini15Flash]
+  sumNode[Summarizer_Llama31_70B]
+  ehrNode[EhrWriter_GPT4o_mini]
+  verifyNode[VerificationGate]
+  leadNode[Lead_GPT4o_or_Claude35]
+
+  userNode --> supNode
+  supNode --> fpNode
+  supNode --> sumNode
+  supNode --> ehrNode
+  fpNode --> verifyNode
+  sumNode --> verifyNode
+  ehrNode --> verifyNode
+  verifyNode --> leadNode
+  leadNode --> userNode
+```
+
+## What this rule does not do
+
+- It does **not** replace implementation: model IDs and routing belong in **env/config** inside the module.
+- It does **not** override PRD-2 git/module scope; it **complements** it.

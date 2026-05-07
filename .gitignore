@@ -24,8 +24,6 @@ ccdaservice/node_modules
 .buildpath
 .project
 .settings
-PRD_Week1_AgentForge.jpeg
-PRD_Week1_AgentForge.md
 
 # testing
 .phpunit.result.cache
@@ -43,3 +41,6 @@ tmp-phpstan/*
 docker/development-easy/docker-compose.override.yml
 docker/development-easy-light/docker-compose.override.yml
 docker/development-easy-redis/docker-compose.override.yml
+
+# MoniGarr Dev Resources
+/interface/modules/custom_modules/oe-module-clinical-copilot/docs/*

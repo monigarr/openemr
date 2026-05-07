@@ -1,0 +1,31 @@
+---
+description: Prefer OpenEMR PatientService, Document class, and DocumentService instead of ad-hoc SQL against patient_data or documents.
+alwaysApply: true
+---
+
+# OpenEMR patient and document access (no raw SQL)
+
+When reading or writing **patient demographics** (`patient_data`) or **clinical documents** (`documents` and related document flows), use OpenEMR’s built-in APIs instead of hand-written SQL in new or changed code.
+
+## Patient (`patient_data`)
+
+- **Use** `OpenEMR\Services\PatientService` for search, CRUD patterns, UUID handling, and validation-oriented flows it already supports.
+- **Do not** add new `sqlQuery` / `sqlStatement` / string-built SQL against `patient_data` when `PatientService` (or an existing upstream service that wraps it) can perform the same job.
+
+There is no separate first-class `Patient` ORM class comparable to `Document`; **`PatientService` is the native service layer** for this table in modern code.
+
+## Documents (`documents`)
+
+- **Use** the `Document` class (`library/classes/Document.class.php`) for document-centric operations tied to that model (storage, categories, notes, etc., as exposed by the class and existing controllers).
+- **Use** `OpenEMR\Services\DocumentService` for REST/service-layer document access and patterns it already implements.
+- **Do not** invent new raw SQL against `documents` when these types already cover the use case.
+
+## Exceptions (rare)
+
+- **Legacy touch points**: If you must change a file that only offers SQL, prefer the smallest change; when adding new logic, still route through the services/classes above when feasible.
+- **No API exists**: If OpenEMR truly has no API for the operation, use centralized, parameterized access (e.g. `QueryUtils` per project standards)—not concatenated SQL—and keep the scope minimal until an upstream service method is appropriate.
+
+## Quick check
+
+- New feature touching patients → start with **`PatientService`**.
+- New feature touching stored documents → start with **`Document` / `DocumentService`** and existing document controllers/helpers.

@@ -1,0 +1,36 @@
+---
+description: 
+alwaysApply: true
+---
+
+# PRD 2 Agentforge fork — Git and module scope
+
+See `.cursor/rules/PRD-2-AgentForge-Agent-Roster.mdc` for default LLM roles and model picks (PRD 2 agent roster).
+
+## Branches
+
+- Do **feature work** only on `prd2_agentforge`, or on **small topic branches** branched from it (not directly on `master` for ongoing work).
+- Treat **`master` as a mirror of `upstream/master`**. Do not use `master` as your long-lived integration branch for local experiments.
+- **feature work** and creating new feature work docker images must be aligned with CONTRIBUTING.md and README files. 
+- Do not change CONTRIBUTING.md and README files.
+- New documentation must be aligned with CONTRIBUTING.md, README files and documentation in the master branch.
+
+## Staying current with upstream
+
+- When you need upstream changes, **merge or rebase `master` into your feature branch** (or topic branch).
+- **Never** merge or rebase your feature branch **into** `master` as a substitute for keeping `master` aligned with upstream. Flow is upstream → `master` → feature branch, not feature → `master` unless you are deliberately preparing a clean contribution to upstream.
+- feature branch must remain in sync with master branch and avoid breaking changes
+
+## What not to commit casually
+
+Avoid large or unrelated edits under paths such as:
+
+- `.phpstan/`
+- `.github/workflows/`
+- Broad or “random” sweeps under `src/` (or similar) unless you are **intentionally** contributing that work to upstream in a **focused, reviewable PR**.
+
+## Custom module (`oe-module-clinical-copilot`)
+
+- Prefer **all** custom module changes under:
+  - `interface/modules/custom_modules/oe-module-clinical-copilot/`
+- Add only the **minimal wiring** the upstream tree expects (for example, a **single** `composer.json` PSR-4 autoload entry for your namespace). That pattern is normal for in-tree modules; do not scatter module logic across the repo when it can live under the module directory.

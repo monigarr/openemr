@@ -1,0 +1,23 @@
+---
+description: Preserve docker/agentforge-railway for Railway.com deployment of local dev branches
+alwaysApply: true
+---
+
+# Agentforge — Railway Docker layout
+
+The directory **`docker/agentforge-railway/`** (including its **`upstream/`** subtree and top-level files such as `Dockerfile`, `Dockerfile.flex`, `README.md`, and env examples) is **intentional fork infrastructure**: it enables deploying **this repository’s local development branches** to **[Railway](https://railway.com/)**.
+
+## Do
+
+- Treat edits under `docker/agentforge-railway/**` as **deployment-sensitive**: change only when you are **explicitly** improving or fixing the Railway build/deploy path.
+- After meaningful changes, verify the Railway-oriented flow still matches what `docker/agentforge-railway/README.md` describes (or update that README in the same change).
+
+## Do not
+
+- **Delete, rename, or “simplify away”** `docker/agentforge-railway/` during broad Docker refactors, upstream merges, or cleanup unless the user explicitly requests that and accepts losing Railway deploy from this tree.
+- **Replace** this tree wholesale with stock OpenEMR docker paths without reconciling Railway build context, entrypoints, and documented env vars.
+- Move Railway-specific assets out of `docker/agentforge-railway/` into random paths without updating deployment docs and Railway project settings.
+
+## Quick check
+
+- Unrelated task touching `docker/` → **leave `docker/agentforge-railway/` unchanged** unless the task is specifically about Railway or this image.
