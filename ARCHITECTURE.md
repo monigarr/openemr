@@ -119,15 +119,14 @@ Requirements:
 ## 8. Observability (Reconciled)
 
 PRD 1:
-- AgentTelemetry (LangFuse)
+- AgentTelemetry (optional **Langfuse** export when configured)
 
 PRD 2:
-- adds LangChain
+- **LangChain** for orchestration is **planned**; it is **not yet in tree** in this repository’s module code (current routing uses the OpenAI tool loop in `AgentOrchestrator`).
 
 ### Final Position:
 
-> LangChain is orchestration  
-> AgentTelemetry remains the system of record for observability
+> When adopted, LangChain is orchestration; **AgentTelemetry** remains the system of record for observability today.
 
 All logs must include:
 - tool sequence

@@ -22,6 +22,10 @@ AgentForge module: **multi-turn** co-pilot on the **patient summary** card using
 - **Week 1 (baseline):** chart tools only (`get_chart_lists`, `get_recent_encounters`, `get_recent_labs`), verification over merged chart JSON.
 - **Week 2 (multimodal + RAG):** **`upload_document`** stages a demo **PDF** for the session `pid`; the agent may call **`attach_and_extract`** (`lab_pdf` | `intake_form`), **`get_document_extractions`**, and **`retrieve_guidelines`** (`query`). Citations may use `document_extractions.*` and `guideline_evidence.chunks.*`. See repo-root **`W2_ARCHITECTURE.md`** and bundled **`resources/guidelines/corpus.json`**. Optional rerank: env **`CLINICAL_COPILOT_COHERE_API_KEY`**.
 
+### Upstream sync (this fork)
+
+Keep **`master`** as an upstream mirror; merge **`master`** (or **`upstream/master`**) into your feature branch—never the reverse for routine work. Full steps: **[`docs/SYNC_DEV_WITH_UPSTREAM.md`](../../../docs/SYNC_DEV_WITH_UPSTREAM.md)**.
+
 ## Install (OpenEMR Admin)
 
 1. Copy or merge this folder to `interface/modules/custom_modules/oe-module-clinical-copilot/`.
@@ -131,4 +135,4 @@ composer phpunit-isolated -- --filter ClinicalCopilot
 - **Verification:** `VerificationGate` then `ClinicalDomainRules`; uncited or unsafe lines are stripped or withheld.
 - **Telemetry:** Monolog JSON: steps, per-round OpenAI, `tool:name`, token totals, rough USD; optional **Langfuse** trace UI when Globals + keys allow (see above).
 
-See repo root `ARCHITECTURE.md` and `USERS.md` for full AgentForge context.
+See **repo root** `ARCHITECTURE.md`, `USERS.md`, `W2_ARCHITECTURE.md`, `PRD_2_AgentForge_Clinical_CoPilot.md`, and `W2_COST_LATENCY_REPORT.md` for AgentForge / PRD 2 context. Module-only notes (e.g. release automation) stay under [`docs/`](docs/) in this folder.

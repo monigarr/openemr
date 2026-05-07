@@ -8,7 +8,7 @@ This document describes how the AgentForge Clinical Co-Pilot extension meets [PR
 
 - **Implementation root:** `interface/modules/custom_modules/oe-module-clinical-copilot/`
 - **Upstream docs:** Do not treat this file as a substitute for `CONTRIBUTING.md` or repository READMEs (those remain unchanged for this track).
-- **Related design notes:** `W2_ARCHITECTURE.md`, `ARCHITECTURE_RISKS.md`, `AUDIT.md`, `USERS.md`
+- **Related design notes:** `ARCHITECTURE.md`, `ARCHITECTURE_RISKS.md`, `W2_ARCHITECTURE_RISKS.md`, `AUDIT.md`, `USERS.md`
 - **Cursor rules:** `.cursor/rules/PRD-2-AgentForge-Agent-Roster.mdc` (default LLM roles for runtime agents)
 
 ## High-level flow
@@ -44,7 +44,7 @@ flowchart LR
 | `attach_and_extract` + `lab_pdf` / `intake_form` | Tool `attach_and_extract` + upload endpoint; extraction pipeline interface with stub default |
 | Strict schemas + citations | `ClinicalCitation`, `LabResultLine`, `IntakeFormRecord` validators; each extracted row carries citation metadata |
 | Hybrid RAG + rerank | `HybridGuidelineRetriever` (sparse + dense) + `CohereReranker` (optional) |
-| Supervisor + workers | Week 2 adds **parametric tools** and explicit routing via the existing OpenAI tool loop; **`AgentOrchestrator`** emits **`supervisor_handoffs`** (tool → `intake_extractor` \| `evidence_retriever` \| `chart_context`) for inspectable PRD-style handoffs. Full LangGraph wiring may layer on without changing verification. |
+| Supervisor + workers | Week 2 adds **parametric tools** and explicit routing via the existing OpenAI tool loop; **`AgentOrchestrator`** emits **`supervisor_handoffs`** (tool → `intake_extractor` \| `evidence_retriever` \| `chart_context`) for inspectable PRD-style handoffs. **LangGraph**-style graph wiring is **planned — not yet in tree**; it may layer on without changing verification. |
 | Citation contract | Model cites `document_extractions.*` and `guideline_evidence.chunks.*`; minimum metadata shape enforced at extraction |
 | No PHI in logs | Observability continues to use clipped / metadata-first payloads (`TelemetryText` patterns); do not log raw document bytes or identifiers in third-party traces |
 | Eval / CI gate | **`eval/cases.json`** (50 cases) + **`eval/run_eval.php`** + **`Prd2EvalRunner`** rubrics: `schema_valid`, `citation_present`, `factually_consistent`, `safe_refusal`, `no_phi_in_logs`. **`eval/prd2_eval_baseline.json`** stores per-rubric agreement counts; each run compares current rates against **pass threshold** (default 95%) and **max regression vs baseline** (default 5 pp). **pre-commit** hook `clinical-copilot-prd2-eval` runs when this module changes. Export cases: `php .../eval/run_eval.php --export-cases`; export baseline after a clean run: `--export-baseline`. CI uploads **`--summary-json`**. **PHPUnit** `Prd2EvalGateRegressionIsolatedTest` proves the gate fails on an injected bad citation and on a non-50 case file (PRD “grader injection” expectation). |

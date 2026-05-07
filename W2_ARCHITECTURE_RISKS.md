@@ -43,7 +43,7 @@ Risk:
 
 Mitigation:
 - AgentTelemetry remains source of truth
-- LangChain only for orchestration
+- **LangChain** for orchestration when introduced (**planned — not yet in tree**); until then, keep the OpenAI tool-loop path inspectable
 
 ---
 
