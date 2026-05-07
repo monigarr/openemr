@@ -11,7 +11,7 @@ Merge the latest changes from the upstream repository into our current dev branc
 ## What this fork expects
 
 - **`master`** tracks **[openemr/openemr](https://github.com/openemr/openemr)** (or your team’s canonical remote). Treat it as an **upstream mirror**, not your day-to-day integration branch for fork-only features.
-- **Feature work** lives on branches such as `prd_1_agentforge_monigarr`, `prd2_agentforge`, or short topic branches cut from those—see `.cursor/rules/` for branch naming if unsure.
+- **Feature work** lives on branches such as `prd_1_agentforge_monigarr`, `prd2_agentforge`, `prd2_af_modernized`, or short topic branches cut from those—see `.cursor/rules/` for branch naming if unsure.
 - **Branch names:** If the default branch were ever `main` instead of `master`, substitute `main` / `upstream/main` in every command below. The rules stay the same.
 
 ## Invariants (do not violate)
