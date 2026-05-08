@@ -30,7 +30,7 @@
 #   2026-05-06
 #
 # Last Updated:
-#   2026-05-07
+#   2026-05-08
 #
 # Classification:
 #   Internal — Contains architectural decision records, AI interaction logs, and verification evidence
@@ -328,7 +328,7 @@ Human confirmed this approach. **Security Audit Agent** reviewed and confirmed n
 | Consume OpenEMR REST/FHIR API as data layer | All hooks use FHIR endpoints; proxy route defined (§19.4) | ✅ |
 | Do not touch backend | Strangler-Fig pattern; six non-negotiable rules (ARCH §9) | ✅ |
 | Do not redesign interface | Feature parity standard; side-by-side screenshot verification | ✅ |
-| Move presentation layer to better tool | Full rationale in Documentation/PATIENT_DASHBOARD_MIGRATION.md (to be generated in Cursor) | ⬜ Pending |
+| Move presentation layer to better tool | Full rationale in Documentation/PATIENT_DASHBOARD_MIGRATION.md (framework defense — present) | ✅ |
 | Authentication via OAuth2/OpenID Connect | next-auth with OIDC provider (ADR-003) | ✅ |
 | Patient header: name, DOB, sex, MRN, active status | PatientBanner component consuming FHIR Patient resource | ✅ |
 | Allergies card | AllergyIntolerance resource, clinical-card pattern | ✅ |
@@ -339,8 +339,8 @@ Human confirmed this approach. **Security Audit Agent** reviewed and confirmed n
 | One additional section | Lab Results (Observation, category=laboratory) with tabs (ADR-004) | ✅ |
 | Working reimplementation in 4 days | AI-Native approach with Cursor; directory structure and generation order defined (§19.2) | ✅ |
 | Feature parity with original | Three-state UX pattern; empty states are clinically accurate | ✅ |
-| Explain framework choice | ADR-001 in this document; PATIENT_DASHBOARD_MIGRATION.md (to be generated in Cursor) | ⬜ Pending |
-| Document defense in repo | PATIENT_DASHBOARD_MIGRATION.md (to be generated) | ⬜ Pending |
+| Explain framework choice | ADR-001 in this document; PATIENT_DASHBOARD_MIGRATION.md (framework defense — present) | ✅ |
+| Document defense in repo | PATIENT_DASHBOARD_MIGRATION.md in repo | ✅ |
 
 ---
 
@@ -444,7 +444,7 @@ Human confirmed this approach. **Security Audit Agent** reviewed and confirmed n
 
 | Artifact | Status | Owner | Due |
 | -------- | ------ | ----- | --- |
-| PATIENT_DASHBOARD_MIGRATION.md | ⬜ Not started | Monica Peters + AI | Day 2 of sprint |
+| PATIENT_DASHBOARD_MIGRATION.md | ✅ Complete | Monica Peters + AI | Delivered 2026-05-07 |
 | README.md | ⬜ Not started | Monica Peters + AI | Day 2 of sprint |
 | VERIFY.md | ⬜ Not started | Monica Peters | Day 1 of sprint |
 | USERS_PRD2_MODERNIZED.md | ⬜ WIP | Monica Peters + AI | Day 1 of sprint |

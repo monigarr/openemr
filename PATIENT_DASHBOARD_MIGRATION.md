@@ -1,7 +1,3 @@
-The modernization follows the Strangler Fig Pattern (Fowler, 2004), which enables incremental replacement of legacy presentation functionality without destabilizing the existing OpenEMR PHP monolith. The new Next.js dashboard coexists with the legacy PHP application, intercepting patient dashboard requests while all other EHR workflows continue to operate on the original codebase.
-
-We classify this as a Hybrid Brownfield AI-Native Frontend architecture: hybrid because both old and new systems operate simultaneously; brownfield because we work within the constraints of a production-critical healthcare monolith; AI-native because the development velocity required to achieve feature parity in four days relies on Cursor's AI-assisted component generation; and frontend-scoped to maintain a clean boundary that guarantees backend stability.
-
 # ============================================================================
 # PATIENT_DASHBOARD_MIGRATION.md
 # ============================================================================
@@ -12,7 +8,7 @@ We classify this as a Hybrid Brownfield AI-Native Frontend architecture: hybrid 
 #   https://github.com/monigarr/openemr/tree/prd2_af_modernized
 #
 # Upstream Source of Truth:
-#   https://github.com/openemr/openemr (NEVER push to this repo)
+#   https://github.com/openemr/openemr (Do Not push to this repo)
 #
 # Version:
 #   0.1.0
@@ -22,7 +18,7 @@ We classify this as a Hybrid Brownfield AI-Native Frontend architecture: hybrid 
 #
 # Authors:
 #   Monica Peters (Human Lead, Architectural Decision-Maker)
-#   Documentation Agents: DeepSeek, Gemini, ChatGPT Extended Pro 5.5, Cursor
+#   Documentation Agents: DeepSeek, Gemini, ChatGPT Extended #   Pro 5.5, Cursor
 #
 # Created:
 #   2026-05-06
@@ -31,8 +27,8 @@ We classify this as a Hybrid Brownfield AI-Native Frontend architecture: hybrid 
 #   2026-05-06
 #
 # Classification:
-#   Public — This document is part of the deliverable and is intended for review
-#   by clients, OpenEMR community maintainers, and technical evaluators.
+#   Public — This document is part of the deliverable and is #   intended for human review
+#   by clients, OpenEMR community maintainers, and technical #   evaluators.
 #
 # ============================================================================
 #
@@ -59,7 +55,7 @@ This document defends the architectural decisions made in modernizing the OpenEM
 
 The modernization follows the **Strangler Fig Pattern** (Fowler, 2004), which enables incremental replacement of legacy presentation functionality without destabilizing the existing OpenEMR PHP monolith. The new Next.js dashboard coexists with the legacy PHP application, intercepting patient dashboard requests while all other EHR workflows continue to operate on the original codebase.
 
-We classify this as a **Hybrid Brownfield AI-Native Frontend** architecture: hybrid because both old and new systems operate simultaneously; brownfield because we work within the constraints of a production-critical healthcare monolith; AI-native because the development velocity required to achieve feature parity in four days relies on Cursor's AI-assisted component generation; and frontend-scoped to maintain a clean boundary that guarantees backend stability.
+I classify this as a **Hybrid Brownfield AI-Native Frontend** architecture: hybrid because both old and new systems operate simultaneously; brownfield because we work within the constraints of a production-critical healthcare monolith; AI-native because the development velocity required to achieve feature parity in four days relies on Cursor's AI-assisted component generation; and frontend-scoped to maintain a clean boundary that guarantees backend stability.
 
 **Core claim:** Moving the presentation layer from PHP server-side rendering to a modern React-based framework delivers measurable improvements in developer velocity, user experience responsiveness, and long-term maintainability — while introducing manageable, well-understood trade-offs that are explicitly acknowledged and mitigated.
 
@@ -326,7 +322,7 @@ The AI does not replace the developer — it accelerates every phase. The develo
 ## 5.2 AI Participation Boundaries
 
 AI participated in:
-- Architecture design (generated the draft ARCHITECTURE.md from the M.O.M. template)
+- Architecture research (generated the draft ARCHITECTURE.md from the M.O.M. template)
 - Component scaffolding (all clinical cards follow the same pattern)
 - TypeScript type generation (derived from embedded FHIR JSON schemas)
 - Documentation draft generation (this document PATIENT_DASHBOARD_MODERNIZATION.md, AUDIT_PRD2_MODERNIZED.md, ARCHITECTURE_RISKS_PRD2_MODERNIZED.md, ARCHITECTURE_PRD2_MODERNIZED.md, USERS_PRD2_MODERNIZED.md)
