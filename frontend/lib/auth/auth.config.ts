@@ -20,6 +20,8 @@
  * Legal/compliance: N/A.
  */
 
+import { randomUUID } from "node:crypto";
+
 import type { Account, NextAuthConfig, Profile } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 
@@ -84,6 +86,7 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
       refreshToken: parsed.refresh_token ?? refreshToken,
       expiresAt,
       error: undefined,
+      langfuseSessionSeed: token.langfuseSessionSeed,
     };
   } catch {
     return { ...token, error: "RefreshAccessTokenError" };
@@ -149,6 +152,7 @@ export const authConfig = {
           name: profile?.name ?? token.name,
           email: profile?.email ?? token.email,
           sub: profileSub ?? token.sub,
+          langfuseSessionSeed: token.langfuseSessionSeed ?? randomUUID(),
         };
       }
 

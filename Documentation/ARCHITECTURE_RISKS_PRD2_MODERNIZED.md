@@ -8,7 +8,7 @@
 #   https://github.com/monigarr/openemr/tree/prd2_af_modernized
 #
 # Version:
-#   0.1.0
+#   0.1.1
 #
 # Status:
 #   Active Risk Register
@@ -20,7 +20,7 @@
 #   2026-05-06
 #
 # Last Updated:
-#   2026-05-07
+#   2026-05-08
 #
 # Classification:
 #   Internal — Contains architectural vulnerability analysis
@@ -119,7 +119,7 @@ The deployed frontend origin (e.g., `https://patient-dashboard.vercel.app`) is n
 - Proxy becomes a single point of failure for all data display.
 
 ### Mitigation
-1. **Proxy layer pre-built:** `frontend/app/api/fhir/[...resource]/route.ts` is part of the standard directory structure (ARCHITECTURE_PRD2_MODERNIZED.md §19.1). It is not an emergency add-on.
+1. **Proxy layer pre-built:** `frontend/app/api/fhir/[...path]/route.ts` is part of the standard directory structure (ARCHITECTURE_PRD2_MODERNIZED.md §19.1). It is not an emergency add-on.
 2. **Environment variable toggle:** `FHIR_PROXY_MODE=auto|always|never` in `.env.local` allows switching between direct and proxied requests without code changes.
 3. **Latency budget:** The proxy adds <50ms overhead for same-region deployments (Vercel + OpenEMR host in same cloud region).
 4. **OpenEMR CORS configuration (optional, not required):** If the client permits, add the frontend origin to OpenEMR's CORS settings. This is a backend change and is explicitly optional — the proxy is the primary mitigation.
@@ -363,6 +363,33 @@ Low. A minimal search bar resolves the usability gap. The full patient list with
 
 ---
 
+## R-011: Documentation Drift — LangChain, LangGraph, or Langfuse Misread as Roadmap
+
+**Severity:** P3  
+**Likelihood:** Low  
+**Category:** Governance / Program alignment  
+**Source Decision:** ADR-007 in `Documentation/AUDIT_PRD2_MODERNIZED.md`; `Documentation/ARCHITECTURE_PRD2_MODERNIZED.md` §8, §11, §21
+
+### Description
+Other files in the repository (or older notes) may still describe **LangChain** or **LangGraph** as planned orchestration, or vague observability wording may lead readers to think **Langfuse** is deferred, limited to Track A only, or replaced by generic Next.js logging. That misaligns engineering, security review, and cost reporting with the Human Lead decision for the PRD2 Modernized / AgentForge program (**Langfuse in scope** for **Track A and Track B** observability when enabled; **LangChain/LangGraph out of scope** for orchestration).
+
+### Trigger Condition
+A new contributor merges peripheral docs, or a stakeholder reads non-canon architecture files, and assumes LangChain or LangGraph is incoming, or Langfuse is optional-to-remove.
+
+### Impact
+Wasted spike work, incorrect budget assumptions, or contradictory security posture narratives — **no direct patient-safety runtime impact** from this risk alone.
+
+### Mitigation
+1. **ADR-007** records: **Langfuse** in program scope for **Track A** (copilot) and **Track B** (FHIR proxy spans) when enabled; **LangChain and LangGraph out of program scope** for orchestration (OpenAI tool loop remains).
+2. **Architecture canon** (§8 Track A/B, §11 observability stack, §21) repeats the same boundaries, including **implementation pointers**: `frontend/instrumentation.ts`, `frontend/lib/observability/`, `frontend/app/api/fhir/[...path]/route.ts`, and Auth.js **`langfuseSessionSeed`** for opaque session correlation.
+3. **Periodic sweep:** When refreshing branches or onboarding, grep `Documentation/*PRD2*` and the framework defense doc for conflicting language.
+4. **Deployment runbooks:** `docker/agentforge-railway/env.langfuse.example` and **README** document **`DASHBOARD_LANGFUSE_ENABLE`** on the Node service separately from OpenEMR Portal globals (Track A).
+
+### Residual Risk After Mitigation
+Low. Documentation-only; mitigated by explicit ADR and cross-links.
+
+---
+
 # 3. Risk Summary by Severity
 
 | Severity | Count | Risks                                                                 |
@@ -370,7 +397,7 @@ Low. A minimal search bar resolves the usability gap. The full patient list with
 | **P0**   | 1     | R-001: OAuth2 token exposure via client-side JavaScript               |
 | **P1**   | 4     | R-002: CORS proxy complexity, R-003: FHIR schema drift, R-007: ACR bypass, R-008: Platform outage |
 | **P2**   | 4     | R-004: AI hallucinations, R-005: Stale data, R-006: Cold starts, R-010: Missing patient navigation |
-| **P3**   | 1     | R-009: Session store scalability (future concern)                     |
+| **P3**   | 2     | R-009: Session store scalability (future concern), R-011: Doc drift LangChain/LangGraph/Langfuse |
 
 ---
 
@@ -410,6 +437,7 @@ The following risks are **accepted** for V1 deployment without full mitigation:
 | R-007 | ACR checklist completeness in `AUDIT.md`              | Missing sign-off → block deployment          |
 | R-008 | Uptime monitor (e.g., Upptime, Better Stack)          | Frontend returns non-200 → alert maintainer  |
 | R-010 | N/A (mitigated with search bar implementation)        | N/A                                          |
+| R-011 | ADR-007 + architecture §8/§11/§21; doc sweep on major merges | Conflicting LangChain/LangGraph/Langfuse narrative in canon docs |
 
 ---
 

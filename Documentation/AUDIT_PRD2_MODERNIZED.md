@@ -11,7 +11,7 @@
 #   https://github.com/openemr/openemr (NEVER push to this repo)
 #
 # Version:
-#   0.1.0
+#   0.1.1
 #
 # Status:
 #   Active Audit Trail — Updated continuously during development
@@ -87,6 +87,10 @@ This audit covers the complete planning and architecture phase of the OpenEMR Pa
 
 **In scope (implementation evidence — 2026-05-07):**
 - Initial Next.js dashboard implementation under [`frontend/`](../frontend/) (OIDC via Auth.js, FHIR proxy, clinical cards, Playwright smoke tests, framework defense doc)
+
+**In scope (implementation evidence — 2026-05-08):**
+- **Track B Langfuse observability:** [`frontend/instrumentation.ts`](../frontend/instrumentation.ts) registers `@langfuse/otel` when **`DASHBOARD_LANGFUSE_ENABLE`** and **`LANGFUSE_*`** are set; [`frontend/app/api/fhir/[...path]/route.ts`](../frontend/app/api/fhir/[...path]/route.ts) emits **`fhir-proxy-get`** spans (metadata-only) with **`propagateAttributes`** for **SHA-256** `userId` / `sessionId` from [`frontend/lib/observability/langfuse-opaque-ids.ts`](../frontend/lib/observability/langfuse-opaque-ids.ts) using **`LANGFUSE_ID_SALT`** and JWT **`langfuseSessionSeed`** ([`frontend/lib/auth/auth.config.ts`](../frontend/lib/auth/auth.config.ts)). Dependencies: `@langfuse/tracing`, `@langfuse/otel`, `@opentelemetry/sdk-node` in [`frontend/package.json`](../frontend/package.json).
+- **Documentation sync:** PRD2 Modernized canon updated so **ADR-007**, **§8/§11**, **cost/latency**, **risks (R-011)**, **framework defense**, **Railway env example**, and **docker README** describe **Track A + Track B** Langfuse consistently.
 
 ## 1.2 Audit Methodology
 
@@ -302,13 +306,13 @@ The dashboard must fetch data from multiple FHIR endpoints per patient. Data sho
 
 ### Decision
 1. **Server-side fetch for initial data:** React Server Components in the App Router fetch FHIR resources server-side using the access token from the next-auth session. This data is passed as props to Client Components.
-2. **Client-side React Query for interactivity:** Client Components use `@tanstack/react-query` for background refetching, cache management, and deduplication. The query function calls a Next.js API route (`/api/fhir/[...resource]`) which proxies to OpenEMR — keeping the token server-side.
+2. **Client-side React Query for interactivity:** Client Components use `@tanstack/react-query` for background refetching, cache management, and deduplication. The query function calls a Next.js API route (`/api/fhir/[...path]`) which proxies to OpenEMR — keeping the token server-side.
 3. **Stale-while-revalidate with 30-second TTL** for clinical cards, 10-second TTL for lab results.
 
 ### Rationale
 1. React Query deduplicates identical FHIR requests. If the Allergy card and the Problem List card both request data simultaneously, React Query batches them.
 2. Server-side initial fetch eliminates the loading spinner on first render (data is available before the component mounts).
-3. The proxy route (`/api/fhir/[...resource]`) solves CORS issues transparently — the browser only communicates with the Next.js origin.
+3. The proxy route (`/api/fhir/[...path]`) solves CORS issues transparently — the browser only communicates with the Next.js origin.
 4. Background refetch on window focus ensures data is current when a clinician returns to the dashboard.
 
 ### Trade-offs Acknowledged
@@ -320,10 +324,46 @@ Human confirmed this approach. **Security Audit Agent** reviewed and confirmed n
 
 ---
 
+## ADR-007: Observability — Retain Langfuse; Orchestration — No LangChain / LangGraph
+
+**Date:** 2026-05-08  
+**Decision Maker:** Monica Peters (Human Lead)  
+**Status:** Approved
+
+### Context
+The program runs two tracks: **Track A — Clinical Co-Pilot** (`interface/modules/custom_modules/oe-module-clinical-copilot/`) and **Track B — PRD2 Modernized** (`frontend/` and this documentation set). Other repository materials have described LangChain- or **LangGraph**-style orchestration as a possible future direction. The Human Lead is aligning **PRD2 Modernized governance documents** to the chosen AgentForge stack: keep existing PHP-side agent flow and observability choices without adopting LangChain, **LangGraph**, or comparable third-party agent-graph frameworks for orchestration.
+
+### Decision
+1. **Retain Langfuse** as the optional observability export for **both** program tracks when configured: **Track A — Clinical Co-Pilot** uses OpenEMR Portal globals plus `LANGFUSE_*` (see module README); **Track B — PRD2 Modernized** (`frontend/`) uses the same `LANGFUSE_*` credentials on the Next.js server plus an explicit **`DASHBOARD_LANGFUSE_ENABLE`** opt-in and emits **metadata-first** spans for the FHIR proxy (resource type and HTTP status only — no patient ids, search params, or response bodies). **Track B** sets Langfuse trace **`userId` / `sessionId`** to **SHA-256 digests** with optional shared **`LANGFUSE_ID_SALT`** (OIDC `sub` + per-login `langfuseSessionSeed` in the Auth.js JWT — see architecture §11). Langfuse is the **documented in-program observability integration** for the initiative: **in scope** for PRD2 Modernized program documentation, cost, and operations, and **not** deprecated or replaced by another vendor without a new ADR. Track B does not replace Track A traces; both can target the same Langfuse project with disjoint span names and `track` metadata.
+2. **Do not incorporate LangChain or LangGraph** for agent orchestration. Track A continues to use the **OpenAI tool-loop** architecture in the PHP module (see [W2_ARCHITECTURE.md](../W2_ARCHITECTURE.md) and module code). **LangChain and LangGraph are out of program scope** for PRD2 AgentForge unless a future ADR explicitly reverses this.
+
+### Rationale
+1. **Single orchestration path:** The current tool loop is inspectable, matches eval and verification gates already in CI, and avoids an additional dependency surface (LangChain/LangGraph versions, graph runtimes, callback handlers, packaging).
+2. **Langfuse fit:** Track A observability is integrated at the PHP module boundary with fail-open semantics; Track B uses the Langfuse JS/OpenTelemetry path at the FHIR proxy with the same fail-open posture. Together they preserve traceability and cost/latency reporting aligned with [Documentation/COST_LATENCY_REPORT_PRD2_MODERNIZED.md](COST_LATENCY_REPORT_PRD2_MODERNIZED.md).
+3. **Track B clarity:** The Next.js patient dashboard remains a presentation layer (no LLM orchestration in Next.js); it does **not** require LangChain or LangGraph. Cross-track wording in architecture docs should not imply adoption of those orchestration stacks.
+
+### Trade-offs Acknowledged
+1. **Ecosystem features:** LangChain/LangGraph provide prebuilt graphs and integrations; the team accepts maintaining orchestration logic in application code instead.
+2. **Documentation drift:** Older or peripheral docs may still mention “planned” LangGraph or LangChain; mitigation is ADR-007 plus periodic sweeps (see ARCHITECTURE_RISKS_PRD2_MODERNIZED.md).
+
+### Alternatives Rejected
+
+| Alternative | Rejection Reason |
+| ----------- | ---------------- |
+| **LangChain or LangGraph (or similar) as orchestration layer** | Adds dependency and indirection; not selected for this program (ADR-007). |
+| **Replacing Langfuse with another vendor without ADR** | Would fragment observability narrative and cost reporting; requires explicit decision. |
+
+### Validation
+Human Lead recorded decision for governance alignment across `Documentation/ARCHITECTURE_PRD2_MODERNIZED.md`, risk register, cost/latency report, and framework defense cross-reference.
+
+---
+
 # 3. PRD Requirement Compliance Matrix
 
 | PRD Requirement | Architectural Satisfaction | Status |
 | --------------- | -------------------------- | ------ |
+| Cross-track / AgentForge alignment — Langfuse in scope (Track A + Track B proxy spans); LangChain / LangGraph out of scope | ADR-007; ARCHITECTURE_PRD2_MODERNIZED.md §8, §11, §21 | ✅ |
+| Track B optional Langfuse (FHIR proxy spans, hashed user/session, `instrumentation.ts`) | ADR-007; `frontend/instrumentation.ts`, `frontend/lib/observability/`, `frontend/app/api/fhir/[...path]/route.ts` | ✅ Implemented 2026-05-08 |
 | Port patient dashboard to modern framework | Next.js 14+ App Router selected (ADR-001) | ✅ |
 | Consume OpenEMR REST/FHIR API as data layer | All hooks use FHIR endpoints; proxy route defined (§19.4) | ✅ |
 | Do not touch backend | Strangler-Fig pattern; six non-negotiable rules (ARCH §9) | ✅ |
@@ -413,6 +453,17 @@ Human confirmed this approach. **Security Audit Agent** reviewed and confirmed n
 
 ---
 
+### Interaction 6: Track B Langfuse observability + opaque session hashing (2026-05-08)
+**Human Prompt:** Align PRD2 Modernized with Langfuse on the Next.js dashboard; add session-scoped hashed `userId` / `sessionId` for Track B traces (parity with **`LANGFUSE_ID_SALT`** on PHP).
+
+**AI Response:** Implemented optional Langfuse OpenTelemetry in **`frontend/`** (instrumentation hook, FHIR proxy spans, `flush` via `after()`), added **`langfuseSessionSeed`** to the Auth.js JWT with refresh preservation, documented env gates and hashing in **ADR-007**, **ARCHITECTURE_PRD2_MODERNIZED.md** §11/§19, **COST_LATENCY_REPORT**, **RISKS**, **PATIENT_DASHBOARD_MIGRATION**, and **docker/agentforge-railway** env/README.
+
+**Human Validation:** Pending formal sign-off; code and canon treated as the implementation source of truth.
+
+**Artifacts Produced:** `frontend/instrumentation.ts`, `frontend/lib/observability/*`, `frontend/package.json` deps; governance doc updates across **Documentation/** and framework defense.
+
+---
+
 # 5. Security Review Summary
 
 ## 5.1 Security Decisions Audited
@@ -429,6 +480,7 @@ Human confirmed this approach. **Security Audit Agent** reviewed and confirmed n
 | CSP headers configured | ✅ Approved — documented as a non-functional requirement (§5) | Security Audit Agent (AI-assisted) |
 | Zod validation of all FHIR responses | ✅ Approved — prevents malformed data from crashing components | Security Audit Agent (AI-assisted) |
 | No client-side persistence of clinical data | ✅ Approved — React Query cache is in-memory only, cleared on logout | Security Audit Agent (AI-assisted) |
+| Optional Track B Langfuse export | ✅ Approved when **off by default** (`DASHBOARD_LANGFUSE_ENABLE`); spans are metadata-only; `userId`/`sessionId` are salted SHA-256 digests, not raw OIDC `sub` | Security Audit Agent (human review for production enablement) |
 
 ## 5.2 Open Security Items
 
@@ -458,7 +510,7 @@ Human confirmed this approach. **Security Audit Agent** reviewed and confirmed n
 - [ ] Playwright E2E test: Login → Navigate to patient → All 6 cards render without error
 - [ ] Playwright security test: Confirm no access token in `window` object
 - [ ] Zod validation test: Inject malformed FHIR response → component shows error state, not crash
-- [ ] Proxy test: FHIR request through `/api/fhir/[...resource]` returns correct data
+- [ ] Proxy test: FHIR request through `/api/fhir/[...path]` returns correct data
 - [ ] Token refresh test: Expired token → automatic refresh → data still loads
 
 ---
@@ -475,6 +527,7 @@ I, **Monica Peters**, have reviewed the following architectural decisions and co
 - [ ] ADR-004: Lab Results as additional section
 - [ ] ADR-005: Three-state component pattern
 - [ ] ADR-006: React Query + server-side proxy data fetching
+- [ ] ADR-007: Langfuse in program scope for **Track A (copilot)** and **Track B (FHIR proxy spans + hashed user/session)** when enabled; LangChain / LangGraph out of program scope for orchestration
 
 I acknowledge that:
 

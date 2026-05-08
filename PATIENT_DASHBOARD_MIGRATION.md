@@ -24,7 +24,7 @@
 #   2026-05-06
 #
 # Last Updated:
-#   2026-05-06
+#   2026-05-08 (Langfuse Track B + doc canon sync)
 #
 # Classification:
 #   Public — This document is part of the deliverable and is #   intended for human review
@@ -58,6 +58,10 @@ The modernization follows the **Strangler Fig Pattern** (Fowler, 2004), which en
 I classify this as a **Hybrid Brownfield AI-Native Frontend** architecture: hybrid because both old and new systems operate simultaneously; brownfield because we work within the constraints of a production-critical healthcare monolith; AI-native because the development velocity required to achieve feature parity in four days relies on Cursor's AI-assisted component generation; and frontend-scoped to maintain a clean boundary that guarantees backend stability.
 
 **Core claim:** Moving the presentation layer from PHP server-side rendering to a modern React-based framework delivers measurable improvements in developer velocity, user experience responsiveness, and long-term maintainability — while introducing manageable, well-understood trade-offs that are explicitly acknowledged and mitigated.
+
+## Program context (Track A — Clinical Co-Pilot; Track B — this dashboard)
+
+This framework defense covers the **Next.js patient dashboard** (presentation layer only). It does **not** embed an LLM orchestration stack. In the broader **AgentForge / PRD 2** program, **Langfuse** is **in scope** as the shared observability choice for **both** tracks: **Track A** exports optional copilot traces from the PHP module (OpenEMR Portal global + `LANGFUSE_*`); **Track B** exports optional **`fhir-proxy-get`** spans from [`frontend/app/api/fhir/[...path]/route.ts`](frontend/app/api/fhir/[...path]/route.ts) when **`DASHBOARD_LANGFUSE_ENABLE`** and **`LANGFUSE_*`** are set on the Node server, via [`frontend/instrumentation.ts`](frontend/instrumentation.ts) (`@langfuse/tracing`, `@langfuse/otel`, `@opentelemetry/sdk-node`). Span metadata is limited to **resource type**, **operation**, and **HTTP status** (no query strings, logical ids, or bodies). Langfuse **userId** / **sessionId** are **SHA-256** digests using optional **`LANGFUSE_ID_SALT`** and a per–sign-in **`langfuseSessionSeed`** in the Auth.js JWT (see [`Documentation/ARCHITECTURE_PRD2_MODERNIZED.md`](Documentation/ARCHITECTURE_PRD2_MODERNIZED.md) §11). **LangChain** and **LangGraph** are **out of scope** for orchestration (PHP OpenAI tool loop only). See **ADR-007** in [`Documentation/AUDIT_PRD2_MODERNIZED.md`](Documentation/AUDIT_PRD2_MODERNIZED.md).
 
 ---
 

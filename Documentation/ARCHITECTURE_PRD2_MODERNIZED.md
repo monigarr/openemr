@@ -11,7 +11,7 @@
 #   https://github.com/openemr/openemr (NEVER push to this repo)
 #
 # Version:
-#   0.1.0
+#   0.1.1
 #
 # Status:
 #   Planning & Initial Development
@@ -33,7 +33,7 @@
 #   2026-05-06
 #
 # Last Updated:
-#   2026-05-06
+#   2026-05-08 (Track B Langfuse §11/§19; privacy §10; monitoring goals; directory tree)
 #
 # License:
 #   MIT
@@ -407,6 +407,8 @@ export const authConfig = {
 
 Use with `interface/modules/custom_modules/oe-module-clinical-copilot/**` — full non-negotiables and flow live in [`.cursor/rules/PRD-2-AgentForge-Agent-Roster.mdc`](PRD-2-AgentForge-Agent-Roster.mdc).
 
+* **Orchestration:** OpenAI **tool-loop** in the PHP module; **LangChain and LangGraph are out of program scope** (no LangChain/LangGraph orchestration or graph runtime). See **ADR-007** in [`Documentation/AUDIT_PRD2_MODERNIZED.md`](AUDIT_PRD2_MODERNIZED.md).
+* **Observability:** **Langfuse** is **in program scope** for Track A as the optional, admin-gated export path for copilot traces when configured (`LANGFUSE_*` and module globals). **Track B** uses the **same Langfuse product** for optional FHIR-proxy spans when `DASHBOARD_LANGFUSE_ENABLE` and `LANGFUSE_*` are set on the Next.js server (metadata-first; see §11). The integration is **not** superseded by a different vendor. Same ADR reference.
 
 **Human Lead (both tracks):** Monica Peters — Architecture approval, security sign-off, 
 deployment authorization, final sign-off on all documents. NOT an AI agent.
@@ -427,7 +429,7 @@ source file omits a model, default to **GPT-4o-mini** for narrow tasks and **GPT
 
 | Role                    | Suggested model                        | Responsibilities                         |
 | ----------------------- | -------------------------------------- | ---------------------------------------- |
-| **Planner Agent**       | **claude-sonnet-4-20250514 or gpt-4o** | Planning, decomposition, task assignment. Does NOT spawn Workers until human Lead Architect has signed off on ADR-001 through ADR-006 in Documentation/AUDIT_PRD2_MODERNIZED.md. |
+| **Planner Agent**       | **claude-sonnet-4-20250514 or gpt-4o** | Planning, decomposition, task assignment. Does NOT spawn Workers until human Lead Architect has signed off on ADR-001 through ADR-007 in Documentation/AUDIT_PRD2_MODERNIZED.md. |
 | **auth-implementer**    | **claude-sonnet-4-20250514**           | OAuth2/OIDC flow only. lib/auth/, app/api/auth/, app/login/. Does NOT touch FHIR, components, or deployment. |
 | **fhir-client-builder** | **claude-sonnet-4-20250514**           | FHIR types, client, and hooks only. lib/fhir/, hooks/. Does NOT build UI or touch auth. |
 | **card-component-builder** | **claude-sonnet-4-20250514**        | All clinical card UI components. components/cards/, components/shared/. Consumes hooks from fhir-client-builder. Enforces three-state pattern (Loading/Error/Empty) on all cards per ADR-005. |
@@ -502,7 +504,7 @@ Security is:
 
 ## Sovereign AI Considerations
 
-* **Indigenous Data Governance:** While this project is a generic technical modernization, OpenEMR is used globally, including in Indigenous-serving clinics. Therefore, the frontend inherits the backend’s data governance policies. It does not replicate, export, or cache patient data to any external service. The data never leaves the boundary between the browser, the Vercel proxy, and the trusted OpenEMR server.
+* **Indigenous Data Governance:** While this project is a generic technical modernization, OpenEMR is used globally, including in Indigenous-serving clinics. Therefore, the frontend inherits the backend’s data governance policies. **Clinical PHI** is not written to client storage, is not sent to external AI summarizers (see below), and is not included in Track B Langfuse exports: optional Langfuse spans are **metadata-only** (resource type, operation, HTTP status) plus **SHA-256–hashed** `userId` / `sessionId` when **`DASHBOARD_LANGFUSE_ENABLE`** is on (§11). Enabling Langfuse remains an **operator choice** subject to BAAs and region policy. FHIR payloads move only between the browser, the Next.js server, and the trusted OpenEMR API as described in §5–§7.
 * **Language Preservation Protections:** No patient notes or text fields are piped to external AI summarization services without a future explicit governance gate (out of scope).
 * **Cultural Safety Considerations:** The UI must accurately display the patient’s preferred name and demographic fields as configured in OpenEMR without bias or modification.
 
@@ -512,12 +514,14 @@ Security is:
 
 ## Observability Stack
 
-* **Langfuse / OpenTelemetry (future):** The Next.js `instrumentation.ts` hook is prepared to export spans for all FHIR API calls.
+* **Langfuse (in program scope — Track A and Track B):** **Track A:** optional observability export for the PHP copilot module when enabled via `LANGFUSE_*` and OpenEMR globals. **Track B:** optional observability via the Langfuse JS SDK (`@langfuse/tracing` + `@langfuse/otel`) registered from Next.js `instrumentation.ts`, gated by **`DASHBOARD_LANGFUSE_ENABLE`** and the same `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY` (and optional `LANGFUSE_BASE_URL`). The FHIR proxy route (`app/api/fhir/[...path]/route.ts`) records span metadata only: **resource type**, **operation**, **HTTP status** — not logical ids, search parameters, or payloads. **Trace `userId` and `sessionId`** are **SHA-256 hex digests** using optional **`LANGFUSE_ID_SALT`** (same variable as Track A): `sha256(sub \0 salt)` and `sha256(sub \0 langfuseSessionSeed \0 salt)` where `sub` is the OIDC subject from the Auth.js JWT and `langfuseSessionSeed` is a random UUID stored in the JWT at sign-in and kept across refresh. This is the **documented in-program observability integration** for both tracks; it does **not** depend on LangChain or LangGraph (see **ADR-007** in [`Documentation/AUDIT_PRD2_MODERNIZED.md`](AUDIT_PRD2_MODERNIZED.md)).
+* **Other OpenTelemetry (optional, Track B):** Additional OTEL instrumentations may be added later; they remain **complementary** to Langfuse export, not a replacement for the program’s Langfuse choice.
 * **Structured Logging:** The proxy layer logs `GET /fhir/AllergyIntolerance?patient=123` with response times and status codes. Patient IDs and all other PHI query params are hashed in logs.
 * **Error Tracking:** A client-side `ErrorBoundary` component wrapping each clinical card catches rendering failures and reports a non-PHI stack trace.
 
 ## Monitoring Goals
 
+* **Langfuse (optional):** When **Track B** export is on, use the Langfuse UI to filter **`fhir-proxy-get`** and review latency or error rates by **resource type** (no PHI in attributes). **Track A** copilot traces remain separate by name and tags.
 * **System Reliability:** Track the ratio of successful FHIR resource fetches to 500 errors.
 * **AI Behavior Tracking:** If AI-generated code is deployed, track bug reports specific to auto-generated components.
 * **Anomaly Detection:** Alert if the `/api/auth/signin` endpoint starts returning 401s en masse.
@@ -694,8 +698,14 @@ In this OpenEMR fork, the layout below lives under the **`frontend/`** directory
 ├── .env.local # NEVER committed
 ├── next.config.js
 ├── tailwind.config.ts
-├── instrumentation.ts # OpenTelemetry hooks (prepared)
+├── instrumentation.ts # Next.js hook: starts Langfuse OTEL export when DASHBOARD_LANGFUSE_ENABLE + LANGFUSE_* (Track B)
 ├── lib/
+│ ├── observability/ # Track B Langfuse (optional): processor singleton, env gates, opaque user/session hashing, FHIR trace metadata
+│ │ ├── dashboard-langfuse-processor.ts
+│ │ ├── is-dashboard-langfuse-enabled.ts
+│ │ ├── should-trace-fhir-proxy.ts
+│ │ ├── fhir-proxy-trace-metadata.ts
+│ │ └── langfuse-opaque-ids.ts # SHA-256 digests with LANGFUSE_ID_SALT (aligns with Track A)
 │ ├── fhir/
 │ │ ├── client.ts # Authenticated FHIR fetch wrapper
 │ │ ├── schemas/ # JSON schemas from OpenEMR swagger
@@ -751,7 +761,7 @@ In this OpenEMR fork, the layout below lives under the **`frontend/`** directory
 │ │ ├── auth/
 │ │ │ └── [...nextauth]/route.ts # next-auth API route
 │ │ └── fhir/
-│ │ └── [...resource]/route.ts # FHIR proxy (if CORS restricted)
+│ │ └── [...path]/route.ts # FHIR proxy; optional Langfuse span fhir-proxy-get + propagateAttributes
 │ └── dashboard/
 │ └── patient/
 │ └── [id]/
@@ -808,6 +818,13 @@ AUTH_OPENEMR_SECRET="your-oauth2-client-secret"
 OPENEMR_BASE_URL="https://your-openemr-instance.com"
 OPENEMR_OAUTH2_ISSUER="https://your-openemr-instance.com/oauth2/default"
 NEXTAUTH_URL="http://localhost:3000"
+
+# Optional — Track B Langfuse (same LANGFUSE_* keys as Clinical Co-Pilot; see docker/agentforge-railway/env.langfuse.example)
+# DASHBOARD_LANGFUSE_ENABLE=1
+# LANGFUSE_PUBLIC_KEY=pk-lf-...
+# LANGFUSE_SECRET_KEY=sk-lf-...
+# LANGFUSE_BASE_URL=https://hipaa.cloud.langfuse.com
+# LANGFUSE_ID_SALT=...   # recommended; shared with Track A for consistent opaque id policy
 ```
 
 ---
@@ -851,7 +868,7 @@ The system prioritizes:
 * **sovereign engineering:** The upstream OpenEMR repository remains the unmodified, sovereign source of truth.
 * **operational continuity:** A clinician using the new dashboard should experience no disruption from the old.
 * **enterprise reliability:** Error boundaries, graceful fallbacks, and instant rollback are built-in, not bolted-on.
-* **scalable intelligence orchestration:** The architecture is ready for AI-powered clinical decision support layers once the base migration is complete.
+* **scalable integration with Track A copilot services:** The dashboard architecture can coexist with Clinical Co-Pilot without embedding an LLM orchestration stack in Next.js. **LangChain and LangGraph are explicitly out of program scope** for AgentForge orchestration (**ADR-007**); Track A remains on the OpenAI tool loop with **Langfuse** as the in-program observability option when enabled, and **Track B** may use the **same Langfuse project** for FHIR-proxy span metadata when `DASHBOARD_LANGFUSE_ENABLE` is on.
 * **long-term maintainability:** A Next.js + shadcn/ui stack is the industry standard and well-understood by any modern frontend team.
 
 **AI accelerates engineering.**  

@@ -7,7 +7,7 @@
  *
  * Usage: Browser/client fetch `/api/fhir/Patient/123` (cookies included). Server attaches `Authorization: Bearer …` to `OPENEMR_BASE_URL/apis/default/fhir/...`.
  *
- * Security/PHI: SSRF allowlist in `lib/fhir/allowlist.ts`; avoid logging full URLs with patient identifiers in production.
+ * Security/PHI: SSRF allowlist in `lib/fhir/allowlist.ts`; avoid logging full URLs with patient identifiers in production. Optional Langfuse spans record resource type and HTTP status only (no ids, query strings, or bodies). Trace `userId` / `sessionId` are SHA-256 digests (`LANGFUSE_ID_SALT` + JWT `sub` / session seed), not raw identifiers.
  * HIPAA: Proxy enforces same RBAC as OpenEMR for the authenticated principal.
  * FHIR: Standard REST read traffic only (GET).
  * Accessibility: N/A.
@@ -16,12 +16,19 @@
  * Legal/compliance: N/A.
  */
 
+import { propagateAttributes, startActiveObservation } from "@langfuse/tracing";
 import { getToken } from "next-auth/jwt";
+import type { JWT } from "next-auth/jwt";
+import { after } from "next/server";
 import type { NextRequest } from "next/server";
 
 import { assertSafeFhirPath } from "@/lib/fhir/allowlist";
+import { flushDashboardLangfuse } from "@/lib/observability/dashboard-langfuse-processor";
+import { fhirProxyTraceMetadata } from "@/lib/observability/fhir-proxy-trace-metadata";
+import { buildLangfuseOpaqueIdsFromJwt } from "@/lib/observability/langfuse-opaque-ids";
+import { shouldTraceFhirProxyRequests } from "@/lib/observability/should-trace-fhir-proxy";
 
-async function forwardFhir(req: NextRequest, path: string[]): Promise<Response> {
+async function forwardFhir(req: NextRequest, path: string[], token: JWT | null): Promise<Response> {
   assertSafeFhirPath(path);
 
   const base = process.env.OPENEMR_BASE_URL;
@@ -31,12 +38,6 @@ async function forwardFhir(req: NextRequest, path: string[]): Promise<Response> 
       { status: 500 },
     );
   }
-
-  const token = await getToken({
-    req,
-    secret: process.env.AUTH_SECRET,
-    secureCookie: process.env.NODE_ENV === "production",
-  });
 
   if (!token?.accessToken || token.error) {
     return Response.json(
@@ -74,7 +75,54 @@ export async function GET(
 ): Promise<Response> {
   try {
     const { path } = await context.params;
-    return await forwardFhir(req, path);
+    const traceProxy = shouldTraceFhirProxyRequests();
+    const token = await getToken({
+      req,
+      secret: process.env.AUTH_SECRET,
+      secureCookie: process.env.NODE_ENV === "production",
+    });
+
+    const response = traceProxy
+      ? await startActiveObservation(
+          "fhir-proxy-get",
+          async (span) => {
+            const opaque = buildLangfuseOpaqueIdsFromJwt(token);
+            const runForward = async () => {
+              span.update({
+                metadata: fhirProxyTraceMetadata(path),
+              });
+              const res = await forwardFhir(req, path, token);
+              span.update({
+                metadata: {
+                  ...fhirProxyTraceMetadata(path),
+                  "http.status_code": String(res.status),
+                },
+              });
+              return res;
+            };
+
+            if (opaque) {
+              return await propagateAttributes(
+                {
+                  userId: opaque.userIdOpaque,
+                  sessionId: opaque.sessionIdOpaque,
+                },
+                runForward,
+              );
+            }
+            return await runForward();
+          },
+          { asType: "span" },
+        )
+      : await forwardFhir(req, path, token);
+
+    if (traceProxy) {
+      after(async () => {
+        await flushDashboardLangfuse();
+      });
+    }
+
+    return response;
   } catch {
     return Response.json(
       { resourceType: "OperationOutcome", issue: [{ severity: "error", code: "forbidden" }] },

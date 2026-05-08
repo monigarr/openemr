@@ -10,10 +10,12 @@
 - **PRD 2 Module:** `interface/modules/custom_modules/oe-module-clinical-copilot/`.
 - **PRD 2 MODERNIZED Module:** `frontend/`.
 
+**Observability / orchestration (program alignment):** **Langfuse** is **in scope** for the PRD2 Modernized program documentation and operations as the **documented observability choice** for **Track A** (Clinical Co-Pilot PHP module) and **Track B** (Next.js FHIR proxy spans, opt-in via `DASHBOARD_LANGFUSE_ENABLE` + `LANGFUSE_*`) when hosted or self-hosted. **LangChain** and **LangGraph** are **not in scope** for this program (no graph/orchestration runtime from those stacks, licensing, or cost line items) — orchestration remains the PHP OpenAI tool loop; see **ADR-007** in `Documentation/AUDIT_PRD2_MODERNIZED.md`.
+
 ## How to measure (before filling tables)
 
-1. **Spend:** Export usage from each provider dashboard for the sprint window (OpenAI, Google AI if Gemini extraction on, Cohere if rerank on, Langfuse if hosted). Do not paste raw prompts or PHI into tickets.
-2. **Latency:** Wrap the copilot request path and Next.js/FHIR with timestamps or use Langfuse spans; label steps (`tool_round`, `retrieve_guidelines`, `attach_and_extract`) without patient identifiers.
+1. **Spend:** Export usage from each provider dashboard for the sprint window (OpenAI, Google AI if Gemini extraction on, Cohere if rerank on, **Langfuse** when used for **Track A** copilot and/or **Track B** dashboard observability). Do not paste raw prompts or PHI into tickets.
+2. **Latency:** Wrap the copilot request path and Next.js/FHIR with timestamps or use **Langfuse** spans: copilot steps (`tool_round`, `retrieve_guidelines`, `attach_and_extract`) on Track A; **`fhir-proxy-get`** spans on Track B (metadata-only; **userId** / **sessionId** are salted **SHA-256** digests only). Never attach patient identifiers or FHIR payloads to span metadata.
 3. **Projection:** Multiply measured tokens × your **contract** price per 1M tokens; add fixed per-call fees (rerank, extraction) from vendor docs.
 
 ## Actual development spend (approximate)
@@ -25,8 +27,9 @@
 | OpenAI API   | $0.02   | Docs Plan |
 | Gemini       | `[TBD]` | Only if `CLINICAL_COPILOT_EXTRACTION_PIPELINE=gemini` |
 | Cohere rerank | `[TBD]`| Only if `CLINICAL_COPILOT_COHERE_API_KEY` set |
-| Langfuse HIPAA| $30    | Self-host vs cloud |
-| LangSmith     | $      | observability |
+| Langfuse HIPAA| $30    | **Selected** observability stack for **Track A and/or Track B** when enabled (self-host vs cloud; Track B uses same project keys optionally) |
+| LangSmith     | $      | **Not selected** for this program (placeholder only; Langfuse retained per ADR-007) |
+| LangChain / LangGraph | N/A | **Out of program scope** — no LangChain or LangGraph orchestration dependency; omit from production cost models |
 | Railway Pro   | $20    | staging deployment |
 | Vercel        | $      | prod deployment | 
 | CloudClusters | $15    | requested refund |
@@ -82,10 +85,10 @@ Fill from logs or Langfuse after a representative run (synthetic patients only i
 | Deliverable | Value |
 |-------------|--------|
 | **Deployed application URL** | `[REPLACE_ME — e.g. Railway staging URL from USERS.md / team runbook]` |
-| **Demo video (3–5 min)** | `[REPLACE_ME — Loom/YouTube unlisted; show upload, extract, guidelines, citations, eval CI, optional Langfuse]` |
-| **Cost/latency last updated** | `2026-05-05` |
+| **Demo video (3–5 min)** | `[REPLACE_ME — Loom/YouTube unlisted; show upload, extract, guidelines, citations, eval CI; Langfuse: Track A copilot traces and/or Track B fhir-proxy-get when enabled (ADR-007)]` |
+| **Cost/latency last updated** | `2026-05-08` |
 
 ## Document control
 
-- Version: 0.2.0 (measurement guide + placeholders)
-- Date: 2026-05-06
+- Version: 0.2.4 (Track B Langfuse implementation + opaque user/session hashing documented; aligns with ADR-007)
+- Date: 2026-05-08

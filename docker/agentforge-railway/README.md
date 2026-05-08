@@ -84,7 +84,9 @@ See also [`interface/modules/custom_modules/oe-module-clinical-copilot/README.md
 docker run --rm --env-file .env openemr:agentforge sh -c "env | grep LANGFUSE"
 ```
 
-**Troubleshooting:** If traces never appear, confirm Railway Variables on the OpenEMR service, the Portal global toggle, and the correct Langfuse host for your project. Check deploy/application logs for Langfuse flush or HTTP errors; ingestion is fail-open and does not block the co-pilot UI.
+**PRD2 Modernized (Next.js):** If you deploy the patient dashboard as a separate **Node** service, set the same `LANGFUSE_*` variables there and add **`DASHBOARD_LANGFUSE_ENABLE=1`** to emit optional FHIR-proxy spans (see `Documentation/ARCHITECTURE_PRD2_MODERNIZED.md` §11). No OpenEMR Portal toggle applies to the Node app.
+
+**Troubleshooting:** If traces never appear, confirm Railway Variables on the OpenEMR service (Track A), the Portal global toggle for the module, and the correct Langfuse host for your project; for Track B, confirm variables on the frontend service and `DASHBOARD_LANGFUSE_ENABLE`. Check deploy/application logs for Langfuse flush or HTTP errors; ingestion is fail-open and does not block the co-pilot UI or dashboard.
 
 ## Troubleshooting: `oe-module-clinical-copilot` not in Manage Modules
 

@@ -8,7 +8,7 @@
 #   https://github.com/monigarr/openemr/tree/prd2_af_modernized
 #
 # Version:
-#   0.1.0
+#   0.1.1
 #
 # Status:
 #   Active — Living document, updated as user feedback is received
@@ -20,7 +20,7 @@
 #   2026-05-06
 #
 # Last Updated:
-#   2026-05-06
+#   2026-05-08
 #
 # Classification:
 #   Internal — Contains user personas, workflow descriptions, and clinical context
@@ -273,6 +273,7 @@ Taylor's use of the dashboard is limited to the patient header for identity conf
 - The dashboard can be deployed independently of the PHP monolith's release cycle.
 - Rollback is fast and documented (one DNS or reverse proxy change).
 - The architecture documentation is complete and accurate.
+- **Optional Langfuse (Track B):** When **`DASHBOARD_LANGFUSE_ENABLE`** and **`LANGFUSE_*`** are set on the **Node** service, traces appear in Langfuse for **`fhir-proxy-get`** (metadata-only; user/session ids are **hashed**). Operators must align with **BAA**, **region** (`LANGFUSE_BASE_URL`), and **`LANGFUSE_ID_SALT`** policy per **`Documentation/ARCHITECTURE_PRD2_MODERNIZED.md`** §11 — same product family as Track A copilot observability, separate from OpenEMR Portal toggles.
 
 ### Technical Safety Criticality: HIGH
 Casey is responsible for ensuring the system does not leak PHI and that authentication boundaries are maintained. A misconfiguration that exposes patient data is Casey's responsibility.
@@ -388,7 +389,7 @@ These scenarios serve as both UX validation and the basis for Playwright end-to-
 1. Casey pushes to the `staging` branch. Railway automatically builds and deploys.
 2. Casey runs the Playwright smoke test suite against the staging URL.
 3. All tests pass. The patient header, all five clinical cards, and lab results render correctly.
-4. Casey checks the structured logs: no FHIR validation errors, no auth failures.
+4. Casey checks the structured logs: no FHIR validation errors, no auth failures. If **Track B Langfuse** is enabled, Casey spot-checks the Langfuse project for **`fhir-proxy-get`** volume and confirms no PHI appears in span fields (metadata-only contract).
 5. Casey promotes the build to production.
 6. Casey verifies that the original PHP dashboard is still accessible at its original URL (untouched).
 7. Casey documents the deployment in CHANGELOG.md.
@@ -409,7 +410,7 @@ These scenarios serve as both UX validation and the basis for Playwright end-to-
 | **Alex** | Dashboard loads fast. Error states are obvious. Medication details (dosage, frequency) are displayed. |
 | **Jordan** | Dashboard is measurably faster and more reliable. Rollback path exists and is documented. Observability data supports rollout decisions. |
 | **Taylor** | Patient header is prominent and accurate. No workflow changes required. |
-| **Casey** | Deployment is independent of PHP releases. Structured logging is available. Architecture is documented. Rollback is fast and simple. |
+| **Casey** | Deployment is independent of PHP releases. Structured logging is available. Optional Langfuse for the FHIR proxy is documented and off by default. Architecture is documented. Rollback is fast and simple. |
 
 ---
 
@@ -447,7 +448,7 @@ This user analysis is a living document. It is updated when:
 - The scope of the modernization expands to include additional dashboard sections that serve different user workflows.
 - Accessibility requirements change (e.g., new WCAG version, institutional accessibility policy update).
 
-**Last reviewed:** 2026-05-06  
+**Last reviewed:** 2026-05-08  
 **Next review:** After first clinician feedback session (post-V1 deployment)
 
 ---

@@ -36,3 +36,21 @@ DELIVERABLE
 keep that file in the repo. That defense is part of the grade.
 
 The framework decision is yours. The UX decision is yours. Own both.
+
+---
+
+## PRD 2 MODERNIZED — Program documentation (canon)
+
+Operational architecture, risks, audit trail, users, and cost/latency for this fork’s **Next.js patient dashboard** track live under **`Documentation/`** (see also **`.cursor/rules/PRD2-Modernized-Scope-and-Docs.mdc`**). In particular:
+
+| Topic | File |
+| ----- | ---- |
+| Requirements detail | `Documentation/PRD2_MODERNIZED.md` (this file) |
+| Architecture | `Documentation/ARCHITECTURE_PRD2_MODERNIZED.md` |
+| Observability (Track A + Track B Langfuse) | Same, §11; **ADR-007** in `Documentation/AUDIT_PRD2_MODERNIZED.md` |
+| Risks | `Documentation/ARCHITECTURE_RISKS_PRD2_MODERNIZED.md` |
+| Framework defense | `PATIENT_DASHBOARD_MIGRATION.md` (repository root; also referenced as `Documentation/PATIENT_DASHBOARD_MIGRATION.md` in some runbooks) |
+| Users / scenarios | `Documentation/USERS_PRD2_MODERNIZED.md` |
+| Cost / latency | `Documentation/COST_LATENCY_REPORT_PRD2_MODERNIZED.md` |
+
+**Track B optional Langfuse:** `frontend/instrumentation.ts`, `frontend/lib/observability/`, env **`DASHBOARD_LANGFUSE_ENABLE`** + **`LANGFUSE_*`** (+ recommended **`LANGFUSE_ID_SALT`**). Does not change PRD feature requirements; instrumentation is **off** unless explicitly enabled.

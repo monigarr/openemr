@@ -32,5 +32,7 @@ declare module "next-auth/jwt" {
     refreshToken?: string;
     expiresAt?: number;
     error?: string;
+    /** Opaque session key for Langfuse Track B hashing; stable across token refresh, new on sign-in. */
+    langfuseSessionSeed?: string;
   }
 }
