@@ -3208,7 +3208,7 @@ $ignoreErrors[] = [
 ];
 $ignoreErrors[] = [
     'message' => '#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#',
-    'count' => 28,
+    'count' => 26,
     'path' => __DIR__ . '/../../portal/account/account.lib.php',
 ];
 $ignoreErrors[] = [
@@ -3278,7 +3278,7 @@ $ignoreErrors[] = [
 ];
 $ignoreErrors[] = [
     'message' => '#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#',
-    'count' => 35,
+    'count' => 33,
     'path' => __DIR__ . '/../../portal/index.php',
 ];
 $ignoreErrors[] = [
@@ -3658,7 +3658,7 @@ $ignoreErrors[] = [
 ];
 $ignoreErrors[] = [
     'message' => '#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#',
-    'count' => 9,
+    'count' => 8,
     'path' => __DIR__ . '/../../src/Common/Auth/OneTimeAuth.php',
 ];
 $ignoreErrors[] = [

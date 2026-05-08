@@ -11177,11 +11177,6 @@ $ignoreErrors[] = [
     'path' => __DIR__ . '/../../interface/modules/custom_modules/oe-module-faxsms/src/Controller/RCFaxClient.php',
 ];
 $ignoreErrors[] = [
-    'message' => '#^Parameter \\#1 \\$json of function json_decode expects string, string\\|false given\\.$#',
-    'count' => 1,
-    'path' => __DIR__ . '/../../interface/modules/custom_modules/oe-module-faxsms/src/Controller/RCFaxClient.php',
-];
-$ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$number of method OpenEMR\\\\Modules\\\\FaxSMS\\\\Controller\\\\AppDispatch\\:\\:formatPhone\\(\\) expects string, mixed given\\.$#',
     'count' => 10,
     'path' => __DIR__ . '/../../interface/modules/custom_modules/oe-module-faxsms/src/Controller/RCFaxClient.php',
@@ -27072,11 +27067,6 @@ $ignoreErrors[] = [
     'path' => __DIR__ . '/../../portal/index.php',
 ];
 $ignoreErrors[] = [
-    'message' => '#^Parameter \\#1 \\$search of function str_replace expects array\\<string\\>\\|string, mixed given\\.$#',
-    'count' => 1,
-    'path' => __DIR__ . '/../../portal/index.php',
-];
-$ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$text of function attr expects string, mixed given\\.$#',
     'count' => 10,
     'path' => __DIR__ . '/../../portal/index.php',
@@ -27230,11 +27220,6 @@ $ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$text of function text expects string, mixed given\\.$#',
     'count' => 12,
     'path' => __DIR__ . '/../../portal/lib/patient_groups.php',
-];
-$ignoreErrors[] = [
-    'message' => '#^Parameter \\#1 \\$json of function json_decode expects string, string\\|false given\\.$#',
-    'count' => 1,
-    'path' => __DIR__ . '/../../portal/lib/paylib.php',
 ];
 $ignoreErrors[] = [
     'message' => '#^Parameter \\#2 \\$rec of method ApplicationTable\\:\\:portalAudit\\(\\) expects string\\|null, mixed given\\.$#',
