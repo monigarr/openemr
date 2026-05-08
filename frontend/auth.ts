@@ -5,7 +5,7 @@
  *
  * Purpose: NextAuth.js entrypoint — exports route handlers, `auth`, `signIn`, and `signOut` for the App Router.
  *
- * Usage: Import handlers in `app/api/auth/[...nextauth]/route.ts`; import `auth` in RSC, middleware, and route handlers.
+ * Usage: Import handlers in `app/api/auth/[...nextauth]/route.ts`; import `auth` in RSC, proxy, and route handlers.
  *
  * Security/PHI: OAuth access tokens are not attached to the user-visible session object (see `lib/auth/auth.config.ts`).
  * HIPAA: N/A — auth plumbing.
