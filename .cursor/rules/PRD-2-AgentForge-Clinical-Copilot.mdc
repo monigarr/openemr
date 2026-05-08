@@ -1,6 +1,8 @@
 ---
-description: 
-alwaysApply: true
+description: PRD 2 AgentForge Clinical CoPilot — git and PHP module scope only (not PRD2 patient dashboard modernization).
+globs:
+  - interface/modules/custom_modules/oe-module-clinical-copilot/**
+alwaysApply: false
 ---
 
 # PRD 2 Agentforge fork — Git and module scope

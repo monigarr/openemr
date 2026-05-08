@@ -1,22 +1,31 @@
 ---
-description: 
+description: >-
+  Fork-wide git policy: master mirrors upstream OpenEMR; feature work stays on
+  integration/topic branches. Complements product-specific rules (PRD-2 module,
+  PRD2 Modernized frontend).
 alwaysApply: true
 ---
 
 # Agentforge fork — Git and module scope
 
+Full teammate procedure: [docs/SYNC_DEV_WITH_UPSTREAM.md](docs/SYNC_DEV_WITH_UPSTREAM.md). Skill: `.cursor/skills/sync-dev-with-upstream/SKILL.md`.
 
 ## Branches
 
-- Do **feature work** only on `prd_1_agentforge_monigarr`, or on **small topic branches** branched from it (not directly on `master` for ongoing work).
-- Treat **`master` as a mirror of `upstream/master`**. Do not use `master` as your long-lived integration branch for local experiments.
-- **feature work** and creating new feature work docker images must be aligned with CONTRIBUTING.md and README files. 
+- Do **feature work** on your **designated integration branch** or **short topic branches** cut from it — **not** on `master` for ongoing WIP.
+- Known integration branches in this fork (use the one that matches the product you are changing):
+  - **PRD 1 / AgentForge baseline:** `prd_1_agentforge_monigarr` (and topics from it).
+  - **PRD 2 Clinical CoPilot (PHP module):** `prd2_agentforge` (and topics from it) — see `.cursor/rules/PRD-2-AgentForge-Clinical-Copilot.mdc`.
+  - **PRD2 Modernized (patient dashboard Next.js):** `prd2_af_modernized` (and topics from it) — see `.cursor/rules/PRD2-Modernized-Scope-and-Docs.mdc`.
+- Treat **`master` as a mirror of `upstream/master`** ([openemr/openemr](https://github.com/openemr/openemr)). Do not use `master` as your long-lived integration branch for fork-only experiments.
+- **Do not push** routine dev work to **`origin/master`** and **never push** to the canonical upstream repo except a deliberate, reviewed contribution workflow agreed with maintainers (default: **never** push to `https://github.com/openemr/openemr`).
+- **feature work** and creating new feature work docker images must be aligned with CONTRIBUTING.md and README files.
 - Do not change CONTRIBUTING.md and README files.
 - New documentation must be aligned with CONTRIBUTING.md, README files and documentation in the master branch.
 
 ## Staying current with upstream
 
-- When you need upstream changes, **merge or rebase `master` into your feature branch** (or topic branch).
+- When you need upstream changes, **merge or rebase `master` into your feature branch** (or topic branch) after updating local `master` from `upstream/master`. See `docs/SYNC_DEV_WITH_UPSTREAM.md`.
 - **Never** merge or rebase your feature branch **into** `master` as a substitute for keeping `master` aligned with upstream. Flow is upstream → `master` → feature branch, not feature → `master` unless you are deliberately preparing a clean contribution to upstream.
 
 ## What not to commit casually

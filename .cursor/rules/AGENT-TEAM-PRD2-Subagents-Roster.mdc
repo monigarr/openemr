@@ -1,0 +1,53 @@
+---
+description: >-
+  PRD2 Clinical CoPilot (PHP module) — sub-agent roles, default models, and governance.
+  Detailed responsibilities and flow: PRD-2-AgentForge-Agent-Roster.mdc.
+globs:
+  - interface/modules/custom_modules/oe-module-clinical-copilot/**
+alwaysApply: false
+---
+
+# AGENT_TEAM PRD2 Clinical CoPilot — subagent roster
+
+**Scope:** `interface/modules/custom_modules/oe-module-clinical-copilot/**` — PRD 2 AgentForge Clinical CoPilot, **not** the patient dashboard Next.js track.
+
+**Authoritative detail:** Full model responsibilities, flow diagram, citation contract, and CoPilot-specific non-negotiables live in [`.cursor/rules/PRD-2-AgentForge-Agent-Roster.mdc`](PRD-2-AgentForge-Agent-Roster.mdc). Module README and local architecture notes live under the module tree.
+
+Cursor does not spawn separate runnable subagents from this file; use it to **assume the correct role**, **pick models** at delegation time (Chat/Composer settings), and **hand off** with explicit role prompts.
+
+**Cross-track:** If a change touches **both** this module and **`frontend/`** or Modernized **`Documentation/`**, follow this roster **and** [`.cursor/rules/AGENT-TEAM-PRD2-MODERNIZED-Subagents-Roster.mdc`](AGENT-TEAM-PRD2-MODERNIZED-Subagents-Roster.mdc) plus path-specific rules.
+
+**Human Lead:** Monica Peters — Architecture approval, security sign-off, deployment authorization, final sign-off on all documents. NOT an AI agent.
+
+## Clinical CoPilot roles (summary)
+
+| Role | Default model | Why (summary) |
+| ---- | ------------- | ------------- |
+| **Lead Agent** | **GPT-4o** | Planning, decomposition, complex system prompts; final grounded answer after verification. |
+| **Supervisor** | **GPT-4o-mini** | Routing: when to run file processing, summarization/evidence path, EHR persistence; inspectable handoffs. |
+| **Subagent 1 — File Processor** | **Gemini 1.5 Flash** | Large context for patient PDFs / messy OCR. |
+| **Subagent 2 — Summarizer** | **Llama 3.1 70B** | Structured JSON; guideline-oriented synthesis / clinical summaries. |
+| **Subagent 3 — EHR Writer** | **GPT-4o-mini** | OpenEMR-shaped writes via **server-controlled** APIs/hooks only (no direct DB). |
+
+## Agent governance (non-negotiable)
+
+- No autonomous deployment.
+- No unsupervised merge approval.
+- Human accountability mandatory.
+- All outputs auditable.
+- Rollback capability preserved.
+
+Modernized-track gates (ADR/ACR, [`Documentation/AUDIT_PRD2_MODERNIZED.md`](../../Documentation/AUDIT_PRD2_MODERNIZED.md)) apply only to **PRD2 Modernized** work — see [`.cursor/rules/AGENT-TEAM-PRD2-MODERNIZED-Subagents-Roster.mdc`](AGENT-TEAM-PRD2-MODERNIZED-Subagents-Roster.mdc).
+
+## Quick delegation map (Clinical CoPilot)
+
+- **PDF / multimodal intake** → Subagent 1 — File Processor (Gemini 1.5 Flash).
+- **Guideline / RAG synthesis** → Subagent 2 — Summarizer (Llama 3.1 70B).
+- **Structured writes to OpenEMR** → Subagent 3 — EHR Writer (GPT-4o-mini) **after** server validation pipeline.
+- **Patient dashboard Next.js / FHIR UI** → [`.cursor/rules/AGENT-TEAM-PRD2-MODERNIZED-Subagents-Roster.mdc`](AGENT-TEAM-PRD2-MODERNIZED-Subagents-Roster.mdc).
+
+## Related
+
+- [`.cursor/skills/agent-team-prd2/SKILL.md`](../skills/agent-team-prd2/SKILL.md) — delegation pattern for both rosters.
+- [`.cursor/rules/PRD-1-AgentForge-Clinical-Copilot.mdc`](PRD-1-AgentForge-Clinical-Copilot.mdc) — fork `master` / upstream policy.
+- [`.cursor/rules/PRD-2-AgentForge-Clinical-Copilot.mdc`](PRD-2-AgentForge-Clinical-Copilot.mdc) — git / module scope for this product line.

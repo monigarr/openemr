@@ -1,0 +1,15 @@
+---
+description: >-
+  OpenEMR compatibility agent default model. Broader PRD2 rosters: AGENT-TEAM-PRD2-Subagents-Roster
+  (Clinical CoPilot module) and AGENT-TEAM-PRD2-MODERNIZED-Subagents-Roster (patient dashboard).
+globs:
+  - frontend/**
+  - Documentation/**
+  - interface/modules/custom_modules/oe-module-clinical-copilot/**
+alwaysApply: true
+---
+
+| Role | Default model | Why (summary) |
+| **openemr-compatibility-agent** | **GPT-4o-mini**  | REST/FHIR contract checks; no unsupported backend assumptions; preserve upstream integrity. |
+
+---

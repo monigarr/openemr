@@ -1,0 +1,59 @@
+---
+description: >-
+  PRD2 Modernized (patient dashboard Next.js) — sub-agent roles, default models, and
+  governance aligned with Documentation/PRD2_MODERNIZED.md and AUDIT_PRD2_MODERNIZED.md.
+globs:
+  - frontend/**
+  - Documentation/**
+alwaysApply: false
+---
+
+# AGENT_TEAM PRD2 MODERNIZED — subagent roster
+
+**Requirements and doc canon:** [`Documentation/PRD2_MODERNIZED.md`](../../Documentation/PRD2_MODERNIZED.md), [`Documentation/ARCHITECTURE_PRD2_MODERNIZED.md`](../../Documentation/ARCHITECTURE_PRD2_MODERNIZED.md), [`Documentation/AUDIT_PRD2_MODERNIZED.md`](../../Documentation/AUDIT_PRD2_MODERNIZED.md). All Next.js paths below live under **`frontend/`** (see [`prd2-patient-dashboard-modernization` skill](../skills/prd2-patient-dashboard-modernization/SKILL.md)).
+
+Cursor does not spawn separate runnable subagents from this file; use it to **assume the correct role**, **pick models** at delegation time (Chat/Composer settings), and **hand off** with explicit role prompts.
+
+**Cross-track:** If a change touches **both** `interface/modules/custom_modules/oe-module-clinical-copilot/**` and **`frontend/`** or **Modernized `Documentation/`**, follow [`.cursor/rules/AGENT-TEAM-PRD2-Subagents-Roster.mdc`](AGENT-TEAM-PRD2-Subagents-Roster.mdc) and [`.cursor/rules/PRD-2-AgentForge-Agent-Roster.mdc`](PRD-2-AgentForge-Agent-Roster.mdc) for the module **and** this file for the dashboard track.
+
+**Human Lead:** Monica Peters — Architecture approval, security sign-off, deployment authorization, final sign-off on all documents. NOT an AI agent.
+
+## PRD2 Modernized roles (Next.js + governance docs)
+
+Where a role omits a model, default to **GPT-4o-mini** for narrow tasks and **GPT-4o** or **Claude Sonnet** for architecture/security reviews.
+
+| Role                    | Suggested model                        | Responsibilities                         |
+| ----------------------- | -------------------------------------- | ---------------------------------------- |
+| **Planner Agent**       | **claude-sonnet-4-20250514 or gpt-4o** | Planning, decomposition, task assignment. Does NOT spawn Workers until human Lead Architect has signed off on ADR-001 through ADR-006 in [`Documentation/AUDIT_PRD2_MODERNIZED.md`](../../Documentation/AUDIT_PRD2_MODERNIZED.md). |
+| **auth-implementer**    | **claude-sonnet-4-20250514**           | OAuth2/OIDC flow only. `frontend/lib/auth/`, `frontend/app/api/auth/`, `frontend/app/login/`. Does NOT touch FHIR, components, or deployment. |
+| **fhir-client-builder** | **claude-sonnet-4-20250514**           | FHIR types, client, and hooks only. `frontend/lib/fhir/`, `frontend/hooks/`. Does NOT build UI or touch auth. |
+| **card-component-builder** | **claude-sonnet-4-20250514**        | All clinical card UI components. `frontend/components/cards/`, `frontend/components/shared/`. Consumes hooks from fhir-client-builder. Enforces three-state pattern (Loading/Error/Empty) on all cards per ADR-005. |
+| **layout-shell-builder**   | **claude-sonnet-4-20250514**        | Dashboard shell, patient banner, page routing. `frontend/components/layout/`, `frontend/app/dashboard/`. Consumes cards as children. |
+| **deployment-verifier**    | **claude-sonnet-4-20250514**        | Deployment config, Playwright tests, final integration verification. Does NOT write application code. |
+| **Security Audit Agent** | **claude-sonnet-4-20250514**           | Review-only gate, not a code author. Reviews auth-implementer output for token exposure (Risk R-001). Reviews proxy route for SSRF. Verifies no PHI in client code. |
+| **Performance Agent**   | **gpt-4o-mini**                        | Rendering, bundles, caching; align with architecture latency goals. |
+| **Documentation Agent** | **gpt-4o-mini**                        | Repo docs, onboarding, architecture alignment (respect fork doc policy). |
+| **Verification Agent**  | **gpt-4o-mini** (+ CI/tests)           | Regression mindset, schema/runtime validation, E2E scenarios. |
+
+## Agent governance (non-negotiable)
+
+- No autonomous deployment.
+- No unsupervised merge approval.
+- Human accountability mandatory.
+- All outputs auditable.
+- Rollback capability preserved.
+- Planner Agent must confirm ACR checklist item completion in [`Documentation/AUDIT_PRD2_MODERNIZED.md`](../../Documentation/AUDIT_PRD2_MODERNIZED.md) before marking task as complete.
+
+## Quick delegation map (Modernized)
+
+- **Next.js UI components** → card-component-builder + layout-shell-builder.
+- **FHIR data fetching** → fhir-client-builder.
+- **Auth / token / proxy** → auth-implementer + Security Audit Agent + [`.cursor/rules/PRD2-Modernized-Frontend-Security.mdc`](PRD2-Modernized-Frontend-Security.mdc).
+- **Playwright / parity** → deployment-verifier + Verification Agent + [`prd2-patient-dashboard-modernization` skill](../skills/prd2-patient-dashboard-modernization/SKILL.md).
+- **Clinical CoPilot module** (PDF, RAG, EHR Writer) → [`.cursor/rules/AGENT-TEAM-PRD2-Subagents-Roster.mdc`](AGENT-TEAM-PRD2-Subagents-Roster.mdc).
+
+## Related
+
+- [`.cursor/rules/PRD2-Modernized-Scope-and-Docs.mdc`](PRD2-Modernized-Scope-and-Docs.mdc) — scope, branch discipline, PHP monolith boundary.
+- [`.cursor/skills/agent-team-prd2/SKILL.md`](../skills/agent-team-prd2/SKILL.md) — delegation pattern for both rosters.
+- [`.cursor/rules/PRD-1-AgentForge-Clinical-Copilot.mdc`](PRD-1-AgentForge-Clinical-Copilot.mdc) — fork `master` / upstream policy.

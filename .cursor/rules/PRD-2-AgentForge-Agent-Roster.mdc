@@ -2,23 +2,20 @@
 description: PRD 2 Clinical CoPilot — default LLM roles and model picks for Lead, Supervisor, and SubAgents.
 globs:
   - interface/modules/custom_modules/oe-module-clinical-copilot/**
-  - PRD_2_AgentForge_Clinical_CoPilot.md
-  - ARCHITECTURE.md
-  - ARCHITECTURE_RISKS.md
-  - AUDIT.md
-  - USERS.md
 alwaysApply: false
 ---
 
 # PRD 2 AgentForge — default agent roster (runtime LLMs)
 
-This rule complements `.cursor/rules/PRD-2-AgentForge-Clinical-Copilot.mdc` (git/module scope). It aligns implementation with repo-root `PRD_2_AgentForge_Clinical_CoPilot.md`, `ARCHITECTURE.md`, `ARCHITECTURE_RISKS.md`, `AUDIT.md`, and `USERS.md`.
+This rule complements `.cursor/rules/PRD-2-AgentForge-Clinical-Copilot.mdc` (git/module scope). It applies **only** to the Clinical CoPilot module under `interface/modules/custom_modules/oe-module-clinical-copilot/`. For **patient dashboard modernization** (Next.js under `frontend/`), use `.cursor/rules/PRD2-Modernized-Scope-and-Docs.mdc`, [`.cursor/rules/AGENT-TEAM-PRD2-MODERNIZED-Subagents-Roster.mdc`](AGENT-TEAM-PRD2-MODERNIZED-Subagents-Roster.mdc), and the skill `prd2-patient-dashboard-modernization`.
+
+**Delegation roster (Clinical CoPilot):** [`.cursor/rules/AGENT-TEAM-PRD2-Subagents-Roster.mdc`](AGENT-TEAM-PRD2-Subagents-Roster.mdc). **Modernized dashboard roster:** [`.cursor/rules/AGENT-TEAM-PRD2-MODERNIZED-Subagents-Roster.mdc`](AGENT-TEAM-PRD2-MODERNIZED-Subagents-Roster.mdc). Module context: `interface/modules/custom_modules/oe-module-clinical-copilot/README.md`.
 
 ## Scope and doc alignment
 
-- PRD 2 is implemented primarily under `interface/modules/custom_modules/oe-module-clinical-copilot/`.
-- Do **not** change repo-root `CONTRIBUTING.md` or upstream **README** files; operational detail lives in module docs and (per PRD submission) `W2_ARCHITECTURE.md` when present.
-- Feature branch discipline: `prd2_agentforge` (see PRD-2-AgentForge-Clinical-Copilot rule).
+- PRD 2 AgentForge is implemented under `interface/modules/custom_modules/oe-module-clinical-copilot/`.
+- Do **not** change repo-root `CONTRIBUTING.md` or upstream **README** files. Operational detail for this module lives in `interface/modules/custom_modules/oe-module-clinical-copilot/README.md` and any module-local docs; do not maintain a second copy under `oe-module-clinical-copilot/docs/` unless the module README directs it.
+- Feature branch discipline for **this** product line: `prd2_agentforge` (see PRD-2-AgentForge-Clinical-Copilot rule).
 
 ## Default model roster
 
@@ -42,10 +39,10 @@ This rule complements `.cursor/rules/PRD-2-AgentForge-Clinical-Copilot.mdc` (git
 
 ## Non-negotiables
 
-- **Extraction is untrusted** until schema-valid, citation-linked, and passed through verification (ARCHITECTURE.md, AUDIT.md).
+- **Extraction is untrusted** until schema-valid, citation-linked, and passed through verification (module README / local architecture docs, audit trail).
 - **Citation contract**: `{source_type, source_id, page_or_section, field_or_chunk_id, quote_or_value}`; PDF bounding-box overlay in UI where applicable (PRD).
 - **Observability**: tool sequence, latency by step, tokens, cost estimate, retrieval hits, extraction confidence, eval outcome — **no raw PHI** in logs (USERS.md, PRD).
-- **Eval gate**: 50-case golden set, boolean rubrics, PR-blocking CI/hook; blocks meaningful regression (ARCHITECTURE_RISKS.md, PRD).
+- **Eval gate**: 50-case golden set, boolean rubrics, PR-blocking CI/hook; blocks meaningful regression (risk register / PRD).
 
 ## Flow (reference)
 

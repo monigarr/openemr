@@ -1,0 +1,47 @@
+---
+description: PRD2 Modernized — patient dashboard Next.js scope, doc canon, branch discipline (frontend + Documentation/).
+globs:
+  - frontend/**
+  - Documentation/**
+alwaysApply: false
+---
+
+# PRD2 Modernized — scope and documentation
+
+This initiative is **OpenEMR Patient Dashboard modernization**: a Next.js presentation layer that consumes existing REST/FHIR APIs. It is **not** PRD 2 AgentForge Clinical CoPilot work (that stays under `interface/modules/custom_modules/oe-module-clinical-copilot/` and its Cursor rules).
+
+## Work focus
+
+- Deliverables and acceptance criteria: [Documentation/PRD2_MODERNIZED.md](Documentation/PRD2_MODERNIZED.md).
+- Do **not** implement or extend AgentForge copilot flows in this track unless the user explicitly asks for that product.
+
+## Code boundary
+
+- **All** Next.js / Node dashboard code lives under [`frontend/`](frontend/) (App Router, auth, FHIR client, UI).
+- **Do not** modify OpenEMR PHP business logic, database schema, or core monolith behavior to “support” the dashboard. Integration is via **published APIs and OAuth2/OIDC** only. See [Documentation/ARCHITECTURE_PRD2_MODERNIZED.md](Documentation/ARCHITECTURE_PRD2_MODERNIZED.md) §3 Out of Scope.
+
+## Documentation canon
+
+Authoritative modernization docs live under **`Documentation/`** (matches upstream OpenEMR’s documentation directory casing):
+
+| Topic | File |
+| ----- | ---- |
+| Requirements | `Documentation/PRD2_MODERNIZED.md` |
+| Architecture | `Documentation/ARCHITECTURE_PRD2_MODERNIZED.md` |
+| Risk register | `Documentation/ARCHITECTURE_RISKS_PRD2_MODERNIZED.md` |
+| Audit trail / ADRs | `Documentation/AUDIT_PRD2_MODERNIZED.md` |
+| Users / parity / scenarios | `Documentation/USERS_PRD2_MODERNIZED.md` |
+| Framework defense | `Documentation/PATIENT_DASHBOARD_MIGRATION.md` |
+| Cost / latency (if used) | `Documentation/COST_LATENCY_REPORT_PRD2_MODERNIZED.md` |
+
+## Git / upstream
+
+- Primary integration branch for this track: **`prd2_af_modernized`** (topic branches branch from it).
+- Treat **`master` as a mirror of `upstream/master`**. Refresh feature work by merging or rebasing `master` into the modernization branch after `git fetch upstream`; follow [docs/SYNC_DEV_WITH_UPSTREAM.md](../../docs/SYNC_DEV_WITH_UPSTREAM.md).
+- **Never** push routine fork work to **`origin/master`**. **Never** push to canonical **[openemr/openemr](https://github.com/openemr/openemr)** unless you are explicitly executing an agreed-upon upstream contribution (default for this fork: do not push upstream).
+
+## Related Cursor assets
+
+- Security constraints: `.cursor/rules/PRD2-Modernized-Frontend-Security.mdc` (`frontend/**` only).
+- Implementation playbook: `.cursor/skills/prd2-patient-dashboard-modernization/SKILL.md`.
+- Subagent roster (Modernized): `.cursor/rules/AGENT-TEAM-PRD2-MODERNIZED-Subagents-Roster.mdc` and skill `.cursor/skills/agent-team-prd2/SKILL.md`. Requirements source: `Documentation/PRD2_MODERNIZED.md`.

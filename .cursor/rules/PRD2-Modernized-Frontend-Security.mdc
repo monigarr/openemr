@@ -1,0 +1,34 @@
+---
+description: PRD2 Modernized Next.js — OAuth/FHIR trust boundary, PHI handling, proxy (non-negotiables).
+globs:
+  - frontend/**
+alwaysApply: false
+---
+
+# PRD2 Modernized — frontend security boundary
+
+These rules apply only to [`frontend/`](frontend/). They encode [Documentation/ARCHITECTURE_PRD2_MODERNIZED.md](Documentation/ARCHITECTURE_PRD2_MODERNIZED.md) §5–7 and P0 items from [Documentation/ARCHITECTURE_RISKS_PRD2_MODERNIZED.md](Documentation/ARCHITECTURE_RISKS_PRD2_MODERNIZED.md).
+
+## OAuth2 / session
+
+- The **access token must never be exposed to browser JavaScript** (use HTTP-only, encrypted session cookies via next-auth / Auth.js patterns as specified in architecture §7.1).
+- **Do not** put `accessToken` (or raw bearer tokens) on the client session object or pass them into `"use client"` trees. **R-001**: misconfigured `session()` callbacks are a P0.
+- FHIR and REST calls that attach `Authorization: Bearer …` run in **Route Handlers**, **Server Actions**, or **React Server Components** — not from client code with a copied token.
+
+## PHI and logging
+
+- **No PHI** in browser `localStorage` / `sessionStorage` / IndexedDB for clinical payloads.
+- **No PHI** in analytics, error reporting payloads, or unstructured `console.log` / third-party telemetry. Use structured, redacted server logs only as allowed by architecture §5.
+
+## API boundary
+
+- Validate FHIR JSON at the trust boundary with **Zod** (or an equivalent runtime schema layer) before treating responses as typed domain data (architecture §5 Reliability).
+- Prefer the **FHIR proxy** at `frontend/app/api/fhir/[...resource]/route.ts` when CORS or browser constraints require it (**R-002**). Support switching direct vs proxied modes via environment configuration as documented in the risk register.
+
+## Testing and review hooks
+
+- Add or maintain checks that the client bundle and `window` / serialized session data do **not** leak token-shaped secrets (e.g. Playwright assertion that embedded data does not contain access token patterns — see **R-001** mitigations in the risk register).
+
+## When unsure
+
+Re-read architecture §7.1 (OIDC sequence) and the P0 rows in `Documentation/ARCHITECTURE_RISKS_PRD2_MODERNIZED.md` before changing auth, session, or FHIR transport code.
