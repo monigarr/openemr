@@ -53,4 +53,6 @@ Operational architecture, risks, audit trail, users, and cost/latency for this f
 | Users / scenarios | `Documentation/USERS_PRD2_MODERNIZED.md` |
 | Cost / latency | `Documentation/COST_LATENCY_REPORT_PRD2_MODERNIZED.md` |
 
+**Validation split (Zod vs PHP):** The Modernized dashboard uses **Zod** on **OpenEMR FHIR/REST responses** in `frontend/`. **Clinical CoPilot** **`lab_pdf` / `intake_form`** extraction rows are enforced with **strict PHP validation** in `oe-module-clinical-copilot` (`LabResultLine`, `IntakeFormRecord`, etc.) — **not** Pydantic models or Zod schema files. See **`Documentation/ARCHITECTURE_PRD2_MODERNIZED.md`** §3 *Cross-track validation boundaries*.
+
 **Track B optional Langfuse:** `frontend/instrumentation.ts`, `frontend/lib/observability/`, env **`DASHBOARD_LANGFUSE_ENABLE`** + **`LANGFUSE_*`** (+ recommended **`LANGFUSE_ID_SALT`**). Does not change PRD feature requirements; instrumentation is **off** unless explicitly enabled.

@@ -33,7 +33,7 @@
 #   2026-05-06
 #
 # Last Updated:
-#   2026-05-08 (Track B Langfuse §11/§19; privacy §10; monitoring goals; directory tree)
+#   2026-05-08 (validation boundaries: Zod = FHIR only; extraction DTOs = PHP module)
 #
 # License:
 #   MIT
@@ -170,6 +170,15 @@ Systems must be transferable to:
 * **Direct Database Access:** No SQL or schema manipulation is permitted.
 * **Full EHR Modernization:** The calendar, billing, and admin panels are explicitly not part of this project.
 
+## Cross-track validation boundaries (FHIR vs document extraction)
+
+The PRD2 program spans two products that share governance docs but **different runtime validation surfaces**:
+
+* **`frontend/` (this modernization track):** Use **Zod** (or an equivalent runtime validator) on **OpenEMR FHIR and REST API responses** at the proxy and `use-fhir-*` hook boundary. That catches structural drift from published interoperability endpoints before data reaches React components.
+* **Clinical CoPilot Week 2 document extraction (`interface/modules/custom_modules/oe-module-clinical-copilot/`):** **`lab_pdf`** and **`intake_form`** rows are **not** modeled or enforced with Pydantic models, Zod schemas, or parallel JSON-schema files in the Next.js tree. The contract is **strict server-side PHP validation** immediately after the extraction pipeline (for example `LabResultLine::validated`, `IntakeFormRecord::validated`, and citation helpers), so untrusted model or VLM output is normalized and rejected in the same trust domain as the OpenEMR session.
+
+The dashboard’s **Lab Results card** reads live **`Observation`** resources from the FHIR API (Zod-validated on the frontend). It does **not** consume Clinical CoPilot `document_extractions` JSON unless a future integration explicitly adds that API and its own boundary rules.
+
 ---
 
 # 4. STRATA-X Scale Classification
@@ -219,7 +228,7 @@ Systems must be transferable to:
 * No unhandled promise rejections in any clinical card.
 
 ### Reliability
-* All FHIR queries are typed with `zod` or a similar runtime validation library to catch schema drift.
+* **FHIR (and related REST) responses** consumed by the dashboard are validated with **`zod`** or a similar runtime library at the API boundary to catch schema drift. This **does not** extend to Clinical CoPilot **`lab_pdf` / `intake_form` extraction DTOs**; those remain PHP-validated in the module (see §3 Cross-track validation boundaries).
 * React Query automatically retries failed requests with exponential backoff.
 
 ### Performance

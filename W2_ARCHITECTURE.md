@@ -42,7 +42,7 @@ flowchart LR
 | PRD requirement | Implementation |
 |-----------------|----------------|
 | `attach_and_extract` + `lab_pdf` / `intake_form` | Tool `attach_and_extract` + upload endpoint; extraction pipeline interface with stub default |
-| Strict schemas + citations | `ClinicalCitation`, `LabResultLine`, `IntakeFormRecord` validators; each extracted row carries citation metadata |
+| Strict schemas + citations | `ClinicalCitation`, `LabResultLine`, `IntakeFormRecord` **PHP** validators (no Pydantic/Zod schema artifacts for these DTOs; PRD2 Modernized uses Zod only on **FHIR** boundaries in `frontend/`) |
 | Hybrid RAG + rerank | `HybridGuidelineRetriever` (sparse + dense) + `CohereReranker` (optional) |
 | Supervisor + workers | Week 2 adds **parametric tools** and explicit routing via the existing OpenAI tool loop; **`AgentOrchestrator`** emits **`supervisor_handoffs`** (tool → `intake_extractor` \| `evidence_retriever` \| `chart_context`) for inspectable PRD-style handoffs. **LangGraph**-style graph wiring is **planned — not yet in tree**; it may layer on without changing verification. |
 | Citation contract | Model cites `document_extractions.*` and `guideline_evidence.chunks.*`; minimum metadata shape enforced at extraction |

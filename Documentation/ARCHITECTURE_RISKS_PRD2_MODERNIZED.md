@@ -153,6 +153,8 @@ Frontend connects to an OpenEMR instance running a different FHIR version than t
 - Repeated failures erode trust in the new dashboard.
 
 ### Mitigation
+**Scope:** Zod runtime checks here target **OpenEMR FHIR/REST JSON** consumed by the Next.js dashboard. **Clinical CoPilot** **`lab_pdf` / `intake_form`** extraction DTOs are **not** Zod-validated; they use **strict PHP validators** in the copilot module (see `Documentation/ARCHITECTURE_PRD2_MODERNIZED.md` §3).
+
 1. **Runtime validation with `zod`:** Every `use-fhir-*.ts` hook validates the API response against a Zod schema derived from the embedded FHIR schema before passing data to the component. Invalid fields are flagged, not silently swallowed.
 2. **Defensive field access:** All render code uses optional chaining: `patient?.name?.[0]?.given?.[0] ?? "Name unavailable"`.
 3. **Schema embedding:** The FHIR schemas are committed to the repository and version-pinned to the target OpenEMR version.

@@ -478,7 +478,7 @@ Human Lead recorded decision for governance alignment across `Documentation/ARCH
 | No PHI in client-side logging or analytics | ✅ Approved — architecture mandates structured logging with PHI hashing | Security Audit Agent (AI-assisted) |
 | No LLM endpoint in this architecture | ✅ Approved — no prompt injection surface exists | Security Audit Agent (AI-assisted) |
 | CSP headers configured | ✅ Approved — documented as a non-functional requirement (§5) | Security Audit Agent (AI-assisted) |
-| Zod validation of all FHIR responses | ✅ Approved — prevents malformed data from crashing components | Security Audit Agent (AI-assisted) |
+| Zod validation of FHIR/API responses in `frontend/` | ✅ Approved — prevents malformed data from crashing components; **out of scope:** Clinical CoPilot `lab_pdf` / `intake_form` extraction DTOs (strict PHP validators in the module, not Pydantic/Zod) | Security Audit Agent (AI-assisted) |
 | No client-side persistence of clinical data | ✅ Approved — React Query cache is in-memory only, cleared on logout | Security Audit Agent (AI-assisted) |
 | Optional Track B Langfuse export | ✅ Approved when **off by default** (`DASHBOARD_LANGFUSE_ENABLE`); spans are metadata-only; `userId`/`sessionId` are salted SHA-256 digests, not raw OIDC `sub` | Security Audit Agent (human review for production enablement) |
 

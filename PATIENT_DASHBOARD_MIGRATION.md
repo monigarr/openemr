@@ -24,7 +24,7 @@
 #   2026-05-06
 #
 # Last Updated:
-#   2026-05-08 (Langfuse Track B + doc canon sync)
+#   2026-05-08 (Langfuse Track B; Zod scope = FHIR only; extraction DTOs = PHP)
 #
 # Classification:
 #   Public — This document is part of the deliverable and is #   intended for human review
@@ -79,7 +79,7 @@ The Patient Dashboard has been reimplemented using:
 | **Component System** | shadcn/ui | Accessible, composable UI primitives (Card, Badge, Skeleton, Table, Tabs) |
 | **Authentication** | next-auth (Auth.js v5) | OpenID Connect client, encrypted session management, automatic token refresh |
 | **Data Fetching** | TanStack Query (React Query) | Client-side caching, background refetch, deduplication, stale-while-revalidate |
-| **Validation** | Zod | Runtime FHIR response validation, type safety at the API boundary |
+| **Validation** | Zod | Runtime validation of **OpenEMR FHIR/REST responses** at the Next.js API and hook boundary only. **Not** used for Clinical CoPilot **`lab_pdf` / `intake_form`** extraction payloads — those are enforced with **strict PHP validators** in `oe-module-clinical-copilot` (`LabResultLine`, `IntakeFormRecord`, etc.), not Pydantic or Zod schema files. |
 | **Deployment** | Railway / Vercel | Zero-configuration Node.js hosting with CI/CD integration |
 
 ## 2.2 Alternatives Considered and Rejected
