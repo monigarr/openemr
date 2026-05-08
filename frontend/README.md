@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PRD2 Modernized — Patient Dashboard (Next.js)
 
-## Getting Started
+OpenEMR **presentation-layer** port: OAuth2/OIDC + FHIR via [`Documentation/PRD2_MODERNIZED.md`](../Documentation/PRD2_MODERNIZED.md).
 
-First, run the development server:
+## Prerequisites
+
+1. **OpenEMR** running with REST + FHIR enabled (e.g. `docker/development-easy` — app on **https://localhost:9300**).
+2. **OAuth client** registered in OpenEMR with redirect URI **`http://localhost:3000/api/auth/callback/openemr`** (same scheme/host/port as this app). Requires ACL **Administration → Super** for **API Clients**.
+3. Node **24+** (see repo root `package.json` engines).
+
+## Configure
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd frontend
+cp .env.example .env.local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Edit **`.env.local`**:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Variable | Example |
+|----------|---------|
+| `AUTH_SECRET` | 32+ byte random hex (single line) |
+| `NEXTAUTH_URL` / `AUTH_URL` | `http://localhost:3000` |
+| `AUTH_OPENEMR_ID` / `AUTH_OPENEMR_SECRET` | From OpenEMR app registration |
+| `OPENEMR_OAUTH2_ISSUER` | `https://localhost:9300/oauth2/default` |
+| `OPENEMR_BASE_URL` | `https://localhost:9300` |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**Self-signed OpenEMR TLS (local only):** add `NODE_TLS_REJECT_UNAUTHORIZED=0` to `.env.local` so Node can call `https://localhost:9300` for OIDC discovery and the FHIR proxy. **Do not use in production.**
 
-## Learn More
+## Run
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm install
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Open **http://localhost:3000** (use **http**, not https, unless you terminate TLS in front of Next).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Common errors
 
-## Deploy on Vercel
+| Symptom | Fix |
+|---------|-----|
+| `error=Configuration` (Auth.js) | Fix `AUTH_SECRET` (one line), set real `AUTH_OPENEMR_*`, ensure `OPENEMR_OAUTH2_ISSUER` is reachable from Node; for self-signed dev TLS see above. |
+| `jwks` / `invalid_client_metadata` on registration | Do not send empty `jwks` string; omit `jwks` in curl body or use valid `{"keys":[]}` if UI requires it — see prior notes. |
+| Redirect URI mismatch | Must exactly match `NEXTAUTH_URL` + `/api/auth/callback/openemr`. |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Tests
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run test:e2e
+```
+
+Requires Playwright browsers: `npx playwright install chromium`.
+
+## More
+
+- Security: [`.cursor/rules/PRD2-Modernized-Frontend-Security.mdc`](../.cursor/rules/PRD2-Modernized-Frontend-Security.mdc)
+- Architecture: [`Documentation/ARCHITECTURE_PRD2_MODERNIZED.md`](../Documentation/ARCHITECTURE_PRD2_MODERNIZED.md)
