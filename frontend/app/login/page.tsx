@@ -1,9 +1,9 @@
 /**
- * @version 0.1.1
+ * @version 0.1.2
  * @date 2026-05-10
  * @author Monica Peters <monica.peters@gfachallenger.gauntletai.com>
  *
- * Purpose: Login entrypoint that starts the OpenEMR OIDC flow via Auth.js (`signIn("openemr")`).
+ * Purpose: Login entrypoint that starts the OpenEMR OIDC flow via Auth.js client `signIn` (PKCE/state cookies from `/api/auth` responses).
  *
  * Usage: Navigating to `/login` shows the button; successful auth lands on `/dashboard`.
  *
@@ -12,12 +12,11 @@
  * FHIR: N/A.
  * Accessibility: Single primary action; clear heading.
  * Performance: N/A.
- * Stability: OAuth-related env is read at request time (`force-dynamic`) so platform secrets are not inlined at `next build`.
+ * Stability: `force-dynamic` for runtime OAuth env; client `signIn` avoids Server Action cookie persistence issues on reverse proxies.
  * Legal/compliance: N/A.
  */
 
-import { signIn } from "@/auth";
-import { Button } from "@/components/ui/button";
+import { OpenEmrSignInButton } from "@/components/auth/openemr-sign-in-button";
 
 /** Resolve OAuth env at runtime (e.g. Railway Variables), not at static generation. */
 export const dynamic = "force-dynamic";
@@ -77,17 +76,9 @@ export default function LoginPage() {
           </div>
         ) : null}
 
-        <form
-          className="mt-6"
-          action={async () => {
-            "use server";
-            await signIn("openemr", { redirectTo: "/dashboard" });
-          }}
-        >
-          <Button type="submit" className="w-full" disabled={needsCredentials}>
-            {needsCredentials ? "Configure OAuth in .env.local first" : "Continue to OpenEMR"}
-          </Button>
-        </form>
+        <div className="mt-6">
+          <OpenEmrSignInButton disabled={needsCredentials} />
+        </div>
       </div>
     </div>
   );
