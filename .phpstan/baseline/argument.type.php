@@ -10612,11 +10612,6 @@ $ignoreErrors[] = [
     'path' => __DIR__ . '/../../interface/modules/custom_modules/oe-module-faxsms/library/webhook_receiver.php',
 ];
 $ignoreErrors[] = [
-    'message' => '#^Parameter \\#1 \\$json of function json_decode expects string, string\\|false given\\.$#',
-    'count' => 1,
-    'path' => __DIR__ . '/../../interface/modules/custom_modules/oe-module-faxsms/library/webhook_receiver.php',
-];
-$ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$phone of static method OpenEMR\\\\Modules\\\\FaxSMS\\\\Utils\\\\SignalWireWebhookValidator\\:\\:validatePhoneNumber\\(\\) expects string, mixed given\\.$#',
     'count' => 2,
     'path' => __DIR__ . '/../../interface/modules/custom_modules/oe-module-faxsms/library/webhook_receiver.php',
@@ -10724,11 +10719,6 @@ $ignoreErrors[] = [
 $ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$header of function header expects string, bool\\|float\\|int\\|string given\\.$#',
     'count' => 1,
-    'path' => __DIR__ . '/../../interface/modules/custom_modules/oe-module-faxsms/src/Controller/AppDispatch.php',
-];
-$ignoreErrors[] = [
-    'message' => '#^Parameter \\#1 \\$json of function json_decode expects string, string\\|false given\\.$#',
-    'count' => 2,
     'path' => __DIR__ . '/../../interface/modules/custom_modules/oe-module-faxsms/src/Controller/AppDispatch.php',
 ];
 $ignoreErrors[] = [
@@ -11702,11 +11692,6 @@ $ignoreErrors[] = [
     'path' => __DIR__ . '/../../interface/modules/custom_modules/oe-module-weno/scripts/file_download.php',
 ];
 $ignoreErrors[] = [
-    'message' => '#^Parameter \\#1 \\$string of function md5 expects string, string\\|false given\\.$#',
-    'count' => 1,
-    'path' => __DIR__ . '/../../interface/modules/custom_modules/oe-module-weno/scripts/file_download.php',
-];
-$ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$text of function errorLogEscape expects string, mixed given\\.$#',
     'count' => 2,
     'path' => __DIR__ . '/../../interface/modules/custom_modules/oe-module-weno/scripts/file_download.php',
@@ -11727,13 +11712,8 @@ $ignoreErrors[] = [
     'path' => __DIR__ . '/../../interface/modules/custom_modules/oe-module-weno/scripts/file_download.php',
 ];
 $ignoreErrors[] = [
-    'message' => '#^Parameter \\#1 \\$value of method OpenEMR\\\\Common\\\\Crypto\\\\CryptoInterface\\:\\:decryptStandard\\(\\) expects string\\|null, mixed given\\.$#',
+    'message' => '#^Parameter \\#1 \\$value of method OpenEMR\\\\Common\\\\Crypto\\\\CryptoInterface\\:\\:decryptFromDatabase\\(\\) expects string\\|null, mixed given\\.$#',
     'count' => 2,
-    'path' => __DIR__ . '/../../interface/modules/custom_modules/oe-module-weno/scripts/file_download.php',
-];
-$ignoreErrors[] = [
-    'message' => '#^Parameter \\#2 \\$data of function hash expects string, string\\|false given\\.$#',
-    'count' => 1,
     'path' => __DIR__ . '/../../interface/modules/custom_modules/oe-module-weno/scripts/file_download.php',
 ];
 $ignoreErrors[] = [
@@ -11912,11 +11892,6 @@ $ignoreErrors[] = [
     'path' => __DIR__ . '/../../interface/modules/custom_modules/oe-module-weno/src/Services/LogProperties.php',
 ];
 $ignoreErrors[] = [
-    'message' => '#^Parameter \\#1 \\$string of function md5 expects string, string\\|false given\\.$#',
-    'count' => 1,
-    'path' => __DIR__ . '/../../interface/modules/custom_modules/oe-module-weno/src/Services/LogProperties.php',
-];
-$ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$string of function urlencode expects string, string\\|false given\\.$#',
     'count' => 1,
     'path' => __DIR__ . '/../../interface/modules/custom_modules/oe-module-weno/src/Services/LogProperties.php',
@@ -11932,13 +11907,8 @@ $ignoreErrors[] = [
     'path' => __DIR__ . '/../../interface/modules/custom_modules/oe-module-weno/src/Services/LogProperties.php',
 ];
 $ignoreErrors[] = [
-    'message' => '#^Parameter \\#1 \\$value of method OpenEMR\\\\Common\\\\Crypto\\\\CryptoInterface\\:\\:decryptStandard\\(\\) expects string\\|null, mixed given\\.$#',
+    'message' => '#^Parameter \\#1 \\$value of method OpenEMR\\\\Common\\\\Crypto\\\\CryptoInterface\\:\\:decryptFromDatabase\\(\\) expects string\\|null, mixed given\\.$#',
     'count' => 4,
-    'path' => __DIR__ . '/../../interface/modules/custom_modules/oe-module-weno/src/Services/LogProperties.php',
-];
-$ignoreErrors[] = [
-    'message' => '#^Parameter \\#2 \\$data of function hash expects string, string\\|false given\\.$#',
-    'count' => 1,
     'path' => __DIR__ . '/../../interface/modules/custom_modules/oe-module-weno/src/Services/LogProperties.php',
 ];
 $ignoreErrors[] = [
@@ -12027,22 +11997,12 @@ $ignoreErrors[] = [
     'path' => __DIR__ . '/../../interface/modules/custom_modules/oe-module-weno/src/Services/WenoPharmaciesJson.php',
 ];
 $ignoreErrors[] = [
-    'message' => '#^Parameter \\#1 \\$string of function md5 expects string, string\\|false given\\.$#',
-    'count' => 1,
-    'path' => __DIR__ . '/../../interface/modules/custom_modules/oe-module-weno/src/Services/WenoPharmaciesJson.php',
-];
-$ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$text of function text expects string, string\\|false given\\.$#',
     'count' => 1,
     'path' => __DIR__ . '/../../interface/modules/custom_modules/oe-module-weno/src/Services/WenoPharmaciesJson.php',
 ];
 $ignoreErrors[] = [
-    'message' => '#^Parameter \\#1 \\$value of method OpenEMR\\\\Common\\\\Crypto\\\\CryptoInterface\\:\\:decryptStandard\\(\\) expects string\\|null, mixed given\\.$#',
-    'count' => 2,
-    'path' => __DIR__ . '/../../interface/modules/custom_modules/oe-module-weno/src/Services/WenoPharmaciesJson.php',
-];
-$ignoreErrors[] = [
-    'message' => '#^Parameter \\#2 \\$data of function hash expects string, bool\\|string given\\.$#',
+    'message' => '#^Parameter \\#1 \\$value of method OpenEMR\\\\Common\\\\Crypto\\\\CryptoInterface\\:\\:decryptFromDatabase\\(\\) expects string\\|null, mixed given\\.$#',
     'count' => 1,
     'path' => __DIR__ . '/../../interface/modules/custom_modules/oe-module-weno/src/Services/WenoPharmaciesJson.php',
 ];
@@ -15065,11 +15025,6 @@ $ignoreErrors[] = [
     'message' => '#^Parameter \\#2 \\$str of function decorateString expects string, mixed given\\.$#',
     'count' => 1,
     'path' => __DIR__ . '/../../interface/patient_file/front_payment.php',
-];
-$ignoreErrors[] = [
-    'message' => '#^Parameter \\#1 \\$apiKey of static method Stripe\\\\Stripe\\:\\:setApiKey\\(\\) expects string, string\\|false given\\.$#',
-    'count' => 4,
-    'path' => __DIR__ . '/../../interface/patient_file/front_payment_cc.php',
 ];
 $ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$id of static method Stripe\\\\PaymentIntent\\:\\:retrieve\\(\\) expects array\\|string, mixed given\\.$#',
@@ -19763,7 +19718,7 @@ $ignoreErrors[] = [
 ];
 $ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$text of function attr expects string, mixed given\\.$#',
-    'count' => 14,
+    'count' => 13,
     'path' => __DIR__ . '/../../interface/super/edit_globals.php',
 ];
 $ignoreErrors[] = [
@@ -20715,11 +20670,6 @@ $ignoreErrors[] = [
     'message' => '#^Parameter \\#2 \\$haystack of function in_array expects array, mixed given\\.$#',
     'count' => 1,
     'path' => __DIR__ . '/../../interface/usergroup/usergroup_admin_add.php',
-];
-$ignoreErrors[] = [
-    'message' => '#^Parameter \\$webhookSecret of class OpenEMR\\\\PaymentProcessing\\\\Rainforest\\\\Webhooks\\\\Verifier constructor expects string, string\\|false given\\.$#',
-    'count' => 1,
-    'path' => __DIR__ . '/../../interface/webhooks/payment/rainforest.php',
 ];
 $ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$array of function array_shift expects array, array\\|false given\\.$#',
@@ -28832,11 +28782,6 @@ $ignoreErrors[] = [
     'path' => __DIR__ . '/../../portal/portal_payment.php',
 ];
 $ignoreErrors[] = [
-    'message' => '#^Parameter \\#1 \\$json of function json_decode expects string, string\\|false given\\.$#',
-    'count' => 1,
-    'path' => __DIR__ . '/../../portal/portal_payment.php',
-];
-$ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$pid of function getPatientData expects int, mixed given\\.$#',
     'count' => 2,
     'path' => __DIR__ . '/../../portal/portal_payment.php',
@@ -29613,11 +29558,6 @@ $ignoreErrors[] = [
 ];
 $ignoreErrors[] = [
     'message' => '#^Parameter \\#2 \\$port of class phpseclib3\\\\Net\\\\SFTP constructor expects int, mixed given\\.$#',
-    'count' => 1,
-    'path' => __DIR__ . '/../../src/Billing/BillingProcessor/X12RemoteTracker.php',
-];
-$ignoreErrors[] = [
-    'message' => '#^Parameter \\#2 \\.\\.\\.\\$args of method phpseclib3\\\\Net\\\\SSH2\\:\\:login\\(\\) expects array\\<array\\>\\|phpseclib3\\\\Crypt\\\\Common\\\\PrivateKey\\|phpseclib3\\\\System\\\\SSH\\\\Agent\\|string\\|null, string\\|false given\\.$#',
     'count' => 1,
     'path' => __DIR__ . '/../../src/Billing/BillingProcessor/X12RemoteTracker.php',
 ];
@@ -30575,11 +30515,6 @@ $ignoreErrors[] = [
     'message' => '#^Parameter \\#4 \\$return_value of static method OpenEMR\\\\Common\\\\Acl\\\\AclMain\\:\\:aclCheckCore\\(\\) expects array\\|string, mixed given\\.$#',
     'count' => 1,
     'path' => __DIR__ . '/../../src/Common/Acl/AclMain.php',
-];
-$ignoreErrors[] = [
-    'message' => '#^Parameter \\#1 \\$value of method OpenEMR\\\\Common\\\\Crypto\\\\CryptoInterface\\:\\:decryptStandard\\(\\) expects string\\|null, mixed given\\.$#',
-    'count' => 1,
-    'path' => __DIR__ . '/../../src/Common/Auth/AuthGlobal.php',
 ];
 $ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$hash of function password_get_info expects string, mixed given\\.$#',
@@ -61752,11 +61687,6 @@ $ignoreErrors[] = [
     'path' => __DIR__ . '/../../src/PaymentProcessing/PaymentProcessing.php',
 ];
 $ignoreErrors[] = [
-    'message' => '#^Parameter \\#1 \\$json of function json_decode expects string, string\\|false given\\.$#',
-    'count' => 1,
-    'path' => __DIR__ . '/../../src/PaymentProcessing/PaymentProcessing.php',
-];
-$ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$code of class Money\\\\Currency constructor expects non\\-empty\\-string, mixed given\\.$#',
     'count' => 1,
     'path' => __DIR__ . '/../../src/PaymentProcessing/Rainforest/EncounterData.php',
@@ -61814,11 +61744,6 @@ $ignoreErrors[] = [
 $ignoreErrors[] = [
     'message' => '#^Parameter \\#1 \\$string of function urlencode expects string, int given\\.$#',
     'count' => 2,
-    'path' => __DIR__ . '/../../src/PaymentProcessing/Sphere/SpherePayment.php',
-];
-$ignoreErrors[] = [
-    'message' => '#^Parameter \\#1 \\$string of function urlencode expects string, string\\|false given\\.$#',
-    'count' => 4,
     'path' => __DIR__ . '/../../src/PaymentProcessing/Sphere/SpherePayment.php',
 ];
 $ignoreErrors[] = [
