@@ -1,0 +1,7 @@
+# PRD2 Modernized — separate Railway service from OpenEMR (Track A).
+# In Railway: set this service’s Root Directory to `frontend` so this file is used
+# (repo root `railway.toml` must NOT apply — it builds OpenEMR via docker/agentforge-railway).
+# Docs: https://docs.railway.com/reference/config-as-code
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"

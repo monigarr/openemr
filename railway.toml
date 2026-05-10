@@ -1,5 +1,6 @@
-# Railway: build OpenEMR from this repo (production-style Dockerfile; see docker/agentforge-railway/README.md).
-# Keep service root at the repository root so the Dockerfile can COPY the app tree from context.
+# Railway: build OpenEMR (Track A) from this repo — see docker/agentforge-railway/README.md.
+# PRD2 Modernized Next.js (Track B) uses frontend/railway.toml; set that service’s Root Directory to `frontend`.
+# Keep THIS service root at the repository root so the Dockerfile can COPY the app tree from context.
 # Docs: https://docs.railway.app/reference/config-as-code
 [build]
 builder = "DOCKERFILE"

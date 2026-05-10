@@ -48,6 +48,20 @@ docker build -f docker/agentforge-railway/Dockerfile -t openemr:agentforge \
 7. **HTTP / `PORT`:** Railway’s edge forwards to the port in the service’s [`PORT` variable](https://docs.railway.com/guides/public-networking). Apache listens on **80** (and **443** for TLS). This image sets `ENV PORT=80`. If you still see **502**, set an explicit Railway variable **`PORT=80`**. First boot may take a few minutes until logs show **Starting apache!** while the DB and auto-setup run.
 8. **Persistence:** Mount or provision volumes for `sites/` and database data for anything beyond a demo.
 
+### Second Railway service: PRD2 Modernized (Next.js, Track B)
+
+Staging (or production) can run **OpenEMR (Track A)** and the **patient dashboard** as **two services** in the same Railway project. Local dev uses different ports (`8300` vs `3000`); on Railway each service has its own public URL and `PORT`.
+
+1. **New service** → same GitHub repo and **same branch** you use for PRD 2 (e.g. `prd2_af_modernized` / your integration branch).
+2. **Root directory:** `frontend` (required). That picks up [`frontend/railway.toml`](../../frontend/railway.toml) and [`frontend/Dockerfile`](../../frontend/Dockerfile) instead of the repo root [`railway.toml`](../../railway.toml), which builds OpenEMR only.
+3. **Build:** Railway should use **Dockerfile** at `frontend/Dockerfile` (multi-stage `standalone` output). Local smoke test from repo root:  
+   `docker build -f frontend/Dockerfile -t prd2-modernized-frontend ./frontend`
+4. **Variables:** Copy names and staging values from [`frontend/railway.env.example`](../../frontend/railway.env.example) into **this** service’s Railway Variables (never commit secrets). At minimum set `AUTH_SECRET`, `NEXTAUTH_URL`, `AUTH_URL`, `AUTH_OPENEMR_ID`, `AUTH_OPENEMR_SECRET`, `OPENEMR_OAUTH2_ISSUER`, and `OPENEMR_BASE_URL` to your **Track A** OpenEMR service HTTPS origin.
+5. **OAuth / SMART registration (OpenEMR):** Register an OAuth client whose **redirect URI** is exactly  
+   `{NEXTAUTH_URL}/api/auth/callback/openemr`  
+   (same origin as the Next app). Use OpenEMR’s API client / SMART registration (e.g. [`interface/smart/register-app.php`](../../interface/smart/register-app.php)) so the client id/secret match `AUTH_OPENEMR_ID` / `AUTH_OPENEMR_SECRET`.
+6. **Langfuse (optional, Track B):** On this Node service, set `LANGFUSE_*` and `DASHBOARD_LANGFUSE_ENABLE=1` as in the paragraph below; OpenEMR Portal toggles do not apply to the Next app.
+
 ### Flex variant only (`Dockerfile.flex`)
 
 If you use **Dockerfile.flex**, flex may clone upstream OpenEMR at container start unless you rely on image-only content; see flex docs on Docker Hub. Optional variables: `FLEX_REPOSITORY`, `FLEX_REPOSITORY_BRANCH` / `FLEX_REPOSITORY_TAG`. Langfuse variables below apply the same way: PHP reads the container environment at runtime.

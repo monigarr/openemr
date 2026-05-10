@@ -1,0 +1,10 @@
+# Reduce Docker build context for PRD2 Modernized (Next.js) image.
+.git
+.next
+node_modules
+npm-debug.log*
+playwright-report
+test-results
+.env
+.env.*
+!.env.example

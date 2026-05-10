@@ -5,7 +5,7 @@
  *
  * Purpose: Auth.js configuration for OpenEMR OIDC (authorization code + PKCE). Stores tokens in the encrypted JWT only; session callback does not expose access tokens to the client (R-001).
  *
- * Usage: Composed by `auth.ts` (`NextAuth(authConfig)`). Env: see `frontend/.env.example`.
+ * Usage: Composed by `auth.ts` (`NextAuth(authConfig)`). Env: see `frontend/.env.example` and `frontend/railway.env.example`.
  *
  * Example: User opens `/login`, submits server action → `signIn("openemr")` → OpenEMR consent → callback → JWT persisted in HTTP-only cookie.
  *
