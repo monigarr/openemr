@@ -22,13 +22,15 @@ import { Button } from "@/components/ui/button";
 function isPlaceholderOauth(): boolean {
   const id = (process.env.AUTH_OPENEMR_ID ?? "").trim();
   const secret = (process.env.AUTH_OPENEMR_SECRET ?? "").trim();
+  const idLooksLikeRedirectUri = /^https?:\/\//i.test(id);
   return (
     id === "" ||
     secret === "" ||
     id === "your-oauth-client-id" ||
     secret === "your-oauth-client-secret" ||
     id.toLowerCase().includes("your-oauth") ||
-    secret.toLowerCase().includes("your-oauth")
+    secret.toLowerCase().includes("your-oauth") ||
+    idLooksLikeRedirectUri
   );
 }
 
@@ -52,7 +54,8 @@ export default function LoginPage() {
           >
             <p className="font-medium">OAuth client not configured</p>
             <p className="mt-1">
-              Set <code className="rounded bg-amber-100 px-1">AUTH_OPENEMR_ID</code> and{" "}
+              Set <code className="rounded bg-amber-100 px-1">AUTH_OPENEMR_ID</code> (the{" "}
+              <strong>client ID</strong> string from the app registration — not the callback URL) and{" "}
               <code className="rounded bg-amber-100 px-1">AUTH_OPENEMR_SECRET</code> in{" "}
               <code className="rounded bg-amber-100 px-1">frontend/.env.local</code> from OpenEMR{" "}
               <strong>Admin → System → API Clients → Register New App</strong>. Redirect URI must be{" "}
@@ -60,6 +63,12 @@ export default function LoginPage() {
                 {(process.env.NEXTAUTH_URL ?? "http://localhost:3000").replace(/\/$/, "")}/api/auth/callback/openemr
               </code>
               .
+            </p>
+            <p className="mt-2 text-xs text-amber-900">
+              Open this app at the same host as <code className="rounded bg-amber-100 px-1">NEXTAUTH_URL</code> (e.g.{" "}
+              <code className="rounded bg-amber-100 px-1">http://localhost:3000</code>
+              , not <code className="rounded bg-amber-100 px-1">127.0.0.1</code> or a LAN IP) so the OAuth state cookie is
+              sent on return.
             </p>
             <p className="mt-2 text-xs text-amber-900">Issuer (discovery): {issuer}</p>
           </div>

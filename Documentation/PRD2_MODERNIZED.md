@@ -45,6 +45,7 @@ Operational architecture, risks, audit trail, users, and cost/latency for this f
 
 | Topic | File |
 | ----- | ---- |
+| Agentic workflow (PRD 1 → 2 → Modernized) | `Documentation/AGENTIC_WORKFLOW_PRD1_PRD2_MODERNIZED.md` |
 | Requirements detail | `Documentation/PRD2_MODERNIZED.md` (this file) |
 | Architecture | `Documentation/ARCHITECTURE_PRD2_MODERNIZED.md` |
 | Observability (Track A + Track B Langfuse) | Same, §11; **ADR-007** in `Documentation/AUDIT_PRD2_MODERNIZED.md` |
