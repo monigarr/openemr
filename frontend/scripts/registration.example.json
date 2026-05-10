@@ -1,0 +1,8 @@
+{
+  "application_type": "private",
+  "redirect_uris": ["http://localhost:3000/api/auth/callback/openemr"],
+  "client_name": "PRD2 Modernized Frontend (local)",
+  "token_endpoint_auth_method": "client_secret_post",
+  "contacts": ["admin@example.com"],
+  "scope": "openid fhirUser offline_access"
+}

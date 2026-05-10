@@ -132,7 +132,12 @@ $dsiTypesStringNames = DecisionSupportInterventionService::DSI_TYPES_CLIENT_STRI
                 appRegister.application_type = document.querySelector("input[name='appType']:checked").value || "private";
                 appRegister.dsi_type = document.querySelector("input[name='dsiType']:checked").value || "";
 
-                if (appRegister.jwks.trim() != "") {
+                // Omit empty JWKS fields: stock Dynamic Client Registration uses JSON_THROW_ON_ERROR on jwks strings,
+                // so "" breaks registration (invalid_client_metadata). Matches sanitizeClientRegistrationMetadata pattern.
+                if (appRegister.jwks_uri.trim() === "") {
+                    delete appRegister.jwks_uri;
+                }
+                if (appRegister.jwks.trim() !== "") {
                     try {
                         appRegister.jwks = JSON.parse(appRegister.jwks);
                     }
@@ -141,6 +146,8 @@ $dsiTypesStringNames = DecisionSupportInterventionService::DSI_TYPES_CLIENT_STRI
                         alert(<?php echo xlj("Your JWKS is invalid"); ?>);
                         return;
                     }
+                } else {
+                    delete appRegister.jwks;
                 }
 
                 let scopes = [];

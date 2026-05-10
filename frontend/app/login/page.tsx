@@ -1,6 +1,6 @@
 /**
- * @version 0.1.0
- * @date 2026-05-07
+ * @version 0.1.1
+ * @date 2026-05-10
  * @author Monica Peters <monica.peters@gfachallenger.gauntletai.com>
  *
  * Purpose: Login entrypoint that starts the OpenEMR OIDC flow via Auth.js (`signIn("openemr")`).
@@ -12,12 +12,15 @@
  * FHIR: N/A.
  * Accessibility: Single primary action; clear heading.
  * Performance: N/A.
- * Stability: Requires OAuth env configuration (`frontend/.env.example`).
+ * Stability: OAuth-related env is read at request time (`force-dynamic`) so platform secrets are not inlined at `next build`.
  * Legal/compliance: N/A.
  */
 
 import { signIn } from "@/auth";
 import { Button } from "@/components/ui/button";
+
+/** Resolve OAuth env at runtime (e.g. Railway Variables), not at static generation. */
+export const dynamic = "force-dynamic";
 
 function isPlaceholderOauth(): boolean {
   const id = (process.env.AUTH_OPENEMR_ID ?? "").trim();

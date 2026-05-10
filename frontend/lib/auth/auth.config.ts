@@ -13,7 +13,7 @@
  *
  * Security/PHI: OAuth tokens stay server-side in the JWT cookie; never added to `Session` for client bundles.
  * HIPAA: Least exposure; no PHI in OAuth client logs here.
- * FHIR: Scopes request `fhirUser` for FHIR access per architecture guidance.
+ * FHIR: Scopes request `fhirUser` for FHIR access; `offline_access` for refresh. Omit `profile` unless userinfo name/email claims are required.
  * Accessibility: N/A — non-UI.
  * Performance: Refresh runs only near token expiry.
  * Stability: Refresh failures set `token.error` so callers can force re-auth.
