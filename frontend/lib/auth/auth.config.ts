@@ -7,7 +7,7 @@
  *
  * Usage: Composed by `auth.ts` (`NextAuth(authConfig)`). Env: see `frontend/.env.example` and `frontend/railway.env.example`.
  *
- * Example: User opens `/login`, submits server action → `signIn("openemr")` → OpenEMR consent → callback → JWT persisted in HTTP-only cookie.
+ * Example: User opens `/login`, submits form POST to `/api/auth/signin/openemr` → OpenEMR consent → callback → JWT persisted in HTTP-only cookie.
  *
  * Dependencies: `next-auth`, OpenEMR OAuth2/OIDC endpoints (`OPENEMR_OAUTH2_ISSUER`).
  *
